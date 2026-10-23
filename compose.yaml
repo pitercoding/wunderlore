@@ -33,6 +33,7 @@ services:
       DB_URL: jdbc:postgresql://postgres:5432/${DB_NAME:-wunderlore}
       DB_USERNAME: ${DB_USERNAME:?Set DB_USERNAME in .env}
       DB_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in .env}
+      THE_ONE_API_ACCESS_TOKEN: ${THE_ONE_API_ACCESS_TOKEN:-}
     ports:
       - "${BACKEND_PORT:-8080}:8080"
     depends_on:
