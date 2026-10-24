@@ -30,20 +30,22 @@ public class TheOneApiClient {
                 .body(ExternalBookResponse.class);
     }
 
-    public ExternalQuoteResponse getQuotes() {
-        return authenticatedGet("/quote")
+    public ExternalQuoteResponse getQuotes(int page, int limit) {
+        return authenticatedGet("/quote?page={page}&limit={limit}", page, limit)
                 .retrieve()
                 .body(ExternalQuoteResponse.class);
     }
 
-    RestClient.RequestHeadersSpec<?> authenticatedGet(String uri) {
+    RestClient.RequestHeadersSpec<?> authenticatedGet(
+            String uri,
+            Object... uriVariables) {
         if (accessToken.isBlank()) {
             throw new IllegalStateException(
                     "THE_ONE_API_ACCESS_TOKEN is not configured");
         }
 
         return restClient.get()
-                .uri(uri)
+                .uri(uri, uriVariables)
                 .headers(headers -> headers.setBearerAuth(accessToken));
     }
 }

@@ -8,6 +8,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClient;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.http.HttpMethod.GET;
@@ -115,7 +116,7 @@ class TheOneApiClientTest {
 
         MockRestServiceServer server = MockRestServiceServer.bindTo(builder).build();
 
-        server.expect(requestTo(BASE_URL + "/quote"))
+        server.expect(requestTo(BASE_URL + "/quote?page=2&limit=5"))
                 .andExpect(method(GET))
                 .andExpect(header(AUTHORIZATION, "Bearer test-token"))
                 .andRespond(withSuccess("""
@@ -129,17 +130,16 @@ class TheOneApiClientTest {
                                     "id": "quote-123"
                                 }
                             ],
-                            "total": 1,
-                            "limit": 1000,
-                            "offset": 0,
-                            "page": 1,
-                            "pages": 1
+                            "total": 11,
+                            "limit": 5,
+                            "page": 2,
+                            "pages": 3
                         }
                         """, MediaType.APPLICATION_JSON));
 
         TheOneApiClient client = new TheOneApiClient(builder, BASE_URL, "test-token");
 
-        var response = client.getQuotes();
+        var response = client.getQuotes(2, 5);
 
         assertEquals(1, response.docs().size());
         assertEquals("quote-123", response.docs().get(0)._id());
@@ -147,11 +147,11 @@ class TheOneApiClientTest {
         assertEquals("movie-123", response.docs().get(0).movie());
         assertEquals("character-123", response.docs().get(0).character());
         assertEquals("quote-123", response.docs().get(0).id());
-        assertEquals(1, response.total());
-        assertEquals(1000, response.limit());
-        assertEquals(0, response.offset());
-        assertEquals(1, response.page());
-        assertEquals(1, response.pages());
+        assertEquals(11, response.total());
+        assertEquals(5, response.limit());
+        assertNull(response.offset());
+        assertEquals(2, response.page());
+        assertEquals(3, response.pages());
 
         server.verify();
     }
@@ -166,7 +166,7 @@ class TheOneApiClientTest {
 
         IllegalStateException exception = assertThrows(
                 IllegalStateException.class,
-                client::getQuotes);
+                () -> client.getQuotes(1, 20));
 
         assertEquals(
                 "THE_ONE_API_ACCESS_TOKEN is not configured",
@@ -181,7 +181,7 @@ class TheOneApiClientTest {
 
         MockRestServiceServer server = MockRestServiceServer.bindTo(builder).build();
 
-        server.expect(requestTo(BASE_URL + "/quote"))
+        server.expect(requestTo(BASE_URL + "/quote?page=1&limit=20"))
                 .andExpect(method(GET))
                 .andExpect(header(AUTHORIZATION, "Bearer invalid-token"))
                 .andRespond(withUnauthorizedRequest());
@@ -190,7 +190,7 @@ class TheOneApiClientTest {
 
         assertThrows(
                 HttpClientErrorException.Unauthorized.class,
-                client::getQuotes);
+                () -> client.getQuotes(1, 20));
 
         server.verify();
     }

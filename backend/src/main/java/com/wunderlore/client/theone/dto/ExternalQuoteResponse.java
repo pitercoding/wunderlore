@@ -6,7 +6,8 @@ public record ExternalQuoteResponse(
         List<ExternalQuote> docs,
         int total,
         int limit,
-        int offset,
+        Integer offset,
         int page,
-        int pages) {
+        int pages
+) {
 }
