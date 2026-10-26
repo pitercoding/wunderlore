@@ -1,5 +1,6 @@
 package com.wunderlore.client.theone;
 
+import com.wunderlore.client.theone.dto.ExternalCharacterResponse;
 import com.wunderlore.client.theone.dto.ExternalQuoteResponse;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
@@ -194,4 +195,91 @@ class TheOneApiClientTest {
 
         server.verify();
     }
+
+    @Test
+    void shouldReturnCharactersWithPaginationAndAuthorization() {
+        RestClient.Builder builder = RestClient.builder();
+
+        MockRestServiceServer server = MockRestServiceServer.bindTo(builder).build();
+
+        server.expect(requestTo(BASE_URL + "/character?page=2&limit=5"))
+                .andExpect(method(GET))
+                .andExpect(header(AUTHORIZATION, "Bearer test-token"))
+                .andRespond(withSuccess("""
+                        {
+                            "docs": [
+                                {
+                                    "_id": "character-123",
+                                    "name": "Gandalf"
+                                },
+                                {
+                                    "_id": "character-456",
+                                    "name": "Frodo"
+                                }
+                            ],
+                            "total": 11,
+                            "limit": 5,
+                            "offset": null,
+                            "page": 2,
+                            "pages": 3
+                        }
+                        """, MediaType.APPLICATION_JSON));
+
+        TheOneApiClient client = new TheOneApiClient(builder, BASE_URL, "test-token");
+
+        ExternalCharacterResponse response = client.getCharacters(2, 5);
+
+        assertEquals(2, response.docs().size());
+        assertEquals("character-123", response.docs().get(0).id());
+        assertEquals("Gandalf", response.docs().get(0).name());
+        assertEquals("character-456", response.docs().get(1).id());
+        assertEquals("Frodo", response.docs().get(1).name());
+        assertEquals(11, response.total());
+        assertEquals(5, response.limit());
+        assertNull(response.offset());
+        assertEquals(2, response.page());
+        assertEquals(3, response.pages());
+
+        server.verify();
+    }
+
+    @Test
+    void shouldNotRequestCharactersWhenTokenIsMissing() {
+        RestClient.Builder builder = RestClient.builder();
+
+        MockRestServiceServer server = MockRestServiceServer.bindTo(builder).build();
+
+        TheOneApiClient client = new TheOneApiClient(builder, BASE_URL, "");
+
+        IllegalStateException exception = assertThrows(
+                IllegalStateException.class,
+                () -> client.getCharacters(1, 20));
+
+        assertEquals(
+                "THE_ONE_API_ACCESS_TOKEN is not configured",
+                exception.getMessage());
+
+        server.verify();
+    }
+
+    @Test
+    void shouldPropagateUnauthorizedResponseWhenFetchingCharacters() {
+        RestClient.Builder builder = RestClient.builder();
+
+        MockRestServiceServer server = MockRestServiceServer.bindTo(builder).build();
+
+        server.expect(requestTo(BASE_URL + "/character?page=1&limit=20"))
+                .andExpect(method(GET))
+                .andExpect(header(AUTHORIZATION, "Bearer invalid-token"))
+                .andRespond(withUnauthorizedRequest());
+
+        TheOneApiClient client = new TheOneApiClient(builder, BASE_URL, "invalid-token");
+
+        assertThrows(
+                HttpClientErrorException.Unauthorized.class,
+                () -> client.getCharacters(1, 20));
+
+        server.verify();
+    }
+
 }

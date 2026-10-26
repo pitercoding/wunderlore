@@ -1,6 +1,7 @@
 package com.wunderlore.client.theone;
 
 import com.wunderlore.client.theone.dto.ExternalBookResponse;
+import com.wunderlore.client.theone.dto.ExternalCharacterResponse;
 import com.wunderlore.client.theone.dto.ExternalQuoteResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -34,6 +35,12 @@ public class TheOneApiClient {
         return authenticatedGet("/quote?page={page}&limit={limit}", page, limit)
                 .retrieve()
                 .body(ExternalQuoteResponse.class);
+    }
+
+    public ExternalCharacterResponse getCharacters(int page, int limit) {
+        return authenticatedGet("/character?page={page}&limit={limit}", page, limit)
+            .retrieve()
+            .body(ExternalCharacterResponse.class);
     }
 
     RestClient.RequestHeadersSpec<?> authenticatedGet(
