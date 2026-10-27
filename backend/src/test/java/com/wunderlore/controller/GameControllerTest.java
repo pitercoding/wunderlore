@@ -15,6 +15,7 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClientException;
 
 import java.util.List;
@@ -112,6 +113,20 @@ class GameControllerTest {
                                 .andExpect(jsonPath("$.status").value(503))
                                 .andExpect(jsonPath("$.detail").value(UNAVAILABLE_DETAIL))
                                 .andExpect(content().string(not(containsString("The One API unavailable"))));
+
+                verify(gameRoundRegistry, never()).register(any());
+        }
+
+        @Test
+        void shouldReturnServiceUnavailableWhenExternalApiTimesOut() throws Exception {
+                when(whoSaidItService.generateRound())
+                                .thenThrow(new ResourceAccessException("Request timed out"));
+
+                mockMvc.perform(get("/api/game/round"))
+                                .andExpect(status().isServiceUnavailable())
+                                .andExpect(jsonPath("$.status").value(503))
+                                .andExpect(jsonPath("$.detail").value(UNAVAILABLE_DETAIL))
+                                .andExpect(content().string(not(containsString("timed out"))));
 
                 verify(gameRoundRegistry, never()).register(any());
         }
