@@ -1,0 +1,109 @@
+.container {
+    width: min(100% - 2rem, 760px);
+    margin: 0 auto;
+    padding: 3rem 0;
+}
+
+.header {
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.eyebrow {
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.header h1 {
+    margin: 0.75rem 0;
+    font-size: clamp(2rem, 5vw, 3rem);
+}
+
+.gameCard {
+    padding: clamp(1.25rem, 4vw, 2rem);
+    border: 1px solid var(--border, #d1d5db);
+    border-radius: 1rem;
+}
+
+.quote {
+    margin: 0 0 2rem;
+    font-size: clamp(1.25rem, 3vw, 1.75rem);
+    line-height: 1.6;
+    text-align: center;
+}
+
+.options {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+}
+
+.option,
+.newRound {
+    padding: 0.9rem 1rem;
+    border: 1px solid var(--border, #d1d5db);
+    border-radius: 0.65rem;
+    background: var(--background, #fff);
+    color: var(--foreground, #171717);
+    font: inherit;
+    cursor: pointer;
+    transition:
+        background-color 150ms ease,
+        border-color 150ms ease;
+}
+
+.option:hover:not(:disabled),
+.newRound:hover:not(:disabled) {
+    border-color: var(--foreground, #171717);
+}
+
+.option:focus-visible,
+.newRound:focus-visible {
+    outline: 2px solid var(--foreground, #171717);
+    outline-offset: 3px;
+}
+
+.option:disabled,
+.newRound:disabled {
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.option.correct {
+    border-color: #15803d;
+    background: #dcfce7;
+    color: #14532d;
+}
+
+.option.incorrect {
+    border-color: #b91c1c;
+    background: #fee2e2;
+    color: #7f1d1d;
+}
+
+.status,
+.error,
+.result {
+    margin-top: 1.5rem;
+    text-align: center;
+}
+
+.error {
+    color: #b91c1c;
+}
+
+.newRound {
+    margin-top: 1rem;
+}
+
+@media (max-width: 480px) {
+    .options {
+        grid-template-columns: 1fr;
+    }
+
+    .container {
+        padding: 2rem 0;
+    }
+}
