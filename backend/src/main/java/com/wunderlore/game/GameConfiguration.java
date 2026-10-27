@@ -1,7 +1,8 @@
 package com.wunderlore.game;
 
-import java.util.random.RandomGenerator;
 import java.time.Clock;
+import java.util.Random;
+import java.util.random.RandomGenerator;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -11,7 +12,9 @@ public class GameConfiguration {
 
     @Bean
     public RandomGenerator randomGenerator() {
-        return RandomGenerator.getDefault();
+        // java.util.Random lives in java.base; RandomGenerator.getDefault()
+        // needs the jdk.random module, which the JRE runtime image lacks.
+        return new Random();
     }
 
     @Bean
