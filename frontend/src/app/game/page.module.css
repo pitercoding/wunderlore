@@ -9,6 +9,27 @@
     text-align: center;
 }
 
+/* Block-level + fit-content keeps the link left-aligned inside the centered header. */
+.backLink {
+    display: block;
+    width: fit-content;
+    min-height: 44px;
+    margin-bottom: 1.5rem;
+    padding: 0.625rem 0;
+    color: inherit;
+    text-align: left;
+    text-decoration: none;
+}
+
+.backLink:hover {
+    text-decoration: underline;
+}
+
+.backLink:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+}
+
 .eyebrow {
     font-size: 0.8rem;
     font-weight: 700;

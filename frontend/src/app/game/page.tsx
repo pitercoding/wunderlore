@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { connection } from "next/server";
 import { Suspense } from "react";
 import { getRound } from "@/lib/api/game";
@@ -27,6 +28,10 @@ async function GameLoader() {
 
         return (
             <main className={styles.container}>
+                <Link href="/" className={styles.backLink}>
+                    ← Wunderlore
+                </Link>
+
                 <h1>Who Said It?</h1>
                 <p role="alert">
                     Unable to load a game round. Please try again.

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { GameRound, AnswerResult } from "@/lib/api/game";
 import { submitGameAnswer } from "./actions";
@@ -53,6 +54,10 @@ export default function GameContent({ round }: GameContentProps) {
     return (
         <main className={styles.container}>
             <header className={styles.header}>
+                <Link href="/" className={styles.backLink}>
+                    ← Wunderlore
+                </Link>
+
                 <p className={styles.eyebrow}>WHO SAID IT?</p>
                 <h1>Who said this quote?</h1>
                 <p>Choose the character you think said it.</p>
