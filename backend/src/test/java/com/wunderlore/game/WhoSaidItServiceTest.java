@@ -26,6 +26,7 @@ import com.wunderlore.client.theone.dto.ExternalCharacter;
 import com.wunderlore.client.theone.dto.ExternalCharacterResponse;
 import com.wunderlore.client.theone.dto.ExternalQuote;
 import com.wunderlore.client.theone.dto.ExternalQuoteResponse;
+import com.wunderlore.lore.LoreDataService;
 
 @ExtendWith(MockitoExtension.class)
 class WhoSaidItServiceTest {
@@ -264,7 +265,7 @@ class WhoSaidItServiceTest {
         }
 
         private WhoSaidItService newService(RandomGenerator random) {
-                return new WhoSaidItService(theOneApiClient, random);
+                return new WhoSaidItService(new LoreDataService(theOneApiClient), random);
         }
 
         private void stubSinglePage(List<ExternalQuote> quotes, List<ExternalCharacter> characters) {
