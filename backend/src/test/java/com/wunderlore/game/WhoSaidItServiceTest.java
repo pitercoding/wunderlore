@@ -9,6 +9,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
+import java.time.Clock;
+import java.time.Duration;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
@@ -265,7 +267,11 @@ class WhoSaidItServiceTest {
         }
 
         private WhoSaidItService newService(RandomGenerator random) {
-                return new WhoSaidItService(new LoreDataService(theOneApiClient), random);
+                // No failure cooldown, so retries are not delayed; the cooldown is covered in LoreDataServiceTest.
+                LoreDataService loreDataService = new LoreDataService(
+                                theOneApiClient, Clock.systemUTC(), Duration.ZERO, 100);
+
+                return new WhoSaidItService(loreDataService, random);
         }
 
         private void stubSinglePage(List<ExternalQuote> quotes, List<ExternalCharacter> characters) {

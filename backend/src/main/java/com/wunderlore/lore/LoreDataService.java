@@ -1,11 +1,16 @@
 package com.wunderlore.lore;
 
+import java.time.Clock;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClientException;
 
 import com.wunderlore.client.theone.TheOneApiClient;
 import com.wunderlore.client.theone.dto.ExternalCharacter;
@@ -20,19 +25,74 @@ public class LoreDataService {
 
     private LoreData cachedLoreData;
 
-    private final TheOneApiClient theOneApiClient;
+    // Set after a failed load and cleared by a successful one; guarded by this.
+    private Instant lastFailureAt;
+    private RuntimeException lastFailure;
 
-    // Constructor
-    public LoreDataService(TheOneApiClient theOneApiClient) {
+    private final TheOneApiClient theOneApiClient;
+    private final Clock clock;
+    private final Duration failureCooldown;
+    private final int maxPages;
+
+    // failureCooldown: how long calls fail fast after a failed load before a new
+    // load may start (default 30s; PT0S disables it).
+    // maxPages: upper bound on pages fetched per dataset (default 100, i.e. up to
+    // 10,000 records each at PAGE_SIZE); a larger reported count fails the load.
+    public LoreDataService(
+            TheOneApiClient theOneApiClient,
+            Clock clock,
+            @Value("${wunderlore.lore.failure-cooldown:PT30S}") Duration failureCooldown,
+            @Value("${wunderlore.lore.max-pages:100}") int maxPages) {
+
+        if (failureCooldown.isNegative()) {
+            throw new IllegalArgumentException("Failure cooldown must not be negative");
+        }
+
+        if (maxPages < 1) {
+            throw new IllegalArgumentException("Maximum pages must be at least 1");
+        }
+
         this.theOneApiClient = theOneApiClient;
+        this.clock = clock;
+        this.failureCooldown = failureCooldown;
+        this.maxPages = maxPages;
     }
 
     // Loads the dataset on first use and caches it only once every page has loaded.
+    // After an upstream failure, callers fail fast until the cooldown expires, so
+    // threads queued on the lock do not start back-to-back full loads.
     public synchronized LoreData getData() {
         if (cachedLoreData != null) {
             return cachedLoreData;
         }
 
+        if (lastFailureAt != null) {
+            Instant retryAt = lastFailureAt.plus(failureCooldown);
+
+            if (clock.instant().isBefore(retryAt)) {
+                throw new LoreDataUnavailableException(
+                        "The One API data load failed recently; next attempt allowed at " + retryAt,
+                        lastFailure);
+            }
+        }
+
+        try {
+            cachedLoreData = loadData();
+        } catch (RestClientException | LoreDataUnavailableException exception) {
+            // Only upstream failures start a cooldown; configuration and programming
+            // errors propagate without one.
+            lastFailureAt = clock.instant();
+            lastFailure = exception;
+            throw exception;
+        }
+
+        lastFailureAt = null;
+        lastFailure = null;
+
+        return cachedLoreData;
+    }
+
+    private LoreData loadData() {
         List<ExternalQuote> quotes = loadAllQuotes();
         List<ExternalCharacter> characters = loadAllCharacters();
 
@@ -40,12 +100,10 @@ public class LoreDataService {
 
         List<ExternalQuote> attributedQuotes = filterValidQuotes(quotes, charactersById);
 
-        cachedLoreData = new LoreData(
+        return new LoreData(
                 List.copyOf(quotes),
                 Map.copyOf(charactersById),
                 List.copyOf(attributedQuotes));
-
-        return cachedLoreData;
     }
 
     // Fetches all citation pages from the API.
@@ -58,8 +116,10 @@ public class LoreDataService {
         // Add the results
         quotes.addAll(quoteDocs(response));
 
+        int pages = validatedPageCount(response.pages(), quotes.isEmpty(), "quote");
+
         // Fetch the remaining pages, starting from page 2
-        for (int page = 2; page <= response.pages(); page++) {
+        for (int page = 2; page <= pages; page++) {
             ExternalQuoteResponse nextPage = theOneApiClient.getQuotes(page, PAGE_SIZE);
 
             quotes.addAll(quoteDocs(nextPage));
@@ -78,14 +138,34 @@ public class LoreDataService {
         // Add the results
         characters.addAll(characterDocs(response));
 
+        int pages = validatedPageCount(response.pages(), characters.isEmpty(), "character");
+
         // Fetch the remaining pages, starting from page 2
-        for (int page = 2; page <= response.pages(); page++) {
+        for (int page = 2; page <= pages; page++) {
             ExternalCharacterResponse nextPage = theOneApiClient.getCharacters(page, PAGE_SIZE);
 
             characters.addAll(characterDocs(nextPage));
         }
 
         return characters;
+    }
+
+    // Rejects page counts that would truncate the dataset or exceed maxPages.
+    // A count of 0 is accepted only for an empty first page, since a missing
+    // "pages" field also deserializes to 0.
+    private int validatedPageCount(int pages, boolean firstPageEmpty, String dataset) {
+        if (pages < 0 || (pages == 0 && !firstPageEmpty)) {
+            throw new LoreDataUnavailableException(
+                    "The One API returned invalid " + dataset + " page count: " + pages);
+        }
+
+        if (pages > maxPages) {
+            throw new LoreDataUnavailableException(
+                    "The One API reported " + pages + " " + dataset
+                            + " pages, above the limit of " + maxPages);
+        }
+
+        return pages;
     }
 
     private List<ExternalQuote> quoteDocs(ExternalQuoteResponse response) {
