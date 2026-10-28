@@ -1,0 +1,72 @@
+name: Backend CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: backend-ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  build:
+    name: Test and package
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    defaults:
+      run:
+        working-directory: backend
+
+    # WunderloreApplicationTests (@SpringBootTest) starts the full context, so
+    # the DataSource and Flyway need a reachable PostgreSQL. Throwaway
+    # credentials, used only by this ephemeral container.
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_DB: wunderlore_ci
+          POSTGRES_USER: wunderlore_ci
+          POSTGRES_PASSWORD: wunderlore_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U wunderlore_ci -d wunderlore_ci"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+          --health-start-period 10s
+
+    # Read by application.properties. No .env exists on the runner and
+    # THE_ONE_API_ACCESS_TOKEN stays unset: tests mock The One API.
+    env:
+      DB_URL: jdbc:postgresql://localhost:5432/wunderlore_ci
+      DB_USERNAME: wunderlore_ci
+      DB_PASSWORD: wunderlore_ci
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Set up Java
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: maven
+          cache-dependency-path: backend/pom.xml
+
+      # mvnw is committed without the executable bit (mode 100644).
+      - name: Make Maven Wrapper executable
+        run: chmod +x mvnw
+
+      # verify runs compile, the full test suite and package (jar + Spring Boot
+      # repackage); there is no failsafe/integration-test phase, so a separate
+      # "mvnw test" step would only run the suite twice.
+      - name: Build and test
+        run: ./mvnw -B -ntp verify
