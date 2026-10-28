@@ -48,7 +48,9 @@ services:
   #   container_name: wunderlore-frontend
   #   restart: unless-stopped
   #   environment:
-  #     NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8080}
+  #     # Read by the Next.js server; inside the Compose network the backend
+  #     # is reached by service name, not localhost.
+  #     API_URL: http://backend:8080
   #   ports:
   #     - "${FRONTEND_PORT:-3000}:3000"
   #   depends_on:
