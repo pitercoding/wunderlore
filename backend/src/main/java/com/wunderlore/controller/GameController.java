@@ -1,5 +1,6 @@
 package com.wunderlore.controller;
 
+import com.wunderlore.client.theone.TheOneApiNotConfiguredException;
 import com.wunderlore.game.GameRound;
 import com.wunderlore.game.GameRoundRegistry;
 import com.wunderlore.game.GameRoundResponse;
@@ -10,6 +11,7 @@ import com.wunderlore.game.InvalidCharacterOptionException;
 import com.wunderlore.game.RoundAlreadyAnsweredException;
 import com.wunderlore.game.RoundCapacityExceededException;
 import com.wunderlore.game.RoundNotFoundException;
+import com.wunderlore.lore.LoreDataUnavailableException;
 
 import jakarta.validation.Valid;
 
@@ -54,6 +56,8 @@ public class GameController {
 
     @ExceptionHandler({
             RestClientException.class,
+            LoreDataUnavailableException.class,
+            TheOneApiNotConfiguredException.class,
             IllegalStateException.class
     })
     public ProblemDetail handleRoundGenerationFailure(Exception exception) {

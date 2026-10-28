@@ -100,8 +100,8 @@ class TheOneApiClientTest {
 
         TheOneApiClient client = new TheOneApiClient(builder, BASE_URL, "");
 
-        IllegalStateException exception = assertThrows(
-                IllegalStateException.class,
+        TheOneApiNotConfiguredException exception = assertThrows(
+                TheOneApiNotConfiguredException.class,
                 () -> client.authenticatedGet("/quote"));
 
         assertEquals(
@@ -165,8 +165,8 @@ class TheOneApiClientTest {
 
         TheOneApiClient client = new TheOneApiClient(builder, BASE_URL, "");
 
-        IllegalStateException exception = assertThrows(
-                IllegalStateException.class,
+        TheOneApiNotConfiguredException exception = assertThrows(
+                TheOneApiNotConfiguredException.class,
                 () -> client.getQuotes(1, 20));
 
         assertEquals(
@@ -251,8 +251,8 @@ class TheOneApiClientTest {
 
         TheOneApiClient client = new TheOneApiClient(builder, BASE_URL, "");
 
-        IllegalStateException exception = assertThrows(
-                IllegalStateException.class,
+        TheOneApiNotConfiguredException exception = assertThrows(
+                TheOneApiNotConfiguredException.class,
                 () -> client.getCharacters(1, 20));
 
         assertEquals(

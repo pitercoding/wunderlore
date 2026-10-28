@@ -1,5 +1,6 @@
 package com.wunderlore.controller;
 
+import com.wunderlore.client.theone.TheOneApiNotConfiguredException;
 import com.wunderlore.game.AnswerRequest;
 import com.wunderlore.game.AnswerResponse;
 import com.wunderlore.game.GameRound;
@@ -9,15 +10,20 @@ import com.wunderlore.game.RoundAlreadyAnsweredException;
 import com.wunderlore.game.RoundCapacityExceededException;
 import com.wunderlore.game.RoundNotFoundException;
 import com.wunderlore.game.WhoSaidItService;
+import com.wunderlore.lore.LoreDataUnavailableException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClientException;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import static org.hamcrest.Matchers.containsString;
@@ -142,6 +148,73 @@ class GameControllerTest {
                                 .andExpect(jsonPath("$.status").value(503))
                                 .andExpect(jsonPath("$.detail").value(UNAVAILABLE_DETAIL))
                                 .andExpect(content().string(not(containsString("At least four distinct characters"))));
+
+                verify(gameRoundRegistry, never()).register(any());
+        }
+
+        @Test
+        void shouldReturnServiceUnavailableWhenNoValidQuotesAreAvailable() throws Exception {
+                when(whoSaidItService.generateRound())
+                                .thenThrow(new IllegalStateException(
+                                                "No valid quotes available to start the game"));
+
+                mockMvc.perform(get("/api/game/round"))
+                                .andExpect(status().isServiceUnavailable())
+                                .andExpect(jsonPath("$.status").value(503))
+                                .andExpect(jsonPath("$.detail").value(UNAVAILABLE_DETAIL))
+                                .andExpect(content().string(not(containsString("No valid quotes"))));
+
+                verify(gameRoundRegistry, never()).register(any());
+        }
+
+        @Test
+        void shouldReturnServiceUnavailableWhenLoreDataIsUnavailable() throws Exception {
+                when(whoSaidItService.generateRound())
+                                .thenThrow(new LoreDataUnavailableException(
+                                                "The One API returned an empty quote page"));
+
+                mockMvc.perform(get("/api/game/round"))
+                                .andExpect(status().isServiceUnavailable())
+                                .andExpect(jsonPath("$.status").value(503))
+                                .andExpect(jsonPath("$.detail").value(UNAVAILABLE_DETAIL))
+                                .andExpect(content().string(not(containsString("empty quote page"))))
+                                .andExpect(content().string(not(containsString("The One API"))));
+
+                verify(gameRoundRegistry, never()).register(any());
+        }
+
+        @Test
+        void shouldReturnServiceUnavailableWhenApiTokenIsNotConfigured() throws Exception {
+                when(whoSaidItService.generateRound())
+                                .thenThrow(new TheOneApiNotConfiguredException());
+
+                mockMvc.perform(get("/api/game/round"))
+                                .andExpect(status().isServiceUnavailable())
+                                .andExpect(jsonPath("$.status").value(503))
+                                .andExpect(jsonPath("$.detail").value(UNAVAILABLE_DETAIL))
+                                .andExpect(content().string(not(containsString("THE_ONE_API_ACCESS_TOKEN"))))
+                                .andExpect(content().string(not(containsString("not configured"))));
+
+                verify(gameRoundRegistry, never()).register(any());
+        }
+
+        @Test
+        void shouldNotExposeUpstreamResponseBodyWhenExternalApiRejectsRequest() throws Exception {
+                when(whoSaidItService.generateRound())
+                                .thenThrow(HttpClientErrorException.create(
+                                                HttpStatus.UNAUTHORIZED,
+                                                "Unauthorized",
+                                                HttpHeaders.EMPTY,
+                                                "{\"message\":\"Invalid token secret-upstream-detail\"}"
+                                                                .getBytes(StandardCharsets.UTF_8),
+                                                StandardCharsets.UTF_8));
+
+                mockMvc.perform(get("/api/game/round"))
+                                .andExpect(status().isServiceUnavailable())
+                                .andExpect(jsonPath("$.status").value(503))
+                                .andExpect(jsonPath("$.detail").value(UNAVAILABLE_DETAIL))
+                                .andExpect(content().string(not(containsString("secret-upstream-detail"))))
+                                .andExpect(content().string(not(containsString("Unauthorized"))));
 
                 verify(gameRoundRegistry, never()).register(any());
         }

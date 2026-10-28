@@ -47,8 +47,7 @@ public class TheOneApiClient {
             String uri,
             Object... uriVariables) {
         if (accessToken.isBlank()) {
-            throw new IllegalStateException(
-                    "THE_ONE_API_ACCESS_TOKEN is not configured");
+            throw new TheOneApiNotConfiguredException();
         }
 
         return restClient.get()
