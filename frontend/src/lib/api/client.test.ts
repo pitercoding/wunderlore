@@ -88,6 +88,7 @@ describe("apiFetch", () => {
         expect(fetchMock).toHaveBeenCalledWith(expect.any(String), {
             headers: { Accept: "application/json" },
             cache: "no-store",
+            signal: expect.any(AbortSignal),
         });
     });
 
@@ -109,6 +110,7 @@ describe("apiFetch", () => {
             },
             body: '{"a":1}',
             cache: "no-store",
+            signal: expect.any(AbortSignal),
         });
     });
 
@@ -124,6 +126,7 @@ describe("apiFetch", () => {
         expect(fetchMock).toHaveBeenCalledWith(expect.any(String), {
             headers: { Accept: "text/plain" },
             cache: "no-store",
+            signal: expect.any(AbortSignal),
         });
     });
 
@@ -183,5 +186,201 @@ describe("apiFetch", () => {
         fetchMock.mockRejectedValue(networkError);
 
         await expect(apiFetch("/api/x")).rejects.toBe(networkError);
+    });
+});
+
+describe("apiFetch timeout and cancellation", () => {
+    // A fetch that never settles on its own, only when its signal aborts,
+    // rejecting with the abort reason like the platform fetch does.
+    function hangingFetch() {
+        fetchMock.mockImplementation(
+            (_input, init) =>
+                new Promise<Response>((_, reject) => {
+                    const signal = init?.signal;
+                    signal?.addEventListener("abort", () =>
+                        reject(signal.reason),
+                    );
+                }),
+        );
+    }
+
+    function signalPassedToFetch() {
+        const signal = fetchMock.mock.calls[0]?.[1]?.signal;
+        if (!signal) {
+            throw new Error("fetch was called without a signal");
+        }
+        return signal;
+    }
+
+    beforeEach(() => {
+        vi.useFakeTimers();
+    });
+
+    afterEach(() => {
+        vi.useRealTimers();
+    });
+
+    it("uses a 15 second default timeout", async () => {
+        const { API_TIMEOUT_MS } = await loadClient("http://api.test");
+
+        expect(API_TIMEOUT_MS).toBe(15_000);
+    });
+
+    it("resolves normally and clears the timer when the response arrives in time", async () => {
+        const { apiFetch } = await loadClient("http://api.test");
+        fetchMock.mockResolvedValue(jsonResponse({ ok: true }));
+
+        await expect(apiFetch("/api/x")).resolves.toEqual({ ok: true });
+
+        expect(vi.getTimerCount()).toBe(0);
+        expect(signalPassedToFetch().aborted).toBe(false);
+    });
+
+    it("clears the timer when the request fails with an HTTP error", async () => {
+        const { apiFetch, ApiError } = await loadClient("http://api.test");
+        fetchMock.mockResolvedValue(jsonResponse({}, { status: 500 }));
+
+        await expect(apiFetch("/api/x")).rejects.toBeInstanceOf(ApiError);
+
+        expect(vi.getTimerCount()).toBe(0);
+    });
+
+    it("clears the timer when fetch fails with a network error", async () => {
+        const { apiFetch } = await loadClient("http://api.test");
+        const networkError = new TypeError("fetch failed");
+        fetchMock.mockRejectedValue(networkError);
+
+        await expect(apiFetch("/api/x")).rejects.toBe(networkError);
+
+        expect(vi.getTimerCount()).toBe(0);
+    });
+
+    it("aborts the request and rejects with an ApiTimeoutError after the timeout", async () => {
+        const { apiFetch, ApiError, ApiTimeoutError, API_TIMEOUT_MS } =
+            await loadClient("http://api.test");
+        hangingFetch();
+
+        const result = apiFetch("/api/x").catch((e: unknown) => e);
+
+        await vi.advanceTimersByTimeAsync(API_TIMEOUT_MS - 1);
+        expect(signalPassedToFetch().aborted).toBe(false);
+
+        await vi.advanceTimersByTimeAsync(1);
+        const error = await result;
+
+        expect(signalPassedToFetch().aborted).toBe(true);
+        expect(error).toBeInstanceOf(ApiTimeoutError);
+        expect(error).not.toBeInstanceOf(ApiError);
+        expect(error).not.toHaveProperty("status");
+        expect(error).toMatchObject({
+            name: "ApiTimeoutError",
+            message: "API request timed out after 15000 ms",
+            timeoutMs: 15_000,
+        });
+        expect(vi.getTimerCount()).toBe(0);
+    });
+
+    it("reports a timeout even if fetch rejects with a generic abort error", async () => {
+        const { apiFetch, ApiTimeoutError, API_TIMEOUT_MS } =
+            await loadClient("http://api.test");
+        fetchMock.mockImplementation(
+            (_input, init) =>
+                new Promise<Response>((_, reject) => {
+                    init?.signal?.addEventListener("abort", () =>
+                        reject(new DOMException("aborted", "AbortError")),
+                    );
+                }),
+        );
+
+        const result = apiFetch("/api/x").catch((e: unknown) => e);
+        await vi.advanceTimersByTimeAsync(API_TIMEOUT_MS);
+
+        await expect(result).resolves.toBeInstanceOf(ApiTimeoutError);
+    });
+
+    it("applies the timeout while reading a stalled response body", async () => {
+        const { apiFetch, ApiTimeoutError, API_TIMEOUT_MS } =
+            await loadClient("http://api.test");
+        fetchMock.mockImplementation(async (_input, init) => {
+            const signal = init?.signal;
+            return {
+                ok: true,
+                status: 200,
+                json: () =>
+                    new Promise((_, reject) => {
+                        signal?.addEventListener("abort", () =>
+                            reject(signal.reason),
+                        );
+                    }),
+            } as Response;
+        });
+
+        const result = apiFetch("/api/x").catch((e: unknown) => e);
+        await vi.advanceTimersByTimeAsync(API_TIMEOUT_MS);
+
+        await expect(result).resolves.toBeInstanceOf(ApiTimeoutError);
+    });
+
+    it("lets the caller cancel the request with its own signal", async () => {
+        const { apiFetch, ApiTimeoutError } = await loadClient("http://api.test");
+        hangingFetch();
+        const caller = new AbortController();
+        const reason = new Error("navigated away");
+
+        const result = apiFetch("/api/x", { signal: caller.signal }).catch(
+            (e: unknown) => e,
+        );
+        caller.abort(reason);
+        const error = await result;
+
+        expect(signalPassedToFetch().aborted).toBe(true);
+        expect(error).toBe(reason);
+        expect(error).not.toBeInstanceOf(ApiTimeoutError);
+        expect(vi.getTimerCount()).toBe(0);
+    });
+
+    it("hands fetch an aborted signal when the caller signal is already aborted", async () => {
+        const { apiFetch } = await loadClient("http://api.test");
+        fetchMock.mockImplementation(async (_input, init) => {
+            throw init?.signal?.reason;
+        });
+        const caller = new AbortController();
+        const reason = new Error("already cancelled");
+        caller.abort(reason);
+
+        await expect(
+            apiFetch("/api/x", { signal: caller.signal }),
+        ).rejects.toBe(reason);
+        expect(signalPassedToFetch().aborted).toBe(true);
+        expect(vi.getTimerCount()).toBe(0);
+    });
+
+    it("keeps the default timeout when the caller provides a signal", async () => {
+        const { apiFetch, ApiTimeoutError, API_TIMEOUT_MS } =
+            await loadClient("http://api.test");
+        hangingFetch();
+        const caller = new AbortController();
+
+        const result = apiFetch("/api/x", { signal: caller.signal }).catch(
+            (e: unknown) => e,
+        );
+        await vi.advanceTimersByTimeAsync(API_TIMEOUT_MS);
+
+        await expect(result).resolves.toBeInstanceOf(ApiTimeoutError);
+        expect(caller.signal.aborted).toBe(false);
+    });
+
+    it("stops listening to the caller signal once the request settles", async () => {
+        const { apiFetch } = await loadClient("http://api.test");
+        fetchMock.mockResolvedValue(jsonResponse({}));
+        const caller = new AbortController();
+        const removeSpy = vi.spyOn(caller.signal, "removeEventListener");
+
+        await apiFetch("/api/x", { signal: caller.signal });
+        caller.abort();
+
+        expect(signalPassedToFetch()).not.toBe(caller.signal);
+        expect(removeSpy).toHaveBeenCalledWith("abort", expect.any(Function));
+        expect(signalPassedToFetch().aborted).toBe(false);
     });
 });
