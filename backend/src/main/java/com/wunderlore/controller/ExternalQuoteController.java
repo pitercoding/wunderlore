@@ -7,6 +7,8 @@ import com.wunderlore.lore.LoreDataService;
 import com.wunderlore.lore.LoreDataUnavailableException;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -21,6 +23,8 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/catalog")
 public class ExternalQuoteController {
+
+    private static final Logger log = LoggerFactory.getLogger(ExternalQuoteController.class);
 
     private final LoreDataService loreDataService;
 
@@ -62,6 +66,9 @@ public class ExternalQuoteController {
             TheOneApiNotConfiguredException.class
     })
     public ProblemDetail handleCatalogLoadFailure(Exception exception) {
+        // LoreDataService already logs load failures at WARN; this only ties them to the request.
+        log.debug("Catalog quotes request failed: {}", exception.getClass().getName());
+
         return ProblemDetail.forStatusAndDetail(
                 HttpStatus.SERVICE_UNAVAILABLE,
                 "Unable to load quotes right now");

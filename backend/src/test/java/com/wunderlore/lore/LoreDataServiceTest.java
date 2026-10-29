@@ -7,6 +7,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
+import java.net.http.HttpTimeoutException;
+import java.nio.charset.StandardCharsets;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
@@ -22,6 +24,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClientException;
 
 import com.wunderlore.client.theone.TheOneApiClient;
@@ -30,6 +36,10 @@ import com.wunderlore.client.theone.dto.ExternalCharacter;
 import com.wunderlore.client.theone.dto.ExternalCharacterResponse;
 import com.wunderlore.client.theone.dto.ExternalQuote;
 import com.wunderlore.client.theone.dto.ExternalQuoteResponse;
+import com.wunderlore.support.LogCapture;
+
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.spi.ILoggingEvent;
 
 @ExtendWith(MockitoExtension.class)
 class LoreDataServiceTest {
@@ -539,6 +549,161 @@ class LoreDataServiceTest {
 
                 verify(theOneApiClient, times(1)).getQuotes(1, PAGE_SIZE);
                 verifyNoMoreInteractions(theOneApiClient);
+        }
+
+        @Test
+        void shouldLogUpstreamFailureWithDatasetAndPageButNoSensitiveDetails() {
+                HttpHeaders requestHeaders = new HttpHeaders();
+                requestHeaders.setBearerAuth("secret-token-value");
+
+                when(theOneApiClient.getQuotes(1, PAGE_SIZE))
+                                .thenReturn(quotePage(List.of(quote("q1", "Po-tay-toes!", "sam")), 1, 2));
+                when(theOneApiClient.getQuotes(2, PAGE_SIZE))
+                                .thenThrow(HttpClientErrorException.create(
+                                                HttpStatus.UNAUTHORIZED,
+                                                "Unauthorized",
+                                                requestHeaders,
+                                                "{\"message\":\"Invalid token secret-upstream-detail\"}"
+                                                                .getBytes(StandardCharsets.UTF_8),
+                                                StandardCharsets.UTF_8));
+
+                try (LogCapture logs = LogCapture.of(LoreDataService.class)) {
+                        assertThatThrownBy(newService()::getData).isInstanceOf(HttpClientErrorException.class);
+
+                        assertThat(logs.events()).hasSize(1);
+
+                        ILoggingEvent event = logs.events().get(0);
+
+                        assertThat(event.getLevel()).isEqualTo(Level.WARN);
+                        assertThat(event.getFormattedMessage())
+                                        .contains("dataset=quote", "page=2", "HttpClientErrorException", "HTTP 401")
+                                        .contains("next attempt allowed at 2026-01-01T12:00:30Z");
+                        assertThat(event.getThrowableProxy()).isNull();
+                        assertThat(logs.allOutput())
+                                        .doesNotContain("secret-token-value")
+                                        .doesNotContain("Bearer")
+                                        .doesNotContain("Authorization")
+                                        .doesNotContain("secret-upstream-detail");
+                }
+        }
+
+        @Test
+        void shouldLogTransportFailureByTypeWithoutRequestUrl() {
+                when(theOneApiClient.getQuotes(1, PAGE_SIZE))
+                                .thenReturn(quotePage(List.of(quote("q1", "Po-tay-toes!", "sam")), 1, 1));
+                when(theOneApiClient.getCharacters(1, PAGE_SIZE))
+                                .thenThrow(new ResourceAccessException(
+                                                "I/O error on GET request for \"https://the-one-api.dev/v2/character?page=1&limit=100\"",
+                                                new HttpTimeoutException("request timed out")));
+
+                try (LogCapture logs = LogCapture.of(LoreDataService.class)) {
+                        assertThatThrownBy(newService()::getData).isInstanceOf(ResourceAccessException.class);
+
+                        assertThat(logs.events(Level.WARN)).singleElement()
+                                        .extracting(ILoggingEvent::getFormattedMessage)
+                                        .asString()
+                                        .contains("dataset=character", "page=1")
+                                        .contains("ResourceAccessException caused by java.net.http.HttpTimeoutException");
+                        assertThat(logs.allOutput())
+                                        .doesNotContain("https://")
+                                        .doesNotContain("request timed out");
+                }
+        }
+
+        @Test
+        void shouldLogInvalidPagingMetadataWithItsReason() {
+                stubSinglePage(List.of(), List.of());
+                when(theOneApiClient.getCharacters(1, PAGE_SIZE))
+                                .thenReturn(characterPage(List.of(SAM), 1, MAX_PAGES + 1));
+
+                try (LogCapture logs = LogCapture.of(LoreDataService.class)) {
+                        assertThatThrownBy(newService()::getData).isInstanceOf(LoreDataUnavailableException.class);
+
+                        assertThat(logs.events(Level.WARN)).singleElement()
+                                        .extracting(ILoggingEvent::getFormattedMessage)
+                                        .asString()
+                                        .contains("dataset=character", "page=1")
+                                        .contains("reported 4 character pages, above the limit of 3");
+                }
+        }
+
+        @Test
+        void shouldLogCooldownRejectionsOnlyAtDebug() {
+                when(theOneApiClient.getQuotes(1, PAGE_SIZE))
+                                .thenThrow(new RestClientException("The One API unavailable"));
+
+                LoreDataService service = newService();
+
+                try (LogCapture logs = LogCapture.of(LoreDataService.class)) {
+                        assertThatThrownBy(service::getData).isInstanceOf(RestClientException.class);
+
+                        for (int call = 0; call < 3; call++) {
+                                assertThatThrownBy(service::getData).isInstanceOf(LoreDataUnavailableException.class);
+                        }
+
+                        assertThat(logs.events(Level.WARN)).hasSize(1);
+                        assertThat(logs.events(Level.DEBUG)).hasSize(3)
+                                        .allSatisfy(event -> assertThat(event.getFormattedMessage())
+                                                        .contains("rejected during cooldown")
+                                                        .contains("2026-01-01T12:00:30Z"));
+                        assertThat(logs.events()).hasSize(4);
+                }
+        }
+
+        @Test
+        void shouldLogRecoveryOnceAfterFailure() {
+                when(theOneApiClient.getQuotes(1, PAGE_SIZE))
+                                .thenThrow(new RestClientException("The One API unavailable"))
+                                .thenReturn(quotePage(List.of(quote("q1", "Po-tay-toes!", "sam")), 1, 1));
+                when(theOneApiClient.getCharacters(1, PAGE_SIZE))
+                                .thenReturn(characterPage(List.of(SAM, FRODO), 1, 1));
+
+                LoreDataService service = newService();
+
+                try (LogCapture logs = LogCapture.of(LoreDataService.class)) {
+                        assertThatThrownBy(service::getData).isInstanceOf(RestClientException.class);
+
+                        clock.advance(COOLDOWN);
+
+                        service.getData();
+                        service.getData();
+                        service.getData();
+
+                        assertThat(logs.events(Level.WARN)).hasSize(1);
+                        assertThat(logs.events(Level.INFO)).singleElement()
+                                        .extracting(ILoggingEvent::getFormattedMessage)
+                                        .isEqualTo("Lore data loaded after a previous failure: quotes=1, characters=2");
+                        assertThat(logs.events()).hasSize(2);
+                }
+        }
+
+        @Test
+        void shouldNotLogSuccessfulLoadWithoutPriorFailure() {
+                stubSinglePage(List.of(quote("q1", "Po-tay-toes!", "sam")), List.of(SAM));
+
+                LoreDataService service = newService();
+
+                try (LogCapture logs = LogCapture.of(LoreDataService.class)) {
+                        service.getData();
+                        service.getData();
+
+                        assertThat(logs.events()).isEmpty();
+                }
+        }
+
+        @Test
+        void shouldNotLogMissingTokenOnEveryRequest() {
+                when(theOneApiClient.getQuotes(1, PAGE_SIZE)).thenThrow(new TheOneApiNotConfiguredException());
+
+                LoreDataService service = newService();
+
+                try (LogCapture logs = LogCapture.of(LoreDataService.class)) {
+                        assertThatThrownBy(service::getData).isInstanceOf(TheOneApiNotConfiguredException.class);
+                        assertThatThrownBy(service::getData).isInstanceOf(TheOneApiNotConfiguredException.class);
+
+                        // TheOneApiClient warns once at startup instead.
+                        assertThat(logs.events()).isEmpty();
+                }
         }
 
         private static LoreDataUnavailableException catchUnavailable(LoreDataService service) {

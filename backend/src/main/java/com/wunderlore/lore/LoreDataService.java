@@ -8,9 +8,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestClientResponseException;
 
 import com.wunderlore.client.theone.TheOneApiClient;
 import com.wunderlore.client.theone.dto.ExternalCharacter;
@@ -20,6 +23,8 @@ import com.wunderlore.client.theone.dto.ExternalQuoteResponse;
 
 @Service
 public class LoreDataService {
+
+    private static final Logger log = LoggerFactory.getLogger(LoreDataService.class);
 
     private static final int PAGE_SIZE = 100;
 
@@ -70,20 +75,34 @@ public class LoreDataService {
             Instant retryAt = lastFailureAt.plus(failureCooldown);
 
             if (clock.instant().isBefore(retryAt)) {
+                // DEBUG only: every request during the cooldown lands here.
+                log.debug("Lore data request rejected during cooldown; next attempt allowed at {}", retryAt);
+
                 throw new LoreDataUnavailableException(
                         "The One API data load failed recently; next attempt allowed at " + retryAt,
                         lastFailure);
             }
         }
 
+        LoadProgress progress = new LoadProgress();
+
         try {
-            cachedLoreData = loadData();
+            cachedLoreData = loadData(progress);
         } catch (RestClientException | LoreDataUnavailableException exception) {
             // Only upstream failures start a cooldown; configuration and programming
             // errors propagate without one.
             lastFailureAt = clock.instant();
             lastFailure = exception;
+
+            log.warn("Lore data load failed: dataset={}, page={}, error={}; next attempt allowed at {}",
+                    progress.dataset, progress.page, describe(exception), lastFailureAt.plus(failureCooldown));
+
             throw exception;
+        }
+
+        if (lastFailureAt != null) {
+            log.info("Lore data loaded after a previous failure: quotes={}, characters={}",
+                    cachedLoreData.quotes().size(), cachedLoreData.charactersById().size());
         }
 
         lastFailureAt = null;
@@ -92,9 +111,9 @@ public class LoreDataService {
         return cachedLoreData;
     }
 
-    private LoreData loadData() {
-        List<ExternalQuote> quotes = loadAllQuotes();
-        List<ExternalCharacter> characters = loadAllCharacters();
+    private LoreData loadData(LoadProgress progress) {
+        List<ExternalQuote> quotes = loadAllQuotes(progress);
+        List<ExternalCharacter> characters = loadAllCharacters(progress);
 
         Map<String, ExternalCharacter> charactersById = indexCharactersById(characters);
 
@@ -107,10 +126,11 @@ public class LoreDataService {
     }
 
     // Fetches all citation pages from the API.
-    private List<ExternalQuote> loadAllQuotes() {
+    private List<ExternalQuote> loadAllQuotes(LoadProgress progress) {
         List<ExternalQuote> quotes = new ArrayList<>();
 
         // Fetch the first page of quotes
+        progress.at("quote", 1);
         ExternalQuoteResponse response = theOneApiClient.getQuotes(1, PAGE_SIZE);
 
         // Add the results
@@ -120,6 +140,7 @@ public class LoreDataService {
 
         // Fetch the remaining pages, starting from page 2
         for (int page = 2; page <= pages; page++) {
+            progress.at("quote", page);
             ExternalQuoteResponse nextPage = theOneApiClient.getQuotes(page, PAGE_SIZE);
 
             quotes.addAll(quoteDocs(nextPage));
@@ -129,10 +150,11 @@ public class LoreDataService {
     }
 
     // Fetches all character pages.
-    private List<ExternalCharacter> loadAllCharacters() {
+    private List<ExternalCharacter> loadAllCharacters(LoadProgress progress) {
         List<ExternalCharacter> characters = new ArrayList<>();
 
         // Fetch the first page of characters
+        progress.at("character", 1);
         ExternalCharacterResponse response = theOneApiClient.getCharacters(1, PAGE_SIZE);
 
         // Add the results
@@ -142,6 +164,7 @@ public class LoreDataService {
 
         // Fetch the remaining pages, starting from page 2
         for (int page = 2; page <= pages; page++) {
+            progress.at("character", page);
             ExternalCharacterResponse nextPage = theOneApiClient.getCharacters(page, PAGE_SIZE);
 
             characters.addAll(characterDocs(nextPage));
@@ -231,5 +254,37 @@ public class LoreDataService {
         }
 
         return validQuotes;
+    }
+
+    // Builds a log-safe description of a load failure. RestClient exception messages
+    // can embed the request URL and the upstream response body, so only class names
+    // and the HTTP status are kept; LoreDataUnavailableException messages are built
+    // in this class from page counts and are safe to log.
+    private static String describe(RuntimeException exception) {
+        if (exception instanceof LoreDataUnavailableException) {
+            return exception.getMessage();
+        }
+
+        String type = exception.getClass().getName();
+
+        if (exception instanceof RestClientResponseException responseException) {
+            return type + " (HTTP " + responseException.getStatusCode().value() + ")";
+        }
+
+        Throwable cause = exception.getCause();
+
+        return cause == null ? type : type + " caused by " + cause.getClass().getName();
+    }
+
+    // The dataset and page being requested, so a failed load can report where it stopped.
+    private static final class LoadProgress {
+
+        private String dataset;
+        private int page;
+
+        void at(String dataset, int page) {
+            this.dataset = dataset;
+            this.page = page;
+        }
     }
 }

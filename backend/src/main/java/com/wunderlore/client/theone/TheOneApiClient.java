@@ -3,12 +3,16 @@ package com.wunderlore.client.theone;
 import com.wunderlore.client.theone.dto.ExternalBookResponse;
 import com.wunderlore.client.theone.dto.ExternalCharacterResponse;
 import com.wunderlore.client.theone.dto.ExternalQuoteResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
 @Component
 public class TheOneApiClient {
+
+    private static final Logger log = LoggerFactory.getLogger(TheOneApiClient.class);
 
     private final RestClient restClient;
     private final String accessToken;
@@ -22,6 +26,12 @@ public class TheOneApiClient {
                 .build();
 
         this.accessToken = accessToken;
+
+        // Logged once at startup instead of per request, since a missing token
+        // fails every authenticated call without starting a cooldown.
+        if (accessToken.isBlank()) {
+            log.warn("THE_ONE_API_ACCESS_TOKEN is not configured; quote and character requests will fail");
+        }
     }
 
     public ExternalBookResponse getBooks() {

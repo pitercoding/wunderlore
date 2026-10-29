@@ -2,6 +2,8 @@ package com.wunderlore.client.theone;
 
 import com.wunderlore.client.theone.dto.ExternalCharacterResponse;
 import com.wunderlore.client.theone.dto.ExternalQuoteResponse;
+import com.wunderlore.support.LogCapture;
+import ch.qos.logback.classic.Level;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.client.MockRestServiceServer;
@@ -11,6 +13,7 @@ import org.springframework.web.client.RestClient;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.header;
@@ -90,6 +93,31 @@ class TheOneApiClientTest {
         assertEquals(0, response.total());
 
         server.verify();
+    }
+
+    @Test
+    void shouldWarnOnceAtConstructionWhenTokenIsMissing() {
+        try (LogCapture logs = LogCapture.of(TheOneApiClient.class)) {
+            TheOneApiClient client = new TheOneApiClient(RestClient.builder(), BASE_URL, " ");
+
+            assertThrows(TheOneApiNotConfiguredException.class, () -> client.authenticatedGet("/quote"));
+            assertThrows(TheOneApiNotConfiguredException.class, () -> client.authenticatedGet("/character"));
+
+            assertEquals(1, logs.events().size());
+            assertEquals(Level.WARN, logs.events().get(0).getLevel());
+            assertEquals(
+                    "THE_ONE_API_ACCESS_TOKEN is not configured; quote and character requests will fail",
+                    logs.events().get(0).getFormattedMessage());
+        }
+    }
+
+    @Test
+    void shouldNotLogTokenWhenConfigured() {
+        try (LogCapture logs = LogCapture.of(TheOneApiClient.class)) {
+            new TheOneApiClient(RestClient.builder(), BASE_URL, "secret-token-value");
+
+            assertTrue(logs.events().isEmpty());
+        }
     }
 
     @Test

@@ -6,6 +6,9 @@ import com.wunderlore.client.theone.dto.ExternalQuote;
 import com.wunderlore.lore.LoreData;
 import com.wunderlore.lore.LoreDataService;
 import com.wunderlore.lore.LoreDataUnavailableException;
+import com.wunderlore.support.LogCapture;
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.spi.ILoggingEvent;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
@@ -21,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.IntStream;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
 import static org.mockito.Mockito.verify;
@@ -246,6 +250,32 @@ class ExternalQuoteControllerTest {
                                 .andExpect(status().isBadRequest());
 
                 verifyNoInteractions(loreDataService);
+        }
+
+        @Test
+        void shouldLogLoadFailureOnlyAtDebugWithoutUpstreamBody() throws Exception {
+                when(loreDataService.getData())
+                                .thenThrow(HttpClientErrorException.create(
+                                                HttpStatus.UNAUTHORIZED,
+                                                "Unauthorized",
+                                                HttpHeaders.EMPTY,
+                                                "{\"message\":\"Invalid token secret-upstream-detail\"}"
+                                                                .getBytes(StandardCharsets.UTF_8),
+                                                StandardCharsets.UTF_8));
+
+                try (LogCapture logs = LogCapture.of(ExternalQuoteController.class)) {
+                        mockMvc.perform(get("/api/catalog/quotes"))
+                                        .andExpect(status().isServiceUnavailable())
+                                        .andExpect(jsonPath("$.detail").value(UNAVAILABLE_DETAIL));
+
+                        // LoreDataService logs the load failure at WARN; the handler must not repeat it.
+                        assertThat(logs.events(Level.WARN)).isEmpty();
+                        assertThat(logs.events(Level.DEBUG)).singleElement()
+                                        .extracting(ILoggingEvent::getFormattedMessage)
+                                        .isEqualTo("Catalog quotes request failed: "
+                                                        + "org.springframework.web.client.HttpClientErrorException$Unauthorized");
+                        assertThat(logs.allOutput()).doesNotContain("secret-upstream-detail");
+                }
         }
 
         private static LoreData loreData(List<ExternalQuote> quotes) {

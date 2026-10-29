@@ -15,6 +15,8 @@ import com.wunderlore.lore.LoreDataUnavailableException;
 
 import jakarta.validation.Valid;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -30,6 +32,8 @@ import org.springframework.web.client.RestClientException;
 @RestController
 @RequestMapping("/api/game")
 public class GameController {
+
+    private static final Logger log = LoggerFactory.getLogger(GameController.class);
 
     private final WhoSaidItService whoSaidItService;
     private final GameRoundRegistry gameRoundRegistry;
@@ -61,6 +65,16 @@ public class GameController {
             IllegalStateException.class
     })
     public ProblemDetail handleRoundGenerationFailure(Exception exception) {
+        if (exception instanceof IllegalStateException) {
+            // Not logged anywhere else; WhoSaidItService raises it with fixed messages
+            // when the loaded data cannot form a round.
+            log.warn("Game round generation failed: {}: {}",
+                    exception.getClass().getName(), exception.getMessage());
+        } else {
+            // LoreDataService already logs load failures at WARN; this only ties them to the request.
+            log.debug("Game round generation failed: {}", exception.getClass().getName());
+        }
+
         return ProblemDetail.forStatusAndDetail(
                 HttpStatus.SERVICE_UNAVAILABLE,
                 "Unable to generate a game round right now");
