@@ -5,6 +5,7 @@ import com.wunderlore.game.AnswerRequest;
 import com.wunderlore.game.AnswerResponse;
 import com.wunderlore.game.GameRound;
 import com.wunderlore.game.GameRoundRegistry;
+import com.wunderlore.game.InsufficientGameDataException;
 import com.wunderlore.game.InvalidCharacterOptionException;
 import com.wunderlore.game.RoundAlreadyAnsweredException;
 import com.wunderlore.game.RoundCapacityExceededException;
@@ -30,6 +31,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
 import static org.mockito.ArgumentMatchers.any;
@@ -144,7 +146,7 @@ class GameControllerTest {
         @Test
         void shouldReturnServiceUnavailableWhenGameDataIsInsufficient() throws Exception {
                 when(whoSaidItService.generateRound())
-                                .thenThrow(new IllegalStateException(
+                                .thenThrow(new InsufficientGameDataException(
                                                 "At least four distinct characters are required to play"));
 
                 mockMvc.perform(get("/api/game/round"))
@@ -159,7 +161,7 @@ class GameControllerTest {
         @Test
         void shouldReturnServiceUnavailableWhenNoValidQuotesAreAvailable() throws Exception {
                 when(whoSaidItService.generateRound())
-                                .thenThrow(new IllegalStateException(
+                                .thenThrow(new InsufficientGameDataException(
                                                 "No valid quotes available to start the game"));
 
                 mockMvc.perform(get("/api/game/round"))
@@ -380,7 +382,7 @@ class GameControllerTest {
         @Test
         void shouldWarnWhenGameDataIsInsufficient() throws Exception {
                 when(whoSaidItService.generateRound())
-                                .thenThrow(new IllegalStateException(
+                                .thenThrow(new InsufficientGameDataException(
                                                 "At least four distinct characters are required to play"));
 
                 try (LogCapture logs = LogCapture.of(GameController.class)) {
@@ -390,9 +392,24 @@ class GameControllerTest {
 
                         assertThat(logs.events(Level.WARN)).singleElement()
                                         .extracting(ILoggingEvent::getFormattedMessage)
-                                        .isEqualTo("Game round generation failed: java.lang.IllegalStateException: "
+                                        .isEqualTo("Game round generation failed: com.wunderlore.game.InsufficientGameDataException: "
                                                         + "At least four distinct characters are required to play");
                 }
+        }
+
+        @Test
+        void shouldNotTreatUnexpectedIllegalStateAsInsufficientGameData() {
+                when(whoSaidItService.generateRound()).thenThrow(new IllegalStateException("bug"));
+
+                try (LogCapture logs = LogCapture.of(GameController.class)) {
+                        // No handler matches, so the error leaves the controller instead of becoming a 503.
+                        assertThatThrownBy(() -> mockMvc.perform(get("/api/game/round")))
+                                        .hasCauseExactlyInstanceOf(IllegalStateException.class);
+
+                        assertThat(logs.events()).isEmpty();
+                }
+
+                verify(gameRoundRegistry, never()).register(any());
         }
 
         @Test

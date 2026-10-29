@@ -143,7 +143,7 @@ class WhoSaidItServiceTest {
                 WhoSaidItService service = newService(new Random(42));
 
                 assertThatThrownBy(service::generateRound)
-                                .isInstanceOf(IllegalStateException.class)
+                                .isInstanceOf(InsufficientGameDataException.class)
                                 .hasMessage("No valid quotes available to start the game");
         }
 
@@ -156,8 +156,22 @@ class WhoSaidItServiceTest {
                 WhoSaidItService service = newService(new Random(42));
 
                 assertThatThrownBy(service::generateRound)
-                                .isInstanceOf(IllegalStateException.class)
+                                .isInstanceOf(InsufficientGameDataException.class)
                                 .hasMessage("At least four distinct characters are required to play");
+        }
+
+        @Test
+        void shouldPropagateUnexpectedIllegalStateUnchanged() {
+                IllegalStateException bug = new IllegalStateException("bug");
+
+                when(theOneApiClient.getQuotes(1, PAGE_SIZE)).thenThrow(bug);
+
+                WhoSaidItService service = newService(new Random(42));
+
+                // Only the known data conditions become InsufficientGameDataException.
+                assertThatThrownBy(service::generateRound)
+                                .isSameAs(bug)
+                                .isNotInstanceOf(InsufficientGameDataException.class);
         }
 
         @Test

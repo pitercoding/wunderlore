@@ -32,7 +32,7 @@ public class WhoSaidItService {
         List<ExternalQuote> quotes = loreData.attributedQuotes();
 
         if (quotes.isEmpty()) {
-            throw new IllegalStateException(
+            throw new InsufficientGameDataException(
                     "No valid quotes available to start the game");
         }
 
@@ -52,7 +52,7 @@ public class WhoSaidItService {
         }
 
         if (wrongCharacters.size() < 3) {
-            throw new IllegalStateException(
+            throw new InsufficientGameDataException(
                     "At least four distinct characters are required to play");
         }
 

@@ -4,6 +4,7 @@ import com.wunderlore.client.theone.TheOneApiNotConfiguredException;
 import com.wunderlore.game.GameRound;
 import com.wunderlore.game.GameRoundRegistry;
 import com.wunderlore.game.GameRoundResponse;
+import com.wunderlore.game.InsufficientGameDataException;
 import com.wunderlore.game.WhoSaidItService;
 import com.wunderlore.game.AnswerRequest;
 import com.wunderlore.game.AnswerResponse;
@@ -62,10 +63,10 @@ public class GameController {
             RestClientException.class,
             LoreDataUnavailableException.class,
             TheOneApiNotConfiguredException.class,
-            IllegalStateException.class
+            InsufficientGameDataException.class
     })
     public ProblemDetail handleRoundGenerationFailure(Exception exception) {
-        if (exception instanceof IllegalStateException) {
+        if (exception instanceof InsufficientGameDataException) {
             // Not logged anywhere else; WhoSaidItService raises it with fixed messages
             // when the loaded data cannot form a round.
             log.warn("Game round generation failed: {}: {}",
