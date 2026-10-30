@@ -1,16 +1,23 @@
-import { render, screen, within } from "@testing-library/react";
+import { act, render, screen, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
 import { ApiError, ApiResponseError } from "@/lib/api/client";
 import { getQuotes, type QuotePage } from "@/lib/api/quotes";
+import { suspendingRefresh } from "@/test/suspendingRefresh";
 import QuotesContent from "./QuotesContent";
+
+const refresh = vi.fn();
+const push = vi.fn();
+const replace = vi.fn();
 
 vi.mock("next/navigation", () => ({
     // Like Next.js, stop rendering by throwing when redirect() is called.
     redirect: vi.fn((url: string) => {
         throw new Error(`NEXT_REDIRECT ${url}`);
     }),
+    useRouter: () => ({ refresh, push, replace }),
 }));
 
 vi.mock("next/server", () => ({
@@ -53,11 +60,14 @@ function quotePage(overrides: Partial<QuotePage> = {}): QuotePage {
 }
 
 // QuotesContent is an async Server Component: resolve it, then render the JSX.
-async function renderQuotes(page?: string) {
+async function renderQuotes(
+    page?: string,
+    options?: Parameters<typeof render>[1],
+) {
     const element = await QuotesContent({
         searchParams: Promise.resolve(page === undefined ? {} : { page }),
     });
-    return render(element);
+    return render(element, options);
 }
 
 function pagination() {
@@ -232,7 +242,61 @@ describe("QuotesContent", () => {
             "We couldn't load the quotes. Please try again later.",
         );
         expect(screen.queryByRole("navigation")).not.toBeInTheDocument();
+        expect(screen.getByRole("button", { name: "Try again" })).toBeEnabled();
         expect(redirectMock).not.toHaveBeenCalled();
         expect(console.error).toHaveBeenCalledWith("Failed to load quotes", error);
+    });
+
+    it("does not offer a retry when the quotes load", async () => {
+        getQuotesMock.mockResolvedValue(quotePage());
+
+        await renderQuotes();
+
+        expect(
+            screen.queryByRole("button", { name: "Try again" }),
+        ).not.toBeInTheDocument();
+    });
+
+    it("retries the same page without navigating away from it", async () => {
+        const user = userEvent.setup();
+        getQuotesMock.mockRejectedValue(new TypeError("fetch failed"));
+        await renderQuotes("7");
+
+        expect(getQuotesMock).toHaveBeenCalledWith(7, 20);
+        expect(refresh).not.toHaveBeenCalled();
+
+        await user.click(screen.getByRole("button", { name: "Try again" }));
+
+        expect(refresh).toHaveBeenCalledTimes(1);
+        expect(push).not.toHaveBeenCalled();
+        expect(replace).not.toHaveBeenCalled();
+        expect(redirectMock).not.toHaveBeenCalled();
+        expect(screen.getByRole("alert")).toHaveTextContent(
+            "We couldn't load the quotes. Please try again later.",
+        );
+    });
+
+    it("disables the retry until the server answers", async () => {
+        const user = userEvent.setup();
+        const server = suspendingRefresh();
+        refresh.mockImplementationOnce(server.refresh);
+        getQuotesMock.mockRejectedValue(new TypeError("fetch failed"));
+        await renderQuotes("2", { wrapper: server.Wrapper });
+
+        // Awaited: the update suspends, and React only resumes it in an awaited act.
+        await act(() =>
+            user.click(screen.getByRole("button", { name: "Try again" })),
+        );
+
+        expect(
+            screen.getByRole("button", { name: "Trying again..." }),
+        ).toBeDisabled();
+        expect(screen.getByRole("alert")).toBeInTheDocument();
+
+        await act(async () => server.respond());
+
+        expect(
+            await screen.findByRole("button", { name: "Try again" }),
+        ).toBeEnabled();
     });
 });

@@ -1,10 +1,18 @@
-import { render, screen } from "@testing-library/react";
+import { act, render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import type { ReactElement } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { connection } from "next/server";
 import { ApiError, ApiResponseError } from "@/lib/api/client";
 import { getRound, type GameRound } from "@/lib/api/game";
+import { suspendingRefresh } from "@/test/suspendingRefresh";
 import GamePage from "./page";
+
+const refresh = vi.fn();
+
+vi.mock("next/navigation", () => ({
+    useRouter: () => ({ refresh }),
+}));
 
 vi.mock("next/server", () => ({
     connection: vi.fn(),
@@ -34,10 +42,10 @@ type SuspenseElement = ReactElement<{
 // GamePage wraps an async, non-exported loader in <Suspense>. jsdom cannot
 // render async Server Components, so the loader is awaited directly and its
 // output is rendered, the same way the server would resolve it.
-async function renderLoadedPage() {
+async function renderLoadedPage(options?: Parameters<typeof render>[1]) {
     const page = GamePage() as SuspenseElement;
     const loader = page.props.children.type as () => Promise<ReactElement>;
-    return render(await loader());
+    return render(await loader(), options);
 }
 
 beforeEach(() => {
@@ -89,6 +97,48 @@ describe("GamePage", () => {
             "round-7: Fly, you fools!",
         );
         expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole("button", { name: "Try again" }),
+        ).not.toBeInTheDocument();
+    });
+
+    it("retries only when the player asks to, keeping the error visible", async () => {
+        const user = userEvent.setup();
+        getRoundMock.mockRejectedValue(new TypeError("fetch failed"));
+        await renderLoadedPage();
+
+        expect(refresh).not.toHaveBeenCalled();
+
+        await user.click(screen.getByRole("button", { name: "Try again" }));
+
+        expect(refresh).toHaveBeenCalledTimes(1);
+        expect(screen.getByRole("alert")).toHaveTextContent(
+            "Unable to load a game round. Please try again.",
+        );
+    });
+
+    it("disables the retry until the server answers", async () => {
+        const user = userEvent.setup();
+        const server = suspendingRefresh();
+        refresh.mockImplementation(server.refresh);
+        getRoundMock.mockRejectedValue(new TypeError("fetch failed"));
+        await renderLoadedPage({ wrapper: server.Wrapper });
+
+        // Awaited: the update suspends, and React only resumes it in an awaited act.
+        await act(() =>
+            user.click(screen.getByRole("button", { name: "Try again" })),
+        );
+
+        expect(
+            screen.getByRole("button", { name: "Trying again..." }),
+        ).toBeDisabled();
+        expect(screen.getByRole("alert")).toBeInTheDocument();
+
+        await act(async () => server.respond());
+
+        expect(
+            await screen.findByRole("button", { name: "Try again" }),
+        ).toBeEnabled();
     });
 
     it.each([
@@ -110,6 +160,7 @@ describe("GamePage", () => {
             "href",
             "/",
         );
+        expect(screen.getByRole("button", { name: "Try again" })).toBeEnabled();
         expect(screen.queryByTestId("game-content")).not.toBeInTheDocument();
         expect(console.error).toHaveBeenCalledWith(
             "Failed to load game round",

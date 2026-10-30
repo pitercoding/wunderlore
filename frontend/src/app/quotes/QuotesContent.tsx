@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
 import { getQuotes } from "@/lib/api/quotes";
+import RetryButton from "../RetryButton";
 import styles from "./page.module.css";
 
 interface QuotesPageProps {
@@ -41,6 +42,8 @@ export default async function QuotesContent({
                 <p role="alert">
                     We couldn&apos;t load the quotes. Please try again later.
                 </p>
+
+                <RetryButton />
             </main>
         );
     }
