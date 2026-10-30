@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,9 +30,14 @@ public class LoreDataService {
 
     private static final int PAGE_SIZE = 100;
 
-    private LoreData cachedLoreData;
+    // Published only after every page has loaded; volatile so cache hits skip the lock.
+    private volatile LoreData cachedLoreData;
 
-    // Set after a failed load and cleared by a successful one; guarded by this.
+    // Guarded by this. The monitor protects only these fields and is never held
+    // while The One API is being called.
+    // inFlight: the load every concurrent caller waits on; null when none is running.
+    // lastFailureAt / lastFailure: set by a failed load, cleared by a successful one.
+    private CompletableFuture<LoreData> inFlight;
     private Instant lastFailureAt;
     private RuntimeException lastFailure;
 
@@ -64,51 +71,144 @@ public class LoreDataService {
     }
 
     // Loads the dataset on first use and caches it only once every page has loaded.
-    // After an upstream failure, callers fail fast until the cooldown expires, so
-    // threads queued on the lock do not start back-to-back full loads.
-    public synchronized LoreData getData() {
-        if (cachedLoreData != null) {
-            return cachedLoreData;
+    // Concurrent callers share a single load: the first one runs it on its own thread
+    // and the others wait for its outcome. After an upstream failure, callers fail
+    // fast until the cooldown expires.
+    public LoreData getData() {
+        LoreData cached = cachedLoreData;
+
+        if (cached != null) {
+            return cached;
         }
 
-        if (lastFailureAt != null) {
-            Instant retryAt = lastFailureAt.plus(failureCooldown);
+        CompletableFuture<LoreData> operation;
+        boolean runsLoad = false;
 
-            if (clock.instant().isBefore(retryAt)) {
-                // DEBUG only: every request during the cooldown lands here.
-                log.debug("Lore data request rejected during cooldown; next attempt allowed at {}", retryAt);
+        synchronized (this) {
+            if (cachedLoreData != null) {
+                return cachedLoreData;
+            }
 
-                throw new LoreDataUnavailableException(
-                        "The One API data load failed recently; next attempt allowed at " + retryAt,
-                        lastFailure);
+            operation = inFlight;
+
+            if (operation == null) {
+                rejectDuringCooldown();
+
+                operation = new CompletableFuture<>();
+                inFlight = operation;
+                runsLoad = true;
             }
         }
 
+        if (runsLoad) {
+            return runLoad(operation);
+        }
+
+        return awaitLoad(operation);
+    }
+
+    // Must be called while holding the monitor.
+    private void rejectDuringCooldown() {
+        if (lastFailureAt == null) {
+            return;
+        }
+
+        Instant retryAt = lastFailureAt.plus(failureCooldown);
+
+        if (clock.instant().isBefore(retryAt)) {
+            // DEBUG only: every request during the cooldown lands here.
+            log.debug("Lore data request rejected during cooldown; next attempt allowed at {}", retryAt);
+
+            throw new LoreDataUnavailableException(
+                    "The One API data load failed recently; next attempt allowed at " + retryAt,
+                    lastFailure);
+        }
+    }
+
+    // Runs the load for the caller that started the operation, outside the monitor.
+    // Whatever happens, the operation is completed and inFlight is cleared, so the
+    // callers waiting on it are released and a later call can start a new load.
+    private LoreData runLoad(CompletableFuture<LoreData> operation) {
         LoadProgress progress = new LoadProgress();
 
         try {
-            cachedLoreData = loadData(progress);
+            LoreData loaded = loadData(progress);
+            boolean recovered;
+
+            synchronized (this) {
+                recovered = lastFailureAt != null;
+
+                cachedLoreData = loaded;
+                lastFailureAt = null;
+                lastFailure = null;
+                inFlight = null;
+            }
+
+            if (recovered) {
+                log.info("Lore data loaded after a previous failure: quotes={}, characters={}",
+                        loaded.quotes().size(), loaded.charactersById().size());
+            }
+
+            operation.complete(loaded);
+
+            return loaded;
         } catch (RestClientException | LoreDataUnavailableException exception) {
             // Only upstream failures start a cooldown; configuration and programming
             // errors propagate without one.
-            lastFailureAt = clock.instant();
-            lastFailure = exception;
+            Instant failedAt = clock.instant();
+
+            synchronized (this) {
+                lastFailureAt = failedAt;
+                lastFailure = exception;
+                inFlight = null;
+            }
 
             log.warn("Lore data load failed: dataset={}, page={}, error={}; next attempt allowed at {}",
-                    progress.dataset, progress.page, describe(exception), lastFailureAt.plus(failureCooldown));
+                    progress.dataset, progress.page, describe(exception), failedAt.plus(failureCooldown));
+
+            operation.completeExceptionally(exception);
+
+            throw exception;
+        } catch (RuntimeException | Error exception) {
+            synchronized (this) {
+                inFlight = null;
+            }
+
+            operation.completeExceptionally(exception);
 
             throw exception;
         }
+    }
 
-        if (lastFailureAt != null) {
-            log.info("Lore data loaded after a previous failure: quotes={}, characters={}",
-                    cachedLoreData.quotes().size(), cachedLoreData.charactersById().size());
+    // Waits for the load another caller is running and reports its outcome.
+    private LoreData awaitLoad(CompletableFuture<LoreData> operation) {
+        try {
+            return operation.get();
+        } catch (InterruptedException exception) {
+            Thread.currentThread().interrupt();
+
+            throw new LoreDataUnavailableException(
+                    "Interrupted while waiting for The One API data load", exception);
+        } catch (ExecutionException exception) {
+            Throwable failure = exception.getCause();
+
+            // A new exception per waiter, as for calls rejected during the cooldown;
+            // the starter of the load receives the original one.
+            if (failure instanceof RestClientException || failure instanceof LoreDataUnavailableException) {
+                throw new LoreDataUnavailableException(
+                        "The One API data load failed", failure);
+            }
+
+            if (failure instanceof RuntimeException runtimeException) {
+                throw runtimeException;
+            }
+
+            if (failure instanceof Error error) {
+                throw error;
+            }
+
+            throw new IllegalStateException("Unexpected lore data load failure", failure);
         }
-
-        lastFailureAt = null;
-        lastFailure = null;
-
-        return cachedLoreData;
     }
 
     private LoreData loadData(LoadProgress progress) {

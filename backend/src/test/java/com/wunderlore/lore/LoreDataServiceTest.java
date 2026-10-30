@@ -1,9 +1,13 @@
 package com.wunderlore.lore;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
@@ -14,16 +18,26 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executor;
 import java.util.concurrent.FutureTask;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.AutoConfigurations;
+import org.springframework.boot.autoconfigure.task.TaskExecutionAutoConfiguration;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpClientErrorException;
@@ -275,9 +289,9 @@ class LoreDataServiceTest {
                         assertThat(loadStarted.await(5, TimeUnit.SECONDS)).isTrue();
 
                         // The second caller arrives while the first one is still loading
-                        // and must wait on the lock instead of starting its own load.
+                        // and must wait for that load instead of starting its own.
                         secondThread.start();
-                        awaitBlocked(secondThread);
+                        awaitWaiting(secondThread);
                         releaseLoad.countDown();
 
                         LoreData firstData = first.get(5, TimeUnit.SECONDS);
@@ -531,10 +545,10 @@ class LoreDataServiceTest {
                         firstThread.start();
                         assertThat(loadStarted.await(5, TimeUnit.SECONDS)).isTrue();
 
-                        // The second caller waits on the lock while the first load is failing
-                        // and must not start another full load once it gets the lock.
+                        // The second caller waits on the failing load and must be released
+                        // with its outcome instead of starting another full load.
                         secondThread.start();
-                        awaitBlocked(secondThread);
+                        awaitWaiting(secondThread);
                         releaseLoad.countDown();
 
                         assertThatThrownBy(() -> first.get(5, TimeUnit.SECONDS))
@@ -706,6 +720,343 @@ class LoreDataServiceTest {
                 }
         }
 
+        @Test
+        void shouldShareOneLoadAmongManyConcurrentCallers() throws Exception {
+                CountDownLatch loadStarted = new CountDownLatch(1);
+                CountDownLatch releaseLoad = new CountDownLatch(1);
+
+                when(theOneApiClient.getQuotes(1, PAGE_SIZE)).thenAnswer(invocation -> {
+                        loadStarted.countDown();
+                        releaseLoad.await(5, TimeUnit.SECONDS);
+                        return quotePage(List.of(quote("q1", "Po-tay-toes!", "sam")), 1, 1);
+                });
+                when(theOneApiClient.getCharacters(1, PAGE_SIZE)).thenReturn(characterPage(List.of(SAM), 1, 1));
+
+                LoreDataService service = newService();
+                List<Caller> callers = new ArrayList<>();
+
+                try {
+                        callers.add(startCaller(service));
+                        assertThat(loadStarted.await(5, TimeUnit.SECONDS)).isTrue();
+
+                        for (int i = 0; i < 4; i++) {
+                                Caller waiter = startCaller(service);
+
+                                callers.add(waiter);
+                                awaitWaiting(waiter.thread());
+                        }
+
+                        releaseLoad.countDown();
+
+                        LoreData shared = callers.get(0).result();
+
+                        for (Caller caller : callers) {
+                                assertThat(caller.result()).isSameAs(shared);
+                        }
+
+                        assertThat(service.getData()).isSameAs(shared);
+                } finally {
+                        releaseLoad.countDown();
+                        callers.forEach(Caller::stop);
+                }
+
+                verify(theOneApiClient, times(1)).getQuotes(1, PAGE_SIZE);
+                verify(theOneApiClient, times(1)).getCharacters(1, PAGE_SIZE);
+                verifyNoMoreInteractions(theOneApiClient);
+        }
+
+        @Test
+        void shouldNotHoldCoordinationLockWhileCallingTheApi() throws Exception {
+                CountDownLatch loadStarted = new CountDownLatch(1);
+                CountDownLatch releaseLoad = new CountDownLatch(1);
+                AtomicBoolean lockHeldDuringQuotes = new AtomicBoolean(true);
+                AtomicBoolean lockHeldDuringCharacters = new AtomicBoolean(true);
+
+                LoreDataService service = newService();
+
+                when(theOneApiClient.getQuotes(1, PAGE_SIZE)).thenAnswer(invocation -> {
+                        lockHeldDuringQuotes.set(Thread.holdsLock(service));
+                        loadStarted.countDown();
+                        releaseLoad.await(5, TimeUnit.SECONDS);
+                        return quotePage(List.of(quote("q1", "Po-tay-toes!", "sam")), 1, 1);
+                });
+                when(theOneApiClient.getCharacters(1, PAGE_SIZE)).thenAnswer(invocation -> {
+                        lockHeldDuringCharacters.set(Thread.holdsLock(service));
+                        return characterPage(List.of(SAM), 1, 1);
+                });
+
+                Caller starter = startCaller(service);
+                Thread probeThread = null;
+
+                try {
+                        assertThat(loadStarted.await(5, TimeUnit.SECONDS)).isTrue();
+
+                        // The monitor is free while the load is stuck on the API: another thread
+                        // can take it right away instead of queueing behind the HTTP call.
+                        FutureTask<Boolean> probe = new FutureTask<>(() -> {
+                                synchronized (service) {
+                                        return true;
+                                }
+                        });
+
+                        probeThread = new Thread(probe);
+                        probeThread.start();
+
+                        assertThat(probe.get(5, TimeUnit.SECONDS)).isTrue();
+
+                        releaseLoad.countDown();
+                        starter.result();
+                } finally {
+                        releaseLoad.countDown();
+                        starter.stop();
+
+                        if (probeThread != null) {
+                                probeThread.interrupt();
+                        }
+                }
+
+                assertThat(lockHeldDuringQuotes).isFalse();
+                assertThat(lockHeldDuringCharacters).isFalse();
+        }
+
+        @Test
+        void shouldReleaseWaitersWhenSharedLoadFailsWithoutPublishingPartialData() throws Exception {
+                CountDownLatch loadStarted = new CountDownLatch(1);
+                CountDownLatch releaseLoad = new CountDownLatch(1);
+                RestClientException upstreamFailure = new RestClientException("The One API unavailable");
+
+                when(theOneApiClient.getQuotes(1, PAGE_SIZE))
+                                .thenReturn(quotePage(List.of(quote("q1", "Po-tay-toes!", "sam")), 1, 1));
+                when(theOneApiClient.getCharacters(1, PAGE_SIZE))
+                                .thenAnswer(invocation -> {
+                                        loadStarted.countDown();
+                                        releaseLoad.await(5, TimeUnit.SECONDS);
+                                        throw upstreamFailure;
+                                })
+                                .thenReturn(characterPage(List.of(SAM), 1, 1));
+
+                LoreDataService service = newService();
+                List<Caller> callers = new ArrayList<>();
+
+                try {
+                        callers.add(startCaller(service));
+                        assertThat(loadStarted.await(5, TimeUnit.SECONDS)).isTrue();
+
+                        callers.add(startCaller(service));
+                        callers.add(startCaller(service));
+                        awaitWaiting(callers.get(1).thread());
+                        awaitWaiting(callers.get(2).thread());
+
+                        releaseLoad.countDown();
+
+                        // The quotes were already loaded, but none of them is ever handed out.
+                        assertThatThrownBy(callers.get(0)::result).hasCause(upstreamFailure);
+
+                        for (Caller waiter : callers.subList(1, 3)) {
+                                assertThatThrownBy(waiter::result)
+                                                .hasCauseInstanceOf(LoreDataUnavailableException.class)
+                                                .cause().hasCause(upstreamFailure);
+                        }
+                } finally {
+                        releaseLoad.countDown();
+                        callers.forEach(Caller::stop);
+                }
+
+                // The operation is over: calls inside the cooldown fail fast without loading.
+                assertThatThrownBy(service::getData)
+                                .isInstanceOf(LoreDataUnavailableException.class)
+                                .hasCause(upstreamFailure);
+                verify(theOneApiClient, times(1)).getCharacters(1, PAGE_SIZE);
+
+                clock.advance(COOLDOWN);
+
+                // A new operation starts after the cooldown and completes normally.
+                LoreData data = service.getData();
+
+                assertThat(data.attributedQuotes()).hasSize(1);
+                assertThat(service.getData()).isSameAs(data);
+                verify(theOneApiClient, times(2)).getQuotes(1, PAGE_SIZE);
+                verify(theOneApiClient, times(2)).getCharacters(1, PAGE_SIZE);
+                verifyNoMoreInteractions(theOneApiClient);
+        }
+
+        @Test
+        void shouldReleaseWaitersAndClearOperationWhenLoadThrowsAnError() throws Exception {
+                CountDownLatch loadStarted = new CountDownLatch(1);
+                CountDownLatch releaseLoad = new CountDownLatch(1);
+                AssertionError fatal = new AssertionError("fatal");
+
+                when(theOneApiClient.getQuotes(1, PAGE_SIZE))
+                                .thenAnswer(invocation -> {
+                                        loadStarted.countDown();
+                                        releaseLoad.await(5, TimeUnit.SECONDS);
+                                        throw fatal;
+                                })
+                                .thenReturn(quotePage(List.of(quote("q1", "Po-tay-toes!", "sam")), 1, 1));
+                when(theOneApiClient.getCharacters(1, PAGE_SIZE)).thenReturn(characterPage(List.of(SAM), 1, 1));
+
+                LoreDataService service = newService();
+                List<Caller> callers = new ArrayList<>();
+
+                try {
+                        callers.add(startCaller(service));
+                        assertThat(loadStarted.await(5, TimeUnit.SECONDS)).isTrue();
+
+                        callers.add(startCaller(service));
+                        awaitWaiting(callers.get(1).thread());
+                        releaseLoad.countDown();
+
+                        assertThatThrownBy(callers.get(0)::result).hasCause(fatal);
+                        assertThatThrownBy(callers.get(1)::result).hasCause(fatal);
+                } finally {
+                        releaseLoad.countDown();
+                        callers.forEach(Caller::stop);
+                }
+
+                // Not an upstream failure: no cooldown, and the operation is not left in flight.
+                assertThat(service.getData().attributedQuotes()).hasSize(1);
+        }
+
+        @Test
+        void shouldSchedulePreloadWithoutLoadingOnTheCallingThread() {
+                QueuedExecutor executor = new QueuedExecutor();
+
+                new LoreDataPreloader(newService(), executor).preload();
+
+                assertThat(executor.tasks).hasSize(1);
+                verifyNoInteractions(theOneApiClient);
+        }
+
+        @Test
+        void shouldShareLoadBetweenPreloadAndConcurrentRequest() throws Exception {
+                CountDownLatch loadStarted = new CountDownLatch(1);
+                CountDownLatch releaseLoad = new CountDownLatch(1);
+
+                when(theOneApiClient.getQuotes(1, PAGE_SIZE)).thenAnswer(invocation -> {
+                        loadStarted.countDown();
+                        releaseLoad.await(5, TimeUnit.SECONDS);
+                        return quotePage(List.of(quote("q1", "Po-tay-toes!", "sam")), 1, 1);
+                });
+                when(theOneApiClient.getCharacters(1, PAGE_SIZE)).thenReturn(characterPage(List.of(SAM), 1, 1));
+
+                LoreDataService service = newService();
+                QueuedExecutor executor = new QueuedExecutor();
+
+                new LoreDataPreloader(service, executor).preload();
+
+                Thread preloadThread = new Thread(executor.tasks.get(0));
+                Caller request = null;
+
+                try {
+                        preloadThread.start();
+                        assertThat(loadStarted.await(5, TimeUnit.SECONDS)).isTrue();
+
+                        // The request arrives while the preload is loading and joins it.
+                        request = startCaller(service);
+                        awaitWaiting(request.thread());
+                        releaseLoad.countDown();
+
+                        LoreData data = request.result();
+
+                        preloadThread.join(TimeUnit.SECONDS.toMillis(5));
+
+                        assertThat(preloadThread.isAlive()).isFalse();
+                        assertThat(service.getData()).isSameAs(data);
+                } finally {
+                        releaseLoad.countDown();
+                        preloadThread.interrupt();
+
+                        if (request != null) {
+                                request.stop();
+                        }
+                }
+
+                verify(theOneApiClient, times(1)).getQuotes(1, PAGE_SIZE);
+                verify(theOneApiClient, times(1)).getCharacters(1, PAGE_SIZE);
+                verifyNoMoreInteractions(theOneApiClient);
+        }
+
+        @Test
+        void shouldNotLoadAgainWhenPreloadRunsAfterTheDataIsCached() {
+                stubSinglePage(List.of(quote("q1", "Po-tay-toes!", "sam")), List.of(SAM));
+
+                LoreDataService service = newService();
+                QueuedExecutor executor = new QueuedExecutor();
+
+                new LoreDataPreloader(service, executor).preload();
+
+                LoreData data = service.getData();
+
+                executor.tasks.get(0).run();
+
+                assertThat(service.getData()).isSameAs(data);
+                verify(theOneApiClient, times(1)).getQuotes(1, PAGE_SIZE);
+                verify(theOneApiClient, times(1)).getCharacters(1, PAGE_SIZE);
+                verifyNoMoreInteractions(theOneApiClient);
+        }
+
+        @Test
+        void shouldNotFailStartupWhenPreloadFailsAndStillRetryAfterCooldown() {
+                when(theOneApiClient.getQuotes(1, PAGE_SIZE))
+                                .thenThrow(new RestClientException("The One API unavailable"))
+                                .thenReturn(quotePage(List.of(quote("q1", "Po-tay-toes!", "sam")), 1, 1));
+                when(theOneApiClient.getCharacters(1, PAGE_SIZE)).thenReturn(characterPage(List.of(SAM), 1, 1));
+
+                LoreDataService service = newService();
+                QueuedExecutor executor = new QueuedExecutor();
+                LoreDataPreloader preloader = new LoreDataPreloader(service, executor);
+
+                assertThatCode(preloader::preload).doesNotThrowAnyException();
+                assertThatCode(() -> executor.tasks.get(0).run()).doesNotThrowAnyException();
+
+                assertThatThrownBy(service::getData).isInstanceOf(LoreDataUnavailableException.class);
+                verify(theOneApiClient, times(1)).getQuotes(1, PAGE_SIZE);
+
+                clock.advance(COOLDOWN);
+
+                assertThat(service.getData().attributedQuotes()).hasSize(1);
+        }
+
+        @Test
+        void shouldNotFailStartupWhenPreloadHitsAMissingToken() {
+                when(theOneApiClient.getQuotes(1, PAGE_SIZE)).thenThrow(new TheOneApiNotConfiguredException());
+
+                QueuedExecutor executor = new QueuedExecutor();
+
+                new LoreDataPreloader(newService(), executor).preload();
+
+                assertThatCode(() -> executor.tasks.get(0).run()).doesNotThrowAnyException();
+        }
+
+        @Test
+        void shouldNotFailStartupWhenTheExecutorRejectsThePreload() {
+                Executor rejecting = task -> {
+                        throw new RejectedExecutionException("executor is shut down");
+                };
+
+                assertThatCode(() -> new LoreDataPreloader(newService(), rejecting).preload())
+                                .doesNotThrowAnyException();
+                verifyNoInteractions(theOneApiClient);
+        }
+
+        @Test
+        void shouldStartPreloadOnApplicationReadyThroughTheApplicationTaskExecutor() {
+                LoreDataService service = mock(LoreDataService.class);
+
+                new ApplicationContextRunner()
+                                .withConfiguration(AutoConfigurations.of(TaskExecutionAutoConfiguration.class))
+                                .withBean(LoreDataService.class, () -> service)
+                                .withBean(LoreDataPreloader.class)
+                                .run(context -> {
+                                        verifyNoInteractions(service);
+
+                                        context.publishEvent(new ApplicationReadyEvent(
+                                                        new SpringApplication(), new String[0], context, Duration.ZERO));
+
+                                        verify(service, timeout(5000)).getData();
+                                });
+        }
+
         private static LoreDataUnavailableException catchUnavailable(LoreDataService service) {
                 try {
                         service.getData();
@@ -716,13 +1067,48 @@ class LoreDataServiceTest {
                 throw new AssertionError("Expected LoreDataUnavailableException");
         }
 
-        // Spins instead of sleeping until the thread is parked on the service monitor.
-        private static void awaitBlocked(Thread thread) {
+        // Spins instead of sleeping until the thread is parked waiting for the shared load.
+        // BLOCKED would mean it is stuck on the service monitor instead.
+        private static void awaitWaiting(Thread thread) {
                 long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(5);
 
-                while (thread.getState() != Thread.State.BLOCKED) {
-                        assertThat(System.nanoTime()).as("thread blocked on lock").isLessThan(deadline);
+                while (thread.getState() != Thread.State.WAITING) {
+                        assertThat(thread.getState()).as("thread must not block on the monitor")
+                                        .isNotEqualTo(Thread.State.BLOCKED);
+                        assertThat(System.nanoTime()).as("thread waiting for the load").isLessThan(deadline);
                         Thread.yield();
+                }
+        }
+
+        // Runs getData() on its own thread, so a test can start several callers at once.
+        private static Caller startCaller(LoreDataService service) {
+                FutureTask<LoreData> task = new FutureTask<>(service::getData);
+                Thread thread = new Thread(task);
+
+                thread.start();
+
+                return new Caller(task, thread);
+        }
+
+        private record Caller(FutureTask<LoreData> task, Thread thread) {
+
+                LoreData result() throws Exception {
+                        return task.get(5, TimeUnit.SECONDS);
+                }
+
+                void stop() {
+                        thread.interrupt();
+                }
+        }
+
+        // Collects scheduled tasks so a test decides when, and on which thread, they run.
+        private static final class QueuedExecutor implements Executor {
+
+                private final List<Runnable> tasks = new CopyOnWriteArrayList<>();
+
+                @Override
+                public void execute(Runnable task) {
+                        tasks.add(task);
                 }
         }
 
