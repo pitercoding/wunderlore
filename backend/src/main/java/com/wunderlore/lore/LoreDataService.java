@@ -218,17 +218,35 @@ public class LoreDataService {
     }
 
     private LoreData loadData(LoadProgress progress) {
-        List<ExternalQuote> quotes = loadAllQuotes(progress);
-        List<ExternalCharacter> characters = loadAllCharacters(progress);
+        // The only place where The One API DTOs become the project's own lore models.
+        List<LoreQuote> quotes = loadAllQuotes(progress).stream()
+                .map(LoreDataService::toLoreQuote)
+                .toList();
+        List<LoreCharacter> characters = loadAllCharacters(progress).stream()
+                .map(LoreDataService::toLoreCharacter)
+                .toList();
 
-        Map<String, ExternalCharacter> charactersById = indexCharactersById(characters);
+        Map<String, LoreCharacter> charactersById = indexCharactersById(characters);
 
-        List<ExternalQuote> attributedQuotes = filterValidQuotes(quotes, charactersById);
+        List<LoreQuote> attributedQuotes = filterValidQuotes(quotes, charactersById);
 
         return new LoreData(
                 List.copyOf(quotes),
                 Map.copyOf(charactersById),
                 List.copyOf(attributedQuotes));
+    }
+
+    private static LoreQuote toLoreQuote(ExternalQuote quote) {
+        return new LoreQuote(
+                quote._id(),
+                quote.dialog(),
+                quote.movie(),
+                quote.character(),
+                quote.id());
+    }
+
+    private static LoreCharacter toLoreCharacter(ExternalCharacter character) {
+        return new LoreCharacter(character.id(), character.name());
     }
 
     // Fetches all citation pages from the API.
@@ -316,12 +334,12 @@ public class LoreDataService {
     }
 
     // Organize the characters into a Map, using the ID as the key.
-    private Map<String, ExternalCharacter> indexCharactersById(
-            List<ExternalCharacter> characters) {
+    private Map<String, LoreCharacter> indexCharactersById(
+            List<LoreCharacter> characters) {
 
-        Map<String, ExternalCharacter> charactersById = new HashMap<>();
+        Map<String, LoreCharacter> charactersById = new HashMap<>();
 
-        for (ExternalCharacter character : characters) {
+        for (LoreCharacter character : characters) {
             if (character.id() == null || character.id().isBlank()) {
                 continue;
             }
@@ -337,22 +355,22 @@ public class LoreDataService {
     }
 
     // Filters valid quotes
-    private List<ExternalQuote> filterValidQuotes(
-            List<ExternalQuote> quotes,
-            Map<String, ExternalCharacter> charactersById) {
+    private List<LoreQuote> filterValidQuotes(
+            List<LoreQuote> quotes,
+            Map<String, LoreCharacter> charactersById) {
 
-        List<ExternalQuote> validQuotes = new ArrayList<>();
+        List<LoreQuote> validQuotes = new ArrayList<>();
 
-        for (ExternalQuote quote : quotes) {
+        for (LoreQuote quote : quotes) {
             if (quote.dialog() == null || quote.dialog().isBlank()) {
                 continue;
             }
 
-            if (quote.character() == null || quote.character().isBlank()) {
+            if (quote.characterId() == null || quote.characterId().isBlank()) {
                 continue;
             }
 
-            if (!charactersById.containsKey(quote.character())) {
+            if (!charactersById.containsKey(quote.characterId())) {
                 continue;
             }
 

@@ -7,10 +7,10 @@ import java.util.random.RandomGenerator;
 
 import org.springframework.stereotype.Service;
 
-import com.wunderlore.client.theone.dto.ExternalCharacter;
-import com.wunderlore.client.theone.dto.ExternalQuote;
+import com.wunderlore.lore.LoreCharacter;
 import com.wunderlore.lore.LoreData;
 import com.wunderlore.lore.LoreDataService;
+import com.wunderlore.lore.LoreQuote;
 
 @Service
 public class WhoSaidItService {
@@ -29,20 +29,20 @@ public class WhoSaidItService {
     public GameRound generateRound() {
         LoreData loreData = loreDataService.getData();
 
-        List<ExternalQuote> quotes = loreData.attributedQuotes();
+        List<LoreQuote> quotes = loreData.attributedQuotes();
 
         if (quotes.isEmpty()) {
             throw new InsufficientGameDataException(
                     "No valid quotes available to start the game");
         }
 
-        ExternalQuote selectedQuote = quotes.get(random.nextInt(quotes.size()));
+        LoreQuote selectedQuote = quotes.get(random.nextInt(quotes.size()));
 
-        ExternalCharacter correctCharacter = loreData.charactersById().get(selectedQuote.character());
+        LoreCharacter correctCharacter = loreData.charactersById().get(selectedQuote.characterId());
 
-        List<ExternalCharacter> wrongCharacters = new ArrayList<>();
+        List<LoreCharacter> wrongCharacters = new ArrayList<>();
 
-        for (ExternalCharacter character : loreData.charactersById().values()) {
+        for (LoreCharacter character : loreData.charactersById().values()) {
 
             if (character.id().equals(correctCharacter.id())) {
                 continue;
@@ -65,7 +65,7 @@ public class WhoSaidItService {
                 correctCharacter.name()));
 
         for (int i = 0; i < 3; i++) {
-            ExternalCharacter character = wrongCharacters.get(i);
+            LoreCharacter character = wrongCharacters.get(i);
 
             options.add(new GameRound.CharacterOption(
                     character.id(),

@@ -1,11 +1,11 @@
 package com.wunderlore.controller;
 
 import com.wunderlore.client.theone.TheOneApiNotConfiguredException;
-import com.wunderlore.client.theone.dto.ExternalCharacter;
-import com.wunderlore.client.theone.dto.ExternalQuote;
+import com.wunderlore.lore.LoreCharacter;
 import com.wunderlore.lore.LoreData;
 import com.wunderlore.lore.LoreDataService;
 import com.wunderlore.lore.LoreDataUnavailableException;
+import com.wunderlore.lore.LoreQuote;
 import com.wunderlore.support.LogCapture;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.spi.ILoggingEvent;
@@ -66,7 +66,7 @@ class ExternalQuoteControllerTest {
 
         @Test
         void shouldReturnQuotesUsingDefaultPagination() throws Exception {
-                ExternalQuote quote = new ExternalQuote(
+                LoreQuote quote = new LoreQuote(
                                 "quote-123",
                                 "Example dialogue",
                                 "movie-123",
@@ -95,11 +95,11 @@ class ExternalQuoteControllerTest {
 
         @Test
         void shouldResolveCharacterNameFromLoadedLoreData() throws Exception {
-                ExternalQuote quote = new ExternalQuote("q1", "My precious", "movie-1", "gollum", "q1");
+                LoreQuote quote = new LoreQuote("q1", "My precious", "movie-1", "gollum", "q1");
 
                 when(loreDataService.getData()).thenReturn(new LoreData(
                                 List.of(quote),
-                                Map.of("gollum", new ExternalCharacter("gollum", "Gollum")),
+                                Map.of("gollum", new LoreCharacter("gollum", "Gollum")),
                                 List.of()));
 
                 mockMvc.perform(get("/api/catalog/quotes"))
@@ -113,14 +113,50 @@ class ExternalQuoteControllerTest {
         }
 
         @Test
+        void shouldMapEveryLoreQuoteFieldToItsCatalogField() throws Exception {
+                // Distinct values prove each field lands where the catalog contract says it does.
+                LoreQuote quote = new LoreQuote("mongo-id", "Dialog", "movie-id", "gollum", "alternate-id");
+
+                when(loreDataService.getData()).thenReturn(new LoreData(
+                                List.of(quote),
+                                Map.of("gollum", new LoreCharacter("gollum", "Gollum")),
+                                List.of()));
+
+                mockMvc.perform(get("/api/catalog/quotes"))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.docs[0]._id").value("mongo-id"))
+                                .andExpect(jsonPath("$.docs[0].dialog").value("Dialog"))
+                                .andExpect(jsonPath("$.docs[0].movie").value("movie-id"))
+                                .andExpect(jsonPath("$.docs[0].character").value("gollum"))
+                                .andExpect(jsonPath("$.docs[0].id").value("alternate-id"))
+                                .andExpect(jsonPath("$.docs[0].characterName").value("Gollum"));
+        }
+
+        @Test
+        void shouldKeepNullQuoteFieldsNullInTheCatalog() throws Exception {
+                LoreQuote quote = new LoreQuote("q1", null, null, null, null);
+
+                when(loreDataService.getData()).thenReturn(loreData(List.of(quote)));
+
+                mockMvc.perform(get("/api/catalog/quotes"))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.docs[0]._id").value("q1"))
+                                .andExpect(jsonPath("$.docs[0].dialog").value(nullValue()))
+                                .andExpect(jsonPath("$.docs[0].movie").value(nullValue()))
+                                .andExpect(jsonPath("$.docs[0].character").value(nullValue()))
+                                .andExpect(jsonPath("$.docs[0].id").value(nullValue()))
+                                .andExpect(jsonPath("$.docs[0].characterName").value(nullValue()));
+        }
+
+        @Test
         void shouldLeaveCharacterNameNullWhenCharacterIsUnknownOrMissing() throws Exception {
-                List<ExternalQuote> quotes = List.of(
-                                new ExternalQuote("q1", "Unknown author", "movie-1", "sauron", "q1"),
-                                new ExternalQuote("q2", "No author", "movie-1", null, "q2"));
+                List<LoreQuote> quotes = List.of(
+                                new LoreQuote("q1", "Unknown author", "movie-1", "sauron", "q1"),
+                                new LoreQuote("q2", "No author", "movie-1", null, "q2"));
 
                 when(loreDataService.getData()).thenReturn(new LoreData(
                                 quotes,
-                                Map.of("frodo", new ExternalCharacter("frodo", "Frodo Baggins")),
+                                Map.of("frodo", new LoreCharacter("frodo", "Frodo Baggins")),
                                 List.of()));
 
                 mockMvc.perform(get("/api/catalog/quotes"))
@@ -134,16 +170,16 @@ class ExternalQuoteControllerTest {
 
         @Test
         void shouldResolveNamesOnlyForTheRequestedPage() throws Exception {
-                List<ExternalQuote> quotes = List.of(
-                                new ExternalQuote("q1", "One", "movie-1", "frodo", "q1"),
-                                new ExternalQuote("q2", "Two", "movie-1", "sam", "q2"),
-                                new ExternalQuote("q3", "Three", "movie-1", "frodo", "q3"));
+                List<LoreQuote> quotes = List.of(
+                                new LoreQuote("q1", "One", "movie-1", "frodo", "q1"),
+                                new LoreQuote("q2", "Two", "movie-1", "sam", "q2"),
+                                new LoreQuote("q3", "Three", "movie-1", "frodo", "q3"));
 
                 when(loreDataService.getData()).thenReturn(new LoreData(
                                 quotes,
                                 Map.of(
-                                                "frodo", new ExternalCharacter("frodo", "Frodo Baggins"),
-                                                "sam", new ExternalCharacter("sam", "Samwise Gamgee")),
+                                                "frodo", new LoreCharacter("frodo", "Frodo Baggins"),
+                                                "sam", new LoreCharacter("sam", "Samwise Gamgee")),
                                 List.of()));
 
                 mockMvc.perform(get("/api/catalog/quotes")
@@ -193,16 +229,16 @@ class ExternalQuoteControllerTest {
 
         @Test
         void shouldIncludeQuotesWithoutDialogOrKnownCharacter() throws Exception {
-                List<ExternalQuote> quotes = List.of(
-                                new ExternalQuote("q1", "", "movie-1", "frodo", "q1"),
-                                new ExternalQuote("q2", null, "movie-1", "frodo", "q2"),
-                                new ExternalQuote("q3", "Unknown author", "movie-1", "sauron", "q3"),
-                                new ExternalQuote("q4", "No author", "movie-1", null, "q4"));
+                List<LoreQuote> quotes = List.of(
+                                new LoreQuote("q1", "", "movie-1", "frodo", "q1"),
+                                new LoreQuote("q2", null, "movie-1", "frodo", "q2"),
+                                new LoreQuote("q3", "Unknown author", "movie-1", "sauron", "q3"),
+                                new LoreQuote("q4", "No author", "movie-1", null, "q4"));
 
                 // attributedQuotes is empty on purpose: the catalog must not rely on it.
                 when(loreDataService.getData()).thenReturn(new LoreData(
                                 quotes,
-                                Map.of("frodo", new ExternalCharacter("frodo", "Frodo Baggins")),
+                                Map.of("frodo", new LoreCharacter("frodo", "Frodo Baggins")),
                                 List.of()));
 
                 mockMvc.perform(get("/api/catalog/quotes"))
@@ -422,13 +458,13 @@ class ExternalQuoteControllerTest {
                 }
         }
 
-        private static LoreData loreData(List<ExternalQuote> quotes) {
+        private static LoreData loreData(List<LoreQuote> quotes) {
                 return new LoreData(quotes, Map.of(), List.of());
         }
 
-        private static List<ExternalQuote> numberedQuotes(int count) {
+        private static List<LoreQuote> numberedQuotes(int count) {
                 return IntStream.rangeClosed(1, count)
-                                .mapToObj(i -> new ExternalQuote(
+                                .mapToObj(i -> new LoreQuote(
                                                 "q" + i, "Dialog " + i, "movie-1", "character-1", "q" + i))
                                 .toList();
         }

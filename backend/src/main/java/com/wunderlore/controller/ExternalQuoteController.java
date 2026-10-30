@@ -1,11 +1,11 @@
 package com.wunderlore.controller;
 
 import com.wunderlore.client.theone.TheOneApiNotConfiguredException;
-import com.wunderlore.client.theone.dto.ExternalCharacter;
-import com.wunderlore.client.theone.dto.ExternalQuote;
+import com.wunderlore.lore.LoreCharacter;
 import com.wunderlore.lore.LoreData;
 import com.wunderlore.lore.LoreDataService;
 import com.wunderlore.lore.LoreDataUnavailableException;
+import com.wunderlore.lore.LoreQuote;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import org.slf4j.Logger;
@@ -53,8 +53,8 @@ public class ExternalQuoteController {
     // pages is at least 1, a page past the end returns an empty docs list,
     // and offset stays null because the request is page-based.
     private CatalogQuotePage paginate(
-            List<ExternalQuote> quotes,
-            Map<String, ExternalCharacter> charactersById,
+            List<LoreQuote> quotes,
+            Map<String, LoreCharacter> charactersById,
             int page,
             int limit) {
         int total = quotes.size();
@@ -77,16 +77,16 @@ public class ExternalQuoteController {
     // The name comes only from the loaded lore data; an unknown or missing
     // character id leaves characterName null rather than guessing one.
     private CatalogQuote toCatalogQuote(
-            ExternalQuote quote, Map<String, ExternalCharacter> charactersById) {
-        ExternalCharacter character =
-                quote.character() == null ? null : charactersById.get(quote.character());
+            LoreQuote quote, Map<String, LoreCharacter> charactersById) {
+        LoreCharacter character =
+                quote.characterId() == null ? null : charactersById.get(quote.characterId());
 
         return new CatalogQuote(
-                quote._id(),
-                quote.dialog(),
-                quote.movie(),
-                quote.character(),
                 quote.id(),
+                quote.dialog(),
+                quote.movieId(),
+                quote.characterId(),
+                quote.alternateId(),
                 character == null ? null : character.name());
     }
 

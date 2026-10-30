@@ -3,6 +3,7 @@ package com.wunderlore.lore;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.entry;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.times;
@@ -85,7 +86,7 @@ class LoreDataServiceTest {
 
                 LoreData data = newService().getData();
 
-                assertThat(data.quotes()).containsExactly(q1, q2, q3);
+                assertThat(data.quotes()).containsExactly(lore(q1), lore(q2), lore(q3));
                 assertThat(data.charactersById()).containsOnlyKeys("frodo", "sam", "gandalf");
 
                 verify(theOneApiClient).getQuotes(1, PAGE_SIZE);
@@ -118,10 +119,48 @@ class LoreDataServiceTest {
 
                 LoreData data = newService().getData();
 
-                assertThat(data.quotes()).containsExactlyElementsOf(quotes);
+                assertThat(data.quotes()).containsExactlyElementsOf(quotes.stream().map(LoreDataServiceTest::lore).toList());
                 assertThat(data.charactersById()).containsOnlyKeys("frodo", "sam");
-                assertThat(data.charactersById().get("frodo")).isEqualTo(FRODO);
-                assertThat(data.attributedQuotes()).containsExactly(valid);
+                assertThat(data.charactersById().get("frodo")).isEqualTo(lore(FRODO));
+                assertThat(data.attributedQuotes()).containsExactly(lore(valid));
+        }
+
+        @Test
+        void shouldMapEveryExternalQuoteFieldToTheLoreQuote() {
+                // Distinct values prove each upstream field lands in the intended lore field.
+                ExternalQuote external = new ExternalQuote(
+                                "mongo-id", "Po-tay-toes!", "movie-id", "sam", "alternate-id");
+
+                stubSinglePage(List.of(external), List.of(SAM));
+
+                LoreData data = newService().getData();
+
+                assertThat(data.quotes()).containsExactly(
+                                new LoreQuote("mongo-id", "Po-tay-toes!", "movie-id", "sam", "alternate-id"));
+                assertThat(data.attributedQuotes()).containsExactlyElementsOf(data.quotes());
+        }
+
+        @Test
+        void shouldPreserveNullQuoteFieldsWhenMapping() {
+                ExternalQuote external = new ExternalQuote("q1", null, null, null, null);
+
+                stubSinglePage(List.of(external), List.of(SAM));
+
+                LoreData data = newService().getData();
+
+                assertThat(data.quotes()).containsExactly(new LoreQuote("q1", null, null, null, null));
+                assertThat(data.attributedQuotes()).isEmpty();
+        }
+
+        @Test
+        void shouldMapCharactersAndIndexThemByTheirId() {
+                stubSinglePage(List.of(), List.of(FRODO, SAM));
+
+                LoreData data = newService().getData();
+
+                assertThat(data.charactersById()).containsOnly(
+                                entry("frodo", new LoreCharacter("frodo", "Frodo Baggins")),
+                                entry("sam", new LoreCharacter("sam", "Samwise Gamgee")));
         }
 
         @Test
@@ -181,7 +220,7 @@ class LoreDataServiceTest {
                 LoreData data = service.getData();
 
                 // The retry starts over from page 1 instead of resuming from a partial dataset.
-                assertThat(data.quotes()).containsExactly(q1, q2);
+                assertThat(data.quotes()).containsExactly(lore(q1), lore(q2));
                 verify(theOneApiClient, times(2)).getQuotes(1, PAGE_SIZE);
                 verify(theOneApiClient, times(2)).getQuotes(2, PAGE_SIZE);
                 verify(theOneApiClient, times(1)).getCharacters(1, PAGE_SIZE);
@@ -197,7 +236,7 @@ class LoreDataServiceTest {
                 LoreData data = newService().getData();
 
                 assertThat(data.attributedQuotes()).isEmpty();
-                assertThat(data.quotes()).containsExactly(unknownAuthor);
+                assertThat(data.quotes()).containsExactly(lore(unknownAuthor));
                 assertThat(data.charactersById()).containsOnlyKeys("frodo", "sam");
         }
 
@@ -459,7 +498,7 @@ class LoreDataServiceTest {
                 when(theOneApiClient.getCharacters(1, PAGE_SIZE))
                                 .thenReturn(characterPage(List.of(FRODO, SAM, GANDALF), 1, 1));
 
-                assertThat(newService().getData().quotes()).containsExactly(q1, q2, q3);
+                assertThat(newService().getData().quotes()).containsExactly(lore(q1), lore(q2), lore(q3));
         }
 
         @Test
@@ -494,7 +533,7 @@ class LoreDataServiceTest {
                 clock.advance(COOLDOWN);
 
                 // The quotes loaded before the failure were discarded, so the retry starts over.
-                assertThat(service.getData().quotes()).containsExactly(q1);
+                assertThat(service.getData().quotes()).containsExactly(lore(q1));
                 verify(theOneApiClient, times(2)).getQuotes(1, PAGE_SIZE);
                 verify(theOneApiClient, times(2)).getCharacters(1, PAGE_SIZE);
                 verifyNoMoreInteractions(theOneApiClient);
@@ -1130,6 +1169,14 @@ class LoreDataServiceTest {
 
         private LoreDataService newService() {
                 return new LoreDataService(theOneApiClient, clock, COOLDOWN, MAX_PAGES);
+        }
+
+        private static LoreQuote lore(ExternalQuote quote) {
+                return new LoreQuote(quote._id(), quote.dialog(), quote.movie(), quote.character(), quote.id());
+        }
+
+        private static LoreCharacter lore(ExternalCharacter character) {
+                return new LoreCharacter(character.id(), character.name());
         }
 
         private void stubSinglePage(List<ExternalQuote> quotes, List<ExternalCharacter> characters) {
