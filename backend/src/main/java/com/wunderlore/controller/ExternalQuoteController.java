@@ -1,8 +1,9 @@
 package com.wunderlore.controller;
 
 import com.wunderlore.client.theone.TheOneApiNotConfiguredException;
+import com.wunderlore.client.theone.dto.ExternalCharacter;
 import com.wunderlore.client.theone.dto.ExternalQuote;
-import com.wunderlore.client.theone.dto.ExternalQuoteResponse;
+import com.wunderlore.lore.LoreData;
 import com.wunderlore.lore.LoreDataService;
 import com.wunderlore.lore.LoreDataUnavailableException;
 import jakarta.validation.constraints.Max;
@@ -21,6 +22,7 @@ import org.springframework.web.client.RestClientException;
 
 import java.time.Clock;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/catalog")
@@ -39,31 +41,53 @@ public class ExternalQuoteController {
     }
 
     @GetMapping("/quotes")
-    public ExternalQuoteResponse getQuotes(
+    public CatalogQuotePage getQuotes(
             @RequestParam(defaultValue = "1") @Min(1) int page,
             @RequestParam(defaultValue = "20") @Min(1) @Max(100) int limit) {
-        List<ExternalQuote> quotes = loreDataService.getData().quotes();
+        LoreData data = loreDataService.getData();
 
-        return paginate(quotes, page, limit);
+        return paginate(data.quotes(), data.charactersById(), page, limit);
     }
 
     // Slices the in-memory quotes the same way The One API paginates them:
     // pages is at least 1, a page past the end returns an empty docs list,
     // and offset stays null because the request is page-based.
-    private ExternalQuoteResponse paginate(List<ExternalQuote> quotes, int page, int limit) {
+    private CatalogQuotePage paginate(
+            List<ExternalQuote> quotes,
+            Map<String, ExternalCharacter> charactersById,
+            int page,
+            int limit) {
         int total = quotes.size();
         int pages = Math.max(1, (total + limit - 1) / limit);
 
         // long avoids overflow when page is very large.
         long start = (long) (page - 1) * limit;
-        List<ExternalQuote> docs = List.of();
+        List<CatalogQuote> docs = List.of();
 
         if (start < total) {
             int end = (int) Math.min(start + limit, total);
-            docs = quotes.subList((int) start, end);
+            docs = quotes.subList((int) start, end).stream()
+                    .map(quote -> toCatalogQuote(quote, charactersById))
+                    .toList();
         }
 
-        return new ExternalQuoteResponse(docs, total, limit, null, page, pages);
+        return new CatalogQuotePage(docs, total, limit, null, page, pages);
+    }
+
+    // The name comes only from the loaded lore data; an unknown or missing
+    // character id leaves characterName null rather than guessing one.
+    private CatalogQuote toCatalogQuote(
+            ExternalQuote quote, Map<String, ExternalCharacter> charactersById) {
+        ExternalCharacter character =
+                quote.character() == null ? null : charactersById.get(quote.character());
+
+        return new CatalogQuote(
+                quote._id(),
+                quote.dialog(),
+                quote.movie(),
+                quote.character(),
+                quote.id(),
+                character == null ? null : character.name());
     }
 
     @ExceptionHandler({

@@ -46,6 +46,7 @@ function quotePage(overrides: Partial<QuotePage> = {}): QuotePage {
                 movie: "m1",
                 character: "arwen-id",
                 id: "q1",
+                characterName: "Arwen",
             },
             {
                 _id: "q2",
@@ -53,6 +54,7 @@ function quotePage(overrides: Partial<QuotePage> = {}): QuotePage {
                 movie: "m2",
                 character: "galadriel-id",
                 id: "q2",
+                characterName: "Galadriel",
             },
         ],
         total: 45,
@@ -151,14 +153,39 @@ describe("QuotesContent", () => {
         expect(articles[0]).toHaveTextContent(
             "I would rather share one lifetime with you.",
         );
-        expect(articles[0]).toHaveTextContent("Character ID: arwen-id");
-        expect(articles[1]).toHaveTextContent("Character ID: galadriel-id");
+        expect(articles[0]).toHaveTextContent("Arwen");
+        expect(articles[1]).toHaveTextContent("Galadriel");
+        expect(catalog.queryByText(/Character ID/)).not.toBeInTheDocument();
+        expect(catalog.queryByText(/arwen-id/)).not.toBeInTheDocument();
         expect(screen.getByText("45 quotes available")).toBeInTheDocument();
         expect(screen.getByRole("link", { name: /Wunderlore/ })).toHaveAttribute(
             "href",
             "/",
         );
     });
+
+    it.each([
+        ["null", null],
+        ["absent", undefined],
+        ["blank", "   "],
+    ])(
+        "shows a fallback without the raw id when the character name is %s",
+        async (_, characterName) => {
+            const base = quotePage().docs[0];
+            getQuotesMock.mockResolvedValue(
+                quotePage({ docs: [{ ...base, characterName }] }),
+            );
+
+            await renderQuotes();
+
+            const article = screen.getByRole("article");
+            expect(article).toHaveTextContent("Unknown character");
+            expect(article).toHaveTextContent(
+                "I would rather share one lifetime with you.",
+            );
+            expect(article).not.toHaveTextContent("arwen-id");
+        },
+    );
 
     it("shows an empty state when the page has no quotes", async () => {
         getQuotesMock.mockResolvedValue(

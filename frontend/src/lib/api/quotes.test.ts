@@ -17,6 +17,7 @@ const quote = {
     movie: "m1",
     character: "ch1",
     id: "q1",
+    characterName: "Aragorn",
 };
 
 const quotePage = {
@@ -145,6 +146,8 @@ describe("getQuotes", () => {
         ["a null dialog", { dialog: null }],
         ["a null character", { character: null }],
         ["a null movie and id", { movie: null, id: null }],
+        ["a null character name", { characterName: null }],
+        ["no character name", { characterName: undefined }],
     ])("accepts a quote with %s", async (_, overrides) => {
         const { getQuotes } = await loadModules();
         const page = { ...quotePage, docs: [{ ...quote, ...overrides }] };
@@ -174,7 +177,9 @@ describe("getQuotes", () => {
         ["a quote without _id", { ...quotePage, docs: [{ ...quote, _id: undefined }] }],
         ["a quote with a null _id", { ...quotePage, docs: [{ ...quote, _id: null }] }],
         ["a numeric dialog", { ...quotePage, docs: [{ ...quote, dialog: 7 }] }],
-        ["an object as character", { ...quotePage, docs: [{ ...quote, character: {} }] }],
+        ["a numeric character name", { ...quotePage, docs: [{ ...quote, characterName: 7 }] }],
+        ["an object as character name", { ...quotePage, docs: [{ ...quote, characterName: {} }] }],
+        ["an object as character",{ ...quotePage, docs: [{ ...quote, character: {} }] }],
         ["a valid quote next to an invalid one", { ...quotePage, docs: [quote, {}] }],
         ["a missing total", { ...quotePage, total: undefined }],
         ["a fractional total", { ...quotePage, total: 1.5 }],

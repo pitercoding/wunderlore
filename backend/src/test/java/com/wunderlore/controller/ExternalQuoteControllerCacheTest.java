@@ -58,6 +58,7 @@ class ExternalQuoteControllerCacheTest {
                                 .andExpect(status().isOk())
                                 .andExpect(jsonPath("$.docs[0]._id").value("q1"))
                                 .andExpect(jsonPath("$.docs[1]._id").value("q2"))
+                                .andExpect(jsonPath("$.docs[0].characterName").value("Samwise Gamgee"))
                                 .andExpect(jsonPath("$.total").value(3))
                                 .andExpect(jsonPath("$.pages").value(2));
 

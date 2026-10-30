@@ -14,6 +14,8 @@ export interface Quote {
     movie?: string | null;
     character?: string | null;
     id?: string | null;
+    // Null (or absent) when the backend could not resolve the character.
+    characterName?: string | null;
 }
 
 export interface QuotePage {
@@ -32,7 +34,8 @@ function isQuote(value: unknown): value is Quote {
         isOptionalString(value.dialog) &&
         isOptionalString(value.movie) &&
         isOptionalString(value.character) &&
-        isOptionalString(value.id)
+        isOptionalString(value.id) &&
+        isOptionalString(value.characterName)
     );
 }
 

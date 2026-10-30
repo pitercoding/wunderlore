@@ -32,6 +32,7 @@ import java.util.stream.IntStream;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -90,6 +91,70 @@ class ExternalQuoteControllerTest {
                                 .andExpect(jsonPath("$.offset").doesNotExist());
 
                 verify(loreDataService).getData();
+        }
+
+        @Test
+        void shouldResolveCharacterNameFromLoadedLoreData() throws Exception {
+                ExternalQuote quote = new ExternalQuote("q1", "My precious", "movie-1", "gollum", "q1");
+
+                when(loreDataService.getData()).thenReturn(new LoreData(
+                                List.of(quote),
+                                Map.of("gollum", new ExternalCharacter("gollum", "Gollum")),
+                                List.of()));
+
+                mockMvc.perform(get("/api/catalog/quotes"))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.docs[0]._id").value("q1"))
+                                .andExpect(jsonPath("$.docs[0].dialog").value("My precious"))
+                                .andExpect(jsonPath("$.docs[0].movie").value("movie-1"))
+                                .andExpect(jsonPath("$.docs[0].character").value("gollum"))
+                                .andExpect(jsonPath("$.docs[0].id").value("q1"))
+                                .andExpect(jsonPath("$.docs[0].characterName").value("Gollum"));
+        }
+
+        @Test
+        void shouldLeaveCharacterNameNullWhenCharacterIsUnknownOrMissing() throws Exception {
+                List<ExternalQuote> quotes = List.of(
+                                new ExternalQuote("q1", "Unknown author", "movie-1", "sauron", "q1"),
+                                new ExternalQuote("q2", "No author", "movie-1", null, "q2"));
+
+                when(loreDataService.getData()).thenReturn(new LoreData(
+                                quotes,
+                                Map.of("frodo", new ExternalCharacter("frodo", "Frodo Baggins")),
+                                List.of()));
+
+                mockMvc.perform(get("/api/catalog/quotes"))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.docs.length()").value(2))
+                                .andExpect(jsonPath("$.docs[0].character").value("sauron"))
+                                .andExpect(jsonPath("$.docs[0].characterName").value(nullValue()))
+                                .andExpect(jsonPath("$.docs[1].character").value(nullValue()))
+                                .andExpect(jsonPath("$.docs[1].characterName").value(nullValue()));
+        }
+
+        @Test
+        void shouldResolveNamesOnlyForTheRequestedPage() throws Exception {
+                List<ExternalQuote> quotes = List.of(
+                                new ExternalQuote("q1", "One", "movie-1", "frodo", "q1"),
+                                new ExternalQuote("q2", "Two", "movie-1", "sam", "q2"),
+                                new ExternalQuote("q3", "Three", "movie-1", "frodo", "q3"));
+
+                when(loreDataService.getData()).thenReturn(new LoreData(
+                                quotes,
+                                Map.of(
+                                                "frodo", new ExternalCharacter("frodo", "Frodo Baggins"),
+                                                "sam", new ExternalCharacter("sam", "Samwise Gamgee")),
+                                List.of()));
+
+                mockMvc.perform(get("/api/catalog/quotes")
+                                .param("page", "2")
+                                .param("limit", "2"))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.docs.length()").value(1))
+                                .andExpect(jsonPath("$.docs[0]._id").value("q3"))
+                                .andExpect(jsonPath("$.docs[0].characterName").value("Frodo Baggins"))
+                                .andExpect(jsonPath("$.total").value(3))
+                                .andExpect(jsonPath("$.pages").value(2));
         }
 
         @Test

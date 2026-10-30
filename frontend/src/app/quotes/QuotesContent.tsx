@@ -77,7 +77,9 @@ export default async function QuotesContent({
                             <blockquote>{quote.dialog}</blockquote>
 
                             <p className={styles.metadata}>
-                                Character ID: {quote.character}
+                                {quote.characterName?.trim()
+                                    ? quote.characterName
+                                    : "Unknown character"}
                             </p>
                         </article>
                     ))
