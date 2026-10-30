@@ -2,7 +2,7 @@ import { render, screen, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
-import { ApiError } from "@/lib/api/client";
+import { ApiError, ApiResponseError } from "@/lib/api/client";
 import { getQuotes, type QuotePage } from "@/lib/api/quotes";
 import QuotesContent from "./QuotesContent";
 
@@ -219,6 +219,7 @@ describe("QuotesContent", () => {
     it.each([
         ["an API error", new ApiError("API request failed with status 502", 502)],
         ["a network error", new TypeError("fetch failed")],
+        ["an invalid payload", new ApiResponseError("/api/catalog/quotes")],
     ])("shows an error message when loading fails with %s", async (_, error) => {
         getQuotesMock.mockRejectedValue(error);
 

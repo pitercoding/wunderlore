@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { ApiError } from "@/lib/api/client";
+import { ApiError, ApiResponseError } from "@/lib/api/client";
 import { submitAnswer } from "@/lib/api/game";
 import { submitGameAnswer } from "./actions";
 
@@ -65,6 +65,7 @@ describe("submitGameAnswer", () => {
     it.each([
         ["an unmapped HTTP status", new ApiError("boom", 500)],
         ["a validation error", new Error("roundId must be a non-empty string")],
+        ["an invalid payload", new ApiResponseError("/api/game/answer")],
         ["a network error", new TypeError("fetch failed")],
         ["a non-numeric status", { status: "404" }],
         ["a thrown string", "unexpected"],

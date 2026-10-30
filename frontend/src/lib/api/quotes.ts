@@ -1,20 +1,55 @@
 import { apiFetch } from "@/lib/api/client";
+import {
+    isIntegerFrom,
+    isNonBlankString,
+    isOptionalString,
+    isRecord,
+} from "@/lib/api/guards";
 
+// The catalog serves upstream quotes unfiltered, so only _id is guaranteed:
+// a quote without dialog or character is valid and must not fail the page.
 export interface Quote {
     _id: string;
-    dialog: string;
-    movie: string;
-    character: string;
-    id: string;
+    dialog?: string | null;
+    movie?: string | null;
+    character?: string | null;
+    id?: string | null;
 }
 
 export interface QuotePage {
     docs: Quote[];
     total: number;
     limit: number;
-    offset: number | null;
+    offset?: number | null;
     page: number;
     pages: number;
+}
+
+function isQuote(value: unknown): value is Quote {
+    return (
+        isRecord(value) &&
+        isNonBlankString(value._id) &&
+        isOptionalString(value.dialog) &&
+        isOptionalString(value.movie) &&
+        isOptionalString(value.character) &&
+        isOptionalString(value.id)
+    );
+}
+
+// page may exceed pages (the caller redirects), and pages 0 means an empty catalog.
+function isQuotePage(value: unknown): value is QuotePage {
+    return (
+        isRecord(value) &&
+        Array.isArray(value.docs) &&
+        value.docs.every(isQuote) &&
+        isIntegerFrom(0, value.total) &&
+        isIntegerFrom(1, value.limit) &&
+        (value.offset === null ||
+            value.offset === undefined ||
+            isIntegerFrom(0, value.offset)) &&
+        isIntegerFrom(1, value.page) &&
+        isIntegerFrom(0, value.pages)
+    );
 }
 
 export async function getQuotes(
@@ -34,7 +69,8 @@ export async function getQuotes(
         limit: String(limit),
     });
 
-    return apiFetch<QuotePage>(
+    return apiFetch(
         `/api/catalog/quotes?${params.toString()}`,
+        isQuotePage,
     );
 }

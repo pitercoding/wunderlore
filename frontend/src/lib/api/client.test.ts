@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { isRecord } from "./guards";
 
 // client.ts reads API_URL when the module is evaluated, so every test stubs
 // the environment first and then imports a fresh copy of the module.
@@ -13,6 +14,11 @@ function jsonResponse(body: unknown, init?: ResponseInit) {
         headers: { "Content-Type": "application/json" },
         ...init,
     });
+}
+
+// For tests about transport: parsed JSON is never undefined, so all of it passes.
+function acceptAny(payload: unknown): payload is unknown {
+    return payload !== undefined;
 }
 
 const fetchMock = vi.fn<typeof fetch>();
@@ -46,7 +52,7 @@ describe("apiFetch", () => {
     ])("rejects without calling fetch when API_URL is %s", async (_, value) => {
         const { apiFetch } = await loadClient(value);
 
-        await expect(apiFetch("/api/anything")).rejects.toThrow(
+        await expect(apiFetch("/api/anything", acceptAny)).rejects.toThrow(
             "API_URL is not configured",
         );
         expect(fetchMock).not.toHaveBeenCalled();
@@ -59,7 +65,7 @@ describe("apiFetch", () => {
         const { apiFetch } = await loadClient(baseUrl);
         fetchMock.mockResolvedValue(jsonResponse({}));
 
-        await apiFetch("/api/game/round");
+        await apiFetch("/api/game/round", acceptAny);
 
         expect(fetchMock).toHaveBeenCalledWith(
             "http://api.test/api/game/round",
@@ -71,7 +77,7 @@ describe("apiFetch", () => {
         const { apiFetch } = await loadClient("http://api.test/backend/");
         fetchMock.mockResolvedValue(jsonResponse({}));
 
-        await apiFetch("/api/catalog/quotes?page=2&limit=20");
+        await apiFetch("/api/catalog/quotes?page=2&limit=20", acceptAny);
 
         expect(fetchMock).toHaveBeenCalledWith(
             "http://api.test/backend/api/catalog/quotes?page=2&limit=20",
@@ -83,7 +89,7 @@ describe("apiFetch", () => {
         const { apiFetch } = await loadClient("http://api.test");
         fetchMock.mockResolvedValue(jsonResponse({}));
 
-        await apiFetch("/api/game/round");
+        await apiFetch("/api/game/round", acceptAny);
 
         expect(fetchMock).toHaveBeenCalledWith(expect.any(String), {
             headers: { Accept: "application/json" },
@@ -96,7 +102,7 @@ describe("apiFetch", () => {
         const { apiFetch } = await loadClient("http://api.test");
         fetchMock.mockResolvedValue(jsonResponse({}));
 
-        await apiFetch("/api/game/answer", {
+        await apiFetch("/api/game/answer", acceptAny, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: '{"a":1}',
@@ -118,7 +124,7 @@ describe("apiFetch", () => {
         const { apiFetch } = await loadClient("http://api.test");
         fetchMock.mockResolvedValue(jsonResponse({}));
 
-        await apiFetch("/api/x", {
+        await apiFetch("/api/x", acceptAny, {
             headers: { Accept: "text/plain" },
             cache: "force-cache",
         });
@@ -135,7 +141,7 @@ describe("apiFetch", () => {
         const body = { roundId: "r1", quote: "Hello", options: [] };
         fetchMock.mockResolvedValue(jsonResponse(body));
 
-        await expect(apiFetch("/api/game/round")).resolves.toEqual(body);
+        await expect(apiFetch("/api/game/round", acceptAny)).resolves.toEqual(body);
     });
 
     it.each([400, 404, 409, 500, 503])(
@@ -146,7 +152,7 @@ describe("apiFetch", () => {
                 jsonResponse({ message: "ignored" }, { status }),
             );
 
-            const error = await apiFetch("/api/x").catch((e: unknown) => e);
+            const error = await apiFetch("/api/x", acceptAny).catch((e: unknown) => e);
 
             expect(error).toBeInstanceOf(ApiError);
             expect(error).toMatchObject({
@@ -160,24 +166,7 @@ describe("apiFetch", () => {
         const { apiFetch, ApiError } = await loadClient("http://api.test");
         fetchMock.mockResolvedValue(new Response("not json", { status: 502 }));
 
-        await expect(apiFetch("/api/x")).rejects.toBeInstanceOf(ApiError);
-    });
-
-    it("propagates a parsing error when a successful body is not JSON", async () => {
-        const { apiFetch, ApiError } = await loadClient("http://api.test");
-        fetchMock.mockResolvedValue(new Response("<html>oops</html>"));
-
-        const error = await apiFetch("/api/x").catch((e: unknown) => e);
-
-        expect(error).toBeInstanceOf(SyntaxError);
-        expect(error).not.toBeInstanceOf(ApiError);
-    });
-
-    it("propagates a parsing error when a successful body is empty", async () => {
-        const { apiFetch } = await loadClient("http://api.test");
-        fetchMock.mockResolvedValue(new Response(null, { status: 200 }));
-
-        await expect(apiFetch("/api/x")).rejects.toBeInstanceOf(SyntaxError);
+        await expect(apiFetch("/api/x", acceptAny)).rejects.toBeInstanceOf(ApiError);
     });
 
     it("propagates network errors from fetch unchanged", async () => {
@@ -185,7 +174,95 @@ describe("apiFetch", () => {
         const networkError = new TypeError("fetch failed");
         fetchMock.mockRejectedValue(networkError);
 
-        await expect(apiFetch("/api/x")).rejects.toBe(networkError);
+        await expect(apiFetch("/api/x", acceptAny)).rejects.toBe(networkError);
+    });
+});
+
+describe("apiFetch payload validation", () => {
+    it("returns a payload accepted by the guard", async () => {
+        const { apiFetch } = await loadClient("http://api.test");
+        fetchMock.mockResolvedValue(jsonResponse({ ok: true }));
+
+        await expect(apiFetch("/api/x", isRecord)).resolves.toEqual({ ok: true });
+    });
+
+    it.each([
+        ["null", null],
+        ["an array", [{ ok: true }]],
+        ["a string", "ok"],
+    ])("rejects %s when the guard expects an object", async (_, body) => {
+        const { apiFetch, ApiResponseError } = await loadClient("http://api.test");
+        fetchMock.mockResolvedValue(jsonResponse(body));
+
+        await expect(apiFetch("/api/x", isRecord)).rejects.toBeInstanceOf(
+            ApiResponseError,
+        );
+    });
+
+    it.each([
+        ["malformed JSON", "<html>oops</html>"],
+        ["an empty body", null],
+    ])("rejects %s from a successful response", async (_, body) => {
+        const { apiFetch, ApiResponseError } = await loadClient("http://api.test");
+        fetchMock.mockResolvedValue(new Response(body));
+
+        await expect(apiFetch("/api/x", acceptAny)).rejects.toBeInstanceOf(
+            ApiResponseError,
+        );
+    });
+
+    it("identifies the endpoint without exposing the query or the body", async () => {
+        const { apiFetch } = await loadClient("http://api.test");
+        fetchMock.mockResolvedValue(new Response("token=abc123 is not JSON"));
+
+        const error = await apiFetch("/api/x?page=2", acceptAny).catch(
+            (e: unknown) => e,
+        );
+
+        expect(error).toMatchObject({
+            name: "ApiResponseError",
+            endpoint: "/api/x",
+            message: "API response from /api/x is invalid",
+        });
+        expect(error).not.toHaveProperty("cause");
+    });
+
+    it("has no status, so it is never mistaken for an HTTP error", async () => {
+        const { apiFetch, ApiError } = await loadClient("http://api.test");
+        fetchMock.mockResolvedValue(jsonResponse(null));
+
+        const error = await apiFetch("/api/x", isRecord).catch((e: unknown) => e);
+
+        expect(error).not.toBeInstanceOf(ApiError);
+        expect(error).not.toHaveProperty("status");
+    });
+
+    it("reports an HTTP error without validating its body", async () => {
+        const { apiFetch, ApiError } = await loadClient("http://api.test");
+        let validated = false;
+        const guard = (payload: unknown): payload is unknown => {
+            validated = true;
+            return acceptAny(payload);
+        };
+        fetchMock.mockResolvedValue(jsonResponse(null, { status: 503 }));
+
+        const error = await apiFetch("/api/x", guard).catch((e: unknown) => e);
+
+        expect(error).toBeInstanceOf(ApiError);
+        expect(error).toHaveProperty("status", 503);
+        expect(validated).toBe(false);
+    });
+
+    it("propagates a connection lost while reading the body unchanged", async () => {
+        const { apiFetch } = await loadClient("http://api.test");
+        const networkError = new TypeError("terminated");
+        fetchMock.mockResolvedValue({
+            ok: true,
+            status: 200,
+            json: () => Promise.reject(networkError),
+        } as Response);
+
+        await expect(apiFetch("/api/x", acceptAny)).rejects.toBe(networkError);
     });
 });
 
@@ -230,7 +307,7 @@ describe("apiFetch timeout and cancellation", () => {
         const { apiFetch } = await loadClient("http://api.test");
         fetchMock.mockResolvedValue(jsonResponse({ ok: true }));
 
-        await expect(apiFetch("/api/x")).resolves.toEqual({ ok: true });
+        await expect(apiFetch("/api/x", acceptAny)).resolves.toEqual({ ok: true });
 
         expect(vi.getTimerCount()).toBe(0);
         expect(signalPassedToFetch().aborted).toBe(false);
@@ -240,7 +317,7 @@ describe("apiFetch timeout and cancellation", () => {
         const { apiFetch, ApiError } = await loadClient("http://api.test");
         fetchMock.mockResolvedValue(jsonResponse({}, { status: 500 }));
 
-        await expect(apiFetch("/api/x")).rejects.toBeInstanceOf(ApiError);
+        await expect(apiFetch("/api/x", acceptAny)).rejects.toBeInstanceOf(ApiError);
 
         expect(vi.getTimerCount()).toBe(0);
     });
@@ -250,7 +327,7 @@ describe("apiFetch timeout and cancellation", () => {
         const networkError = new TypeError("fetch failed");
         fetchMock.mockRejectedValue(networkError);
 
-        await expect(apiFetch("/api/x")).rejects.toBe(networkError);
+        await expect(apiFetch("/api/x", acceptAny)).rejects.toBe(networkError);
 
         expect(vi.getTimerCount()).toBe(0);
     });
@@ -260,7 +337,7 @@ describe("apiFetch timeout and cancellation", () => {
             await loadClient("http://api.test");
         hangingFetch();
 
-        const result = apiFetch("/api/x").catch((e: unknown) => e);
+        const result = apiFetch("/api/x", acceptAny).catch((e: unknown) => e);
 
         await vi.advanceTimersByTimeAsync(API_TIMEOUT_MS - 1);
         expect(signalPassedToFetch().aborted).toBe(false);
@@ -292,7 +369,7 @@ describe("apiFetch timeout and cancellation", () => {
                 }),
         );
 
-        const result = apiFetch("/api/x").catch((e: unknown) => e);
+        const result = apiFetch("/api/x", acceptAny).catch((e: unknown) => e);
         await vi.advanceTimersByTimeAsync(API_TIMEOUT_MS);
 
         await expect(result).resolves.toBeInstanceOf(ApiTimeoutError);
@@ -315,7 +392,7 @@ describe("apiFetch timeout and cancellation", () => {
             } as Response;
         });
 
-        const result = apiFetch("/api/x").catch((e: unknown) => e);
+        const result = apiFetch("/api/x", acceptAny).catch((e: unknown) => e);
         await vi.advanceTimersByTimeAsync(API_TIMEOUT_MS);
 
         await expect(result).resolves.toBeInstanceOf(ApiTimeoutError);
@@ -327,7 +404,7 @@ describe("apiFetch timeout and cancellation", () => {
         const caller = new AbortController();
         const reason = new Error("navigated away");
 
-        const result = apiFetch("/api/x", { signal: caller.signal }).catch(
+        const result = apiFetch("/api/x", acceptAny, { signal: caller.signal }).catch(
             (e: unknown) => e,
         );
         caller.abort(reason);
@@ -349,7 +426,7 @@ describe("apiFetch timeout and cancellation", () => {
         caller.abort(reason);
 
         await expect(
-            apiFetch("/api/x", { signal: caller.signal }),
+            apiFetch("/api/x", acceptAny, { signal: caller.signal }),
         ).rejects.toBe(reason);
         expect(signalPassedToFetch().aborted).toBe(true);
         expect(vi.getTimerCount()).toBe(0);
@@ -361,7 +438,7 @@ describe("apiFetch timeout and cancellation", () => {
         hangingFetch();
         const caller = new AbortController();
 
-        const result = apiFetch("/api/x", { signal: caller.signal }).catch(
+        const result = apiFetch("/api/x", acceptAny, { signal: caller.signal }).catch(
             (e: unknown) => e,
         );
         await vi.advanceTimersByTimeAsync(API_TIMEOUT_MS);
@@ -376,7 +453,7 @@ describe("apiFetch timeout and cancellation", () => {
         const caller = new AbortController();
         const removeSpy = vi.spyOn(caller.signal, "removeEventListener");
 
-        await apiFetch("/api/x", { signal: caller.signal });
+        await apiFetch("/api/x", acceptAny, { signal: caller.signal });
         caller.abort();
 
         expect(signalPassedToFetch()).not.toBe(caller.signal);

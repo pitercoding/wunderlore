@@ -20,8 +20,33 @@ export class ApiTimeoutError extends Error {
     }
 }
 
+// Deliberately has no status and no payload: a 2xx response whose body breaks
+// the contract is not an HTTP failure, and its content must not reach the logs.
+export class ApiResponseError extends Error {
+    constructor(public readonly endpoint: string) {
+        super(`API response from ${endpoint} is invalid`);
+        this.name = "ApiResponseError";
+    }
+}
+
+export type PayloadGuard<T> = (payload: unknown) => payload is T;
+
+async function readJson(response: Response, endpoint: string): Promise<unknown> {
+    try {
+        return await response.json();
+    } catch (error: unknown) {
+        // Replaced, not wrapped: the SyntaxError message quotes the body.
+        if (error instanceof SyntaxError) {
+            throw new ApiResponseError(endpoint);
+        }
+
+        throw error;
+    }
+}
+
 export async function apiFetch<T>(
     path: string,
+    isValid: PayloadGuard<T>,
     init?: RequestInit,
 ): Promise<T> {
     if (!API_URL) {
@@ -67,8 +92,17 @@ export async function apiFetch<T>(
             );
         }
 
+        // Without the query string, which identifies the request, not the endpoint.
+        const endpoint = path.split("?", 1)[0];
+
         // Awaited here so the timeout also covers a body that stalls.
-        return (await response.json()) as T;
+        const payload = await readJson(response, endpoint);
+
+        if (!isValid(payload)) {
+            throw new ApiResponseError(endpoint);
+        }
+
+        return payload;
     } catch (error: unknown) {
         if (controller.signal.reason === timeoutError) {
             throw timeoutError;

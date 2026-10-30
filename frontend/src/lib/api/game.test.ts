@@ -31,6 +31,22 @@ afterEach(() => {
     vi.unstubAllEnvs();
 });
 
+const validRound = {
+    roundId: "round-1",
+    quote: "You shall not pass!",
+    options: [
+        { id: "c1", name: "Gandalf" },
+        { id: "c2", name: "Frodo Baggins" },
+    ],
+};
+
+const validAnswer = {
+    roundId: "round-1",
+    submittedCharacterId: "c2",
+    correct: false,
+    correctCharacterId: "c1",
+};
+
 describe("getRound", () => {
     it("requests a new round and returns it", async () => {
         const { getRound } = await loadModules();
@@ -60,6 +76,38 @@ describe("getRound", () => {
 
         expect(error).toBeInstanceOf(ApiError);
         expect(error).toHaveProperty("status", 503);
+    });
+
+    it("keeps fields the backend may add in the future", async () => {
+        const { getRound } = await loadModules();
+        const round = { ...validRound, difficulty: "hard" };
+        fetchMock.mockResolvedValue(jsonResponse(round));
+
+        await expect(getRound()).resolves.toEqual(round);
+    });
+
+    it.each([
+        ["null", null],
+        ["an array", [validRound]],
+        ["a missing roundId", { ...validRound, roundId: undefined }],
+        ["a blank roundId", { ...validRound, roundId: "  " }],
+        ["a non-string roundId", { ...validRound, roundId: 1 }],
+        ["a missing quote", { ...validRound, quote: undefined }],
+        ["a null quote", { ...validRound, quote: null }],
+        ["missing options", { ...validRound, options: undefined }],
+        ["options that are not a list", { ...validRound, options: { id: "c1" } }],
+        ["an empty options list", { ...validRound, options: [] }],
+        ["a null option", { ...validRound, options: [null] }],
+        ["an option without name", { ...validRound, options: [{ id: "c1" }] }],
+        ["an option with a numeric id", { ...validRound, options: [{ id: 1, name: "Sam" }] }],
+    ])("rejects %s", async (_, body) => {
+        const { getRound, ApiResponseError } = await loadModules();
+        fetchMock.mockResolvedValue(jsonResponse(body));
+
+        const error = await getRound().catch((e: unknown) => e);
+
+        expect(error).toBeInstanceOf(ApiResponseError);
+        expect(error).toHaveProperty("endpoint", "/api/game/round");
     });
 });
 
@@ -130,4 +178,24 @@ describe("submitAnswer", () => {
             expect(error).toHaveProperty("status", status);
         },
     );
+
+    it.each([
+        ["null", null],
+        ["an array", [validAnswer]],
+        ["a missing roundId", { ...validAnswer, roundId: undefined }],
+        ["a missing submittedCharacterId", { ...validAnswer, submittedCharacterId: undefined }],
+        ["a missing correct flag", { ...validAnswer, correct: undefined }],
+        ["a correct flag that is not boolean", { ...validAnswer, correct: "true" }],
+        ["a null correctCharacterId", { ...validAnswer, correctCharacterId: null }],
+    ])("rejects %s", async (_, body) => {
+        const { submitAnswer, ApiResponseError } = await loadModules();
+        fetchMock.mockResolvedValue(jsonResponse(body));
+
+        const error = await submitAnswer("round-1", "c2").catch(
+            (e: unknown) => e,
+        );
+
+        expect(error).toBeInstanceOf(ApiResponseError);
+        expect(error).toHaveProperty("endpoint", "/api/game/answer");
+    });
 });

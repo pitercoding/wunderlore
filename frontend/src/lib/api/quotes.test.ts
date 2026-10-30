@@ -11,16 +11,16 @@ async function loadModules() {
     return { ...quotes, ...client };
 }
 
+const quote = {
+    _id: "q1",
+    dialog: "Deeds will not be less valiant because they are unpraised.",
+    movie: "m1",
+    character: "ch1",
+    id: "q1",
+};
+
 const quotePage = {
-    docs: [
-        {
-            _id: "q1",
-            dialog: "Deeds will not be less valiant because they are unpraised.",
-            movie: "m1",
-            character: "ch1",
-            id: "q1",
-        },
-    ],
+    docs: [quote],
     total: 1,
     limit: 20,
     offset: 0,
@@ -109,5 +109,88 @@ describe("getQuotes", () => {
 
         expect(error).toBeInstanceOf(ApiError);
         expect(error).toHaveProperty("status", 502);
+    });
+
+    it("accepts the page the backend sends, with a null offset", async () => {
+        const { getQuotes } = await loadModules();
+        const page = { ...quotePage, offset: null };
+        fetchMock.mockResolvedValue(Response.json(page));
+
+        await expect(getQuotes()).resolves.toEqual(page);
+    });
+
+    it("accepts a page without offset", async () => {
+        const { getQuotes } = await loadModules();
+        const page: Partial<typeof quotePage> = { ...quotePage };
+        delete page.offset;
+        fetchMock.mockResolvedValue(Response.json(page));
+
+        await expect(getQuotes()).resolves.toEqual(page);
+    });
+
+    it.each([
+        ["past the last page", { docs: [], page: 9, pages: 3 }],
+        ["of an empty catalog", { docs: [], total: 0, pages: 0 }],
+    ])("accepts a page %s", async (_, overrides) => {
+        const { getQuotes } = await loadModules();
+        const page = { ...quotePage, ...overrides };
+        fetchMock.mockResolvedValue(Response.json(page));
+
+        await expect(getQuotes()).resolves.toEqual(page);
+    });
+
+    // The catalog is unfiltered: ExternalQuoteController serves these on purpose.
+    it.each([
+        ["an empty dialog", { dialog: "" }],
+        ["a null dialog", { dialog: null }],
+        ["a null character", { character: null }],
+        ["a null movie and id", { movie: null, id: null }],
+    ])("accepts a quote with %s", async (_, overrides) => {
+        const { getQuotes } = await loadModules();
+        const page = { ...quotePage, docs: [{ ...quote, ...overrides }] };
+        fetchMock.mockResolvedValue(Response.json(page));
+
+        await expect(getQuotes()).resolves.toEqual(page);
+    });
+
+    it("keeps fields the backend may add in the future", async () => {
+        const { getQuotes } = await loadModules();
+        const page = {
+            ...quotePage,
+            hasMore: true,
+            docs: [{ ...quote, language: "en" }],
+        };
+        fetchMock.mockResolvedValue(Response.json(page));
+
+        await expect(getQuotes()).resolves.toEqual(page);
+    });
+
+    it.each([
+        ["null", null],
+        ["an array", [quotePage]],
+        ["missing docs", { ...quotePage, docs: undefined }],
+        ["docs that are not a list", { ...quotePage, docs: quote }],
+        ["a null quote", { ...quotePage, docs: [null] }],
+        ["a quote without _id", { ...quotePage, docs: [{ ...quote, _id: undefined }] }],
+        ["a quote with a null _id", { ...quotePage, docs: [{ ...quote, _id: null }] }],
+        ["a numeric dialog", { ...quotePage, docs: [{ ...quote, dialog: 7 }] }],
+        ["an object as character", { ...quotePage, docs: [{ ...quote, character: {} }] }],
+        ["a valid quote next to an invalid one", { ...quotePage, docs: [quote, {}] }],
+        ["a missing total", { ...quotePage, total: undefined }],
+        ["a fractional total", { ...quotePage, total: 1.5 }],
+        ["a negative total", { ...quotePage, total: -1 }],
+        ["a limit of zero", { ...quotePage, limit: 0 }],
+        ["a text offset", { ...quotePage, offset: "0" }],
+        ["a page of zero", { ...quotePage, page: 0 }],
+        ["a text page", { ...quotePage, page: "1" }],
+        ["null pages", { ...quotePage, pages: null }],
+    ])("rejects %s", async (_, body) => {
+        const { getQuotes, ApiResponseError } = await loadModules();
+        fetchMock.mockResolvedValue(Response.json(body));
+
+        const error = await getQuotes(2).catch((e: unknown) => e);
+
+        expect(error).toBeInstanceOf(ApiResponseError);
+        expect(error).toHaveProperty("endpoint", "/api/catalog/quotes");
     });
 });

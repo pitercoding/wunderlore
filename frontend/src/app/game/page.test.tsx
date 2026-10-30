@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react";
 import type { ReactElement } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { connection } from "next/server";
-import { ApiError } from "@/lib/api/client";
+import { ApiError, ApiResponseError } from "@/lib/api/client";
 import { getRound, type GameRound } from "@/lib/api/game";
 import GamePage from "./page";
 
@@ -94,6 +94,7 @@ describe("GamePage", () => {
     it.each([
         ["an API error", new ApiError("API request failed with status 503", 503)],
         ["a network error", new TypeError("fetch failed")],
+        ["an invalid payload", new ApiResponseError("/api/game/round")],
     ])("shows an error message when loading fails with %s", async (_, error) => {
         getRoundMock.mockRejectedValue(error);
 
