@@ -333,6 +333,22 @@ class LoreDataServiceTest {
         }
 
         @Test
+        void shouldReportRetryTimeOnCooldownRejections() {
+                when(theOneApiClient.getQuotes(1, PAGE_SIZE)).thenReturn(null);
+
+                LoreDataService service = newService();
+                Instant failedAt = clock.instant();
+
+                // The call that ran the failed load has no retry time of its own.
+                assertThat(catchUnavailable(service).retryAt()).isNull();
+
+                clock.advance(Duration.ofSeconds(10));
+
+                // Rejected calls report when the cooldown started by that failure ends.
+                assertThat(catchUnavailable(service).retryAt()).isEqualTo(failedAt.plus(COOLDOWN));
+        }
+
+        @Test
         void shouldThrowNewExceptionForEachCallDuringCooldown() {
                 when(theOneApiClient.getQuotes(1, PAGE_SIZE)).thenReturn(null);
 

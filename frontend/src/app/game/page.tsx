@@ -2,6 +2,7 @@ import Link from "next/link";
 import { connection } from "next/server";
 import { Suspense } from "react";
 import { getRound } from "@/lib/api/game";
+import { unavailableMessage } from "@/lib/api/unavailable";
 import RetryButton from "../RetryButton";
 import GameContent from "./GameContent";
 import styles from "./page.module.css";
@@ -35,7 +36,8 @@ async function GameLoader() {
 
                 <h1>Who Said It?</h1>
                 <p role="alert">
-                    Unable to load a game round. Please try again.
+                    {unavailableMessage(error) ??
+                        "Unable to load a game round. Please try again."}
                 </p>
 
                 <RetryButton />

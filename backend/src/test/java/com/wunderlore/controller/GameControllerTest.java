@@ -17,7 +17,9 @@ import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -28,6 +30,9 @@ import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClientException;
 
 import java.nio.charset.StandardCharsets;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneOffset;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -41,6 +46,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -66,6 +72,17 @@ class GameControllerTest {
 
         @Autowired
         private MockMvc mockMvc;
+
+        private static final Instant NOW = Instant.parse("2026-01-01T12:00:00Z");
+
+        @TestConfiguration
+        static class ClockConfiguration {
+
+                @Bean
+                Clock clock() {
+                        return Clock.fixed(NOW, ZoneOffset.UTC);
+                }
+        }
 
         @MockitoBean
         private WhoSaidItService whoSaidItService;
@@ -190,6 +207,68 @@ class GameControllerTest {
         }
 
         @Test
+        void shouldSendRetryAfterRoundedUpWhenLoreDataIsCoolingDown() throws Exception {
+                when(whoSaidItService.generateRound())
+                                .thenThrow(new LoreDataUnavailableException(
+                                                "The One API data load failed recently",
+                                                null,
+                                                NOW.plusMillis(12_200)));
+
+                mockMvc.perform(get("/api/game/round"))
+                                .andExpect(status().isServiceUnavailable())
+                                .andExpect(header().string("Retry-After", "13"))
+                                .andExpect(jsonPath("$.status").value(503))
+                                .andExpect(jsonPath("$.detail").value(UNAVAILABLE_DETAIL))
+                                .andExpect(content().string(not(containsString("failed recently"))));
+        }
+
+        @Test
+        void shouldSendExactRetryAfterWithoutRoundingUpWholeSeconds() throws Exception {
+                when(whoSaidItService.generateRound())
+                                .thenThrow(new LoreDataUnavailableException(
+                                                "cooldown", null, NOW.plusSeconds(30)));
+
+                mockMvc.perform(get("/api/game/round"))
+                                .andExpect(status().isServiceUnavailable())
+                                .andExpect(header().string("Retry-After", "30"));
+        }
+
+        @Test
+        void shouldNeverSendNegativeRetryAfterWhenRetryIsAlreadyAvailable() throws Exception {
+                when(whoSaidItService.generateRound())
+                                .thenThrow(new LoreDataUnavailableException(
+                                                "cooldown", null, NOW.minusSeconds(5)));
+
+                mockMvc.perform(get("/api/game/round"))
+                                .andExpect(status().isServiceUnavailable())
+                                .andExpect(header().string("Retry-After", "0"));
+        }
+
+        @Test
+        void shouldOmitRetryAfterWhenLoreDataFailureHasNoRetryTime() throws Exception {
+                when(whoSaidItService.generateRound())
+                                .thenThrow(new LoreDataUnavailableException("The One API returned an empty quote page"));
+
+                mockMvc.perform(get("/api/game/round"))
+                                .andExpect(status().isServiceUnavailable())
+                                .andExpect(header().doesNotExist("Retry-After"));
+        }
+
+        @Test
+        void shouldOmitRetryAfterForOtherServiceUnavailableErrors() throws Exception {
+                when(whoSaidItService.generateRound())
+                                .thenThrow(new ResourceAccessException("Request timed out"))
+                                .thenThrow(new InsufficientGameDataException("No valid quotes"));
+
+                mockMvc.perform(get("/api/game/round"))
+                                .andExpect(status().isServiceUnavailable())
+                                .andExpect(header().doesNotExist("Retry-After"));
+                mockMvc.perform(get("/api/game/round"))
+                                .andExpect(status().isServiceUnavailable())
+                                .andExpect(header().doesNotExist("Retry-After"));
+        }
+
+        @Test
         void shouldReturnServiceUnavailableWhenApiTokenIsNotConfigured() throws Exception {
                 when(whoSaidItService.generateRound())
                                 .thenThrow(new TheOneApiNotConfiguredException());
@@ -235,6 +314,7 @@ class GameControllerTest {
                                 .andExpect(status().isServiceUnavailable())
                                 .andExpect(jsonPath("$.status").value(503))
                                 .andExpect(jsonPath("$.detail").value(CAPACITY_DETAIL))
+                                .andExpect(header().doesNotExist("Retry-After"))
                                 .andExpect(jsonPath("$.roundId").doesNotExist());
 
                 verify(gameRoundRegistry).register(ROUND);

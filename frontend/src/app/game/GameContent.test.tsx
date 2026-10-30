@@ -199,7 +199,7 @@ describe("GameContent", () => {
 
     it.each([
         ["invalid", "That isn't a valid option for this round."],
-        ["temporary", "The game is temporarily unavailable. Please try again."],
+        ["temporary", "Wunderlore is temporarily unavailable. Please try again."],
     ] as const)("keeps the round open after a %s failure", async (kind, message) => {
         const user = userEvent.setup();
         submitGameAnswerMock

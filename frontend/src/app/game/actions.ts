@@ -1,6 +1,7 @@
 "use server";
 
 import { submitAnswer, type AnswerResult } from "@/lib/api/game";
+import { unavailableMessage } from "@/lib/api/unavailable";
 
 // Follows GameRoundRegistry.answer, not the status class:
 // - terminal: the round can no longer be answered (404 expired or unknown, 409 answered).
@@ -63,20 +64,17 @@ export async function submitGameAnswer(
             };
         }
 
-        if (status === 503) {
-            return {
-                ok: false as const,
-                kind: "temporary",
-                message: "The game is temporarily unavailable. Please try again.",
-            };
-        }
+        const unavailable = unavailableMessage(error);
 
-        console.error("Failed to submit game answer", error);
+        // A 503 is expected while the service recovers, so only the other failures are logged.
+        if (status !== 503) {
+            console.error("Failed to submit game answer", error);
+        }
 
         return {
             ok: false as const,
             kind: "temporary",
-            message: "Something went wrong. Please try again.",
+            message: unavailable ?? "Something went wrong. Please try again.",
         };
     }
 }

@@ -162,6 +162,47 @@ describe("apiFetch", () => {
         },
     );
 
+    it.each([
+        ["30", 30],
+        [" 12 ", 12],
+        ["1", 1],
+        ["3600", 3600],
+    ])("reads Retry-After %j as %i seconds", async (header, seconds) => {
+        const { apiFetch } = await loadClient("http://api.test");
+        fetchMock.mockResolvedValue(
+            new Response(null, { status: 503, headers: { "Retry-After": header } }),
+        );
+
+        const error = await apiFetch("/api/x", acceptAny).catch((e: unknown) => e);
+
+        expect(error).toMatchObject({ status: 503, retryAfterSeconds: seconds });
+    });
+
+    it.each([
+        ["absent", undefined],
+        ["empty", ""],
+        ["zero", "0"],
+        ["negative", "-5"],
+        ["fractional", "1.5"],
+        ["non-numeric", "soon"],
+        ["an HTTP date", "Wed, 21 Oct 2026 07:28:00 GMT"],
+        ["above one hour", "3601"],
+        ["not a safe integer", "99999999999999999999"],
+    ])("treats a %s Retry-After as no known wait", async (_, header) => {
+        const { apiFetch, ApiError } = await loadClient("http://api.test");
+        fetchMock.mockResolvedValue(
+            new Response(null, {
+                status: 503,
+                headers: header === undefined ? {} : { "Retry-After": header },
+            }),
+        );
+
+        const error = await apiFetch("/api/x", acceptAny).catch((e: unknown) => e);
+
+        expect(error).toBeInstanceOf(ApiError);
+        expect(error).toMatchObject({ status: 503, retryAfterSeconds: undefined });
+    });
+
     it("does not read the body of an error response", async () => {
         const { apiFetch, ApiError } = await loadClient("http://api.test");
         fetchMock.mockResolvedValue(new Response("not json", { status: 502 }));

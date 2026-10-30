@@ -16,10 +16,13 @@ import com.wunderlore.lore.LoreDataUnavailableException;
 
 import jakarta.validation.Valid;
 
+import java.time.Clock;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -36,14 +39,19 @@ public class GameController {
 
     private static final Logger log = LoggerFactory.getLogger(GameController.class);
 
+    private static final String ROUND_UNAVAILABLE_DETAIL = "Unable to generate a game round right now";
+
     private final WhoSaidItService whoSaidItService;
     private final GameRoundRegistry gameRoundRegistry;
+    private final Clock clock;
 
     public GameController(
             WhoSaidItService whoSaidItService,
-            GameRoundRegistry gameRoundRegistry) {
+            GameRoundRegistry gameRoundRegistry,
+            Clock clock) {
         this.whoSaidItService = whoSaidItService;
         this.gameRoundRegistry = gameRoundRegistry;
+        this.clock = clock;
     }
 
     @GetMapping("/round")
@@ -61,7 +69,6 @@ public class GameController {
 
     @ExceptionHandler({
             RestClientException.class,
-            LoreDataUnavailableException.class,
             TheOneApiNotConfiguredException.class,
             InsufficientGameDataException.class
     })
@@ -78,7 +85,16 @@ public class GameController {
 
         return ProblemDetail.forStatusAndDetail(
                 HttpStatus.SERVICE_UNAVAILABLE,
-                "Unable to generate a game round right now");
+                ROUND_UNAVAILABLE_DETAIL);
+    }
+
+    // Same 503 as above, plus Retry-After when the lore data load is cooling down.
+    @ExceptionHandler(LoreDataUnavailableException.class)
+    public ResponseEntity<ProblemDetail> handleLoreDataUnavailable(
+            LoreDataUnavailableException exception) {
+        log.debug("Game round generation failed: {}", exception.getClass().getName());
+
+        return LoreUnavailableResponses.serviceUnavailable(exception, clock, ROUND_UNAVAILABLE_DETAIL);
     }
 
     @ExceptionHandler({

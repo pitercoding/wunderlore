@@ -11,7 +11,9 @@ import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -20,6 +22,9 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.ResourceAccessException;
 
 import java.nio.charset.StandardCharsets;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.IntStream;
@@ -32,6 +37,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -39,6 +45,17 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class ExternalQuoteControllerTest {
 
         private static final String UNAVAILABLE_DETAIL = "Unable to load quotes right now";
+
+        private static final Instant NOW = Instant.parse("2026-01-01T12:00:00Z");
+
+        @TestConfiguration
+        static class ClockConfiguration {
+
+                @Bean
+                Clock clock() {
+                        return Clock.fixed(NOW, ZoneOffset.UTC);
+                }
+        }
 
         @Autowired
         private MockMvc mockMvc;
@@ -184,6 +201,68 @@ class ExternalQuoteControllerTest {
                                 .andExpect(jsonPath("$.status").value(503))
                                 .andExpect(jsonPath("$.detail").value(UNAVAILABLE_DETAIL))
                                 .andExpect(content().string(not(containsString("empty quote page"))));
+        }
+
+        @Test
+        void shouldSendRetryAfterRoundedUpWhenLoreDataIsCoolingDown() throws Exception {
+                when(loreDataService.getData())
+                                .thenThrow(new LoreDataUnavailableException(
+                                                "The One API data load failed recently",
+                                                null,
+                                                NOW.plusMillis(12_200)));
+
+                mockMvc.perform(get("/api/catalog/quotes"))
+                                .andExpect(status().isServiceUnavailable())
+                                .andExpect(header().string("Retry-After", "13"))
+                                .andExpect(jsonPath("$.status").value(503))
+                                .andExpect(jsonPath("$.detail").value(UNAVAILABLE_DETAIL))
+                                .andExpect(content().string(not(containsString("failed recently"))));
+        }
+
+        @Test
+        void shouldSendExactRetryAfterWithoutRoundingUpWholeSeconds() throws Exception {
+                when(loreDataService.getData())
+                                .thenThrow(new LoreDataUnavailableException(
+                                                "cooldown", null, NOW.plusSeconds(30)));
+
+                mockMvc.perform(get("/api/catalog/quotes"))
+                                .andExpect(status().isServiceUnavailable())
+                                .andExpect(header().string("Retry-After", "30"));
+        }
+
+        @Test
+        void shouldNeverSendNegativeRetryAfterWhenRetryIsAlreadyAvailable() throws Exception {
+                when(loreDataService.getData())
+                                .thenThrow(new LoreDataUnavailableException(
+                                                "cooldown", null, NOW.minusSeconds(5)));
+
+                mockMvc.perform(get("/api/catalog/quotes"))
+                                .andExpect(status().isServiceUnavailable())
+                                .andExpect(header().string("Retry-After", "0"));
+        }
+
+        @Test
+        void shouldOmitRetryAfterWhenLoreDataFailureHasNoRetryTime() throws Exception {
+                when(loreDataService.getData())
+                                .thenThrow(new LoreDataUnavailableException("The One API returned an empty quote page"));
+
+                mockMvc.perform(get("/api/catalog/quotes"))
+                                .andExpect(status().isServiceUnavailable())
+                                .andExpect(header().doesNotExist("Retry-After"));
+        }
+
+        @Test
+        void shouldOmitRetryAfterForOtherServiceUnavailableErrors() throws Exception {
+                when(loreDataService.getData())
+                                .thenThrow(new ResourceAccessException("Request timed out"))
+                                .thenThrow(new TheOneApiNotConfiguredException());
+
+                mockMvc.perform(get("/api/catalog/quotes"))
+                                .andExpect(status().isServiceUnavailable())
+                                .andExpect(header().doesNotExist("Retry-After"));
+                mockMvc.perform(get("/api/catalog/quotes"))
+                                .andExpect(status().isServiceUnavailable())
+                                .andExpect(header().doesNotExist("Retry-After"));
         }
 
         @Test

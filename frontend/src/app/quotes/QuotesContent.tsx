@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
 import { getQuotes } from "@/lib/api/quotes";
+import { unavailableMessage } from "@/lib/api/unavailable";
 import RetryButton from "../RetryButton";
 import styles from "./page.module.css";
 
@@ -40,7 +41,8 @@ export default async function QuotesContent({
 
                 <h1>Quotes</h1>
                 <p role="alert">
-                    We couldn&apos;t load the quotes. Please try again later.
+                    {unavailableMessage(error) ??
+                        "We couldn't load the quotes. Please try again."}
                 </p>
 
                 <RetryButton />

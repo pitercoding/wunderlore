@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import type { ReactElement } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { connection } from "next/server";
-import { ApiError, ApiResponseError } from "@/lib/api/client";
+import { ApiError, ApiResponseError, ApiTimeoutError } from "@/lib/api/client";
 import { getRound, type GameRound } from "@/lib/api/game";
 import { suspendingRefresh } from "@/test/suspendingRefresh";
 import GamePage from "./page";
@@ -30,6 +30,11 @@ vi.mock("./GameContent", () => ({
         </p>
     ),
 }));
+
+const UNAVAILABLE = "Wunderlore is temporarily unavailable. Please try again.";
+const COOLDOWN =
+    "Wunderlore is temporarily unavailable. Please try again in about 30 seconds.";
+const UNEXPECTED = "Unable to load a game round. Please try again.";
 
 const connectionMock = vi.mocked(connection);
 const getRoundMock = vi.mocked(getRound);
@@ -113,7 +118,7 @@ describe("GamePage", () => {
 
         expect(refresh).toHaveBeenCalledTimes(1);
         expect(screen.getByRole("alert")).toHaveTextContent(
-            "Unable to load a game round. Please try again.",
+            "Wunderlore is temporarily unavailable. Please try again.",
         );
     });
 
@@ -142,10 +147,14 @@ describe("GamePage", () => {
     });
 
     it.each([
-        ["an API error", new ApiError("API request failed with status 503", 503)],
-        ["a network error", new TypeError("fetch failed")],
-        ["an invalid payload", new ApiResponseError("/api/game/round")],
-    ])("shows an error message when loading fails with %s", async (_, error) => {
+        ["a 503 without a retry time", new ApiError("API request failed with status 503", 503), UNAVAILABLE],
+        ["a 503 with an invalid retry time", new ApiError("API request failed with status 503", 503, Number.NaN), UNAVAILABLE],
+        ["a 503 with a retry time", new ApiError("API request failed with status 503", 503, 30), COOLDOWN],
+        ["a timeout", new ApiTimeoutError(15_000), UNAVAILABLE],
+        ["a network error", new TypeError("fetch failed"), UNAVAILABLE],
+        ["an unmapped API error", new ApiError("API request failed with status 502", 502), UNEXPECTED],
+        ["an invalid payload", new ApiResponseError("/api/game/round"), UNEXPECTED],
+    ])("shows an error message when loading fails with %s", async (_, error, message) => {
         getRoundMock.mockRejectedValue(error);
 
         await renderLoadedPage();
@@ -153,15 +162,15 @@ describe("GamePage", () => {
         expect(
             screen.getByRole("heading", { level: 1, name: "Who Said It?" }),
         ).toBeInTheDocument();
-        expect(screen.getByRole("alert")).toHaveTextContent(
-            "Unable to load a game round. Please try again.",
-        );
+        expect(screen.getByRole("alert")).toHaveTextContent(message);
         expect(screen.getByRole("link", { name: /Wunderlore/ })).toHaveAttribute(
             "href",
             "/",
         );
         expect(screen.getByRole("button", { name: "Try again" })).toBeEnabled();
         expect(screen.queryByTestId("game-content")).not.toBeInTheDocument();
+        // Retrying is the player's decision, never automatic.
+        expect(refresh).not.toHaveBeenCalled();
         expect(console.error).toHaveBeenCalledWith(
             "Failed to load game round",
             error,

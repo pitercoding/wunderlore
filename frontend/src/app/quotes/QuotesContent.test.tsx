@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
-import { ApiError, ApiResponseError } from "@/lib/api/client";
+import { ApiError, ApiResponseError, ApiTimeoutError } from "@/lib/api/client";
 import { getQuotes, type QuotePage } from "@/lib/api/quotes";
 import { suspendingRefresh } from "@/test/suspendingRefresh";
 import QuotesContent from "./QuotesContent";
@@ -27,6 +27,11 @@ vi.mock("next/server", () => ({
 vi.mock("@/lib/api/quotes", () => ({
     getQuotes: vi.fn(),
 }));
+
+const UNAVAILABLE = "Wunderlore is temporarily unavailable. Please try again.";
+const COOLDOWN =
+    "Wunderlore is temporarily unavailable. Please try again in about 30 seconds.";
+const UNEXPECTED = "We couldn't load the quotes. Please try again.";
 
 const connectionMock = vi.mocked(connection);
 const getQuotesMock = vi.mocked(getQuotes);
@@ -227,10 +232,14 @@ describe("QuotesContent", () => {
     });
 
     it.each([
-        ["an API error", new ApiError("API request failed with status 502", 502)],
-        ["a network error", new TypeError("fetch failed")],
-        ["an invalid payload", new ApiResponseError("/api/catalog/quotes")],
-    ])("shows an error message when loading fails with %s", async (_, error) => {
+        ["a 503 without a retry time", new ApiError("API request failed with status 503", 503), UNAVAILABLE],
+        ["a 503 with an invalid retry time", new ApiError("API request failed with status 503", 503, Number.NaN), UNAVAILABLE],
+        ["a 503 with a retry time", new ApiError("API request failed with status 503", 503, 30), COOLDOWN],
+        ["a timeout", new ApiTimeoutError(15_000), UNAVAILABLE],
+        ["a network error", new TypeError("fetch failed"), UNAVAILABLE],
+        ["an unmapped API error", new ApiError("API request failed with status 502", 502), UNEXPECTED],
+        ["an invalid payload", new ApiResponseError("/api/catalog/quotes"), UNEXPECTED],
+    ])("shows an error message when loading fails with %s", async (_, error, message) => {
         getQuotesMock.mockRejectedValue(error);
 
         await renderQuotes("2");
@@ -238,13 +247,13 @@ describe("QuotesContent", () => {
         expect(
             screen.getByRole("heading", { level: 1, name: "Quotes" }),
         ).toBeInTheDocument();
-        expect(screen.getByRole("alert")).toHaveTextContent(
-            "We couldn't load the quotes. Please try again later.",
-        );
+        expect(screen.getByRole("alert")).toHaveTextContent(message);
         expect(screen.queryByRole("navigation")).not.toBeInTheDocument();
         expect(screen.getByRole("button", { name: "Try again" })).toBeEnabled();
         expect(redirectMock).not.toHaveBeenCalled();
         expect(console.error).toHaveBeenCalledWith("Failed to load quotes", error);
+        // Retrying is the player's decision, never automatic.
+        expect(refresh).not.toHaveBeenCalled();
     });
 
     it("does not offer a retry when the quotes load", async () => {
@@ -271,9 +280,7 @@ describe("QuotesContent", () => {
         expect(push).not.toHaveBeenCalled();
         expect(replace).not.toHaveBeenCalled();
         expect(redirectMock).not.toHaveBeenCalled();
-        expect(screen.getByRole("alert")).toHaveTextContent(
-            "We couldn't load the quotes. Please try again later.",
-        );
+        expect(screen.getByRole("alert")).toHaveTextContent(UNAVAILABLE);
     });
 
     it("disables the retry until the server answers", async () => {

@@ -121,7 +121,8 @@ public class LoreDataService {
 
             throw new LoreDataUnavailableException(
                     "The One API data load failed recently; next attempt allowed at " + retryAt,
-                    lastFailure);
+                    lastFailure,
+                    retryAt);
         }
     }
 
@@ -196,7 +197,7 @@ public class LoreDataService {
             // the starter of the load receives the original one.
             if (failure instanceof RestClientException || failure instanceof LoreDataUnavailableException) {
                 throw new LoreDataUnavailableException(
-                        "The One API data load failed", failure);
+                        "The One API data load failed", failure, currentRetryAt());
             }
 
             if (failure instanceof RuntimeException runtimeException) {
@@ -209,6 +210,11 @@ public class LoreDataService {
 
             throw new IllegalStateException("Unexpected lore data load failure", failure);
         }
+    }
+
+    // When the cooldown started by the latest failure ends; null if there is none.
+    private synchronized Instant currentRetryAt() {
+        return lastFailureAt == null ? null : lastFailureAt.plus(failureCooldown);
     }
 
     private LoreData loadData(LoadProgress progress) {

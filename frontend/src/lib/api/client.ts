@@ -2,10 +2,15 @@ const API_URL = process.env.API_URL;
 
 export const API_TIMEOUT_MS = 15_000;
 
+// Longer waits are treated as unknown rather than shown to the user.
+const MAX_RETRY_AFTER_SECONDS = 3600;
+
 export class ApiError extends Error {
+    // retryAfterSeconds: the Retry-After wait, only when it is a usable positive delta-seconds value.
     constructor(
         message: string,
         public readonly status: number,
+        public readonly retryAfterSeconds?: number,
     ) {
         super(message);
         this.name = "ApiError";
@@ -27,6 +32,20 @@ export class ApiResponseError extends Error {
         super(`API response from ${endpoint} is invalid`);
         this.name = "ApiResponseError";
     }
+}
+
+// Retry-After may also be an HTTP date, which the backend never sends; anything
+// but a positive whole number of seconds counts as "no known wait".
+export function parseRetryAfter(value: string | null): number | undefined {
+    const trimmed = value?.trim();
+
+    if (!trimmed || !/^\d+$/.test(trimmed)) {
+        return undefined;
+    }
+
+    const seconds = Number(trimmed);
+
+    return seconds > 0 && seconds <= MAX_RETRY_AFTER_SECONDS ? seconds : undefined;
 }
 
 export type PayloadGuard<T> = (payload: unknown) => payload is T;
@@ -89,6 +108,7 @@ export async function apiFetch<T>(
             throw new ApiError(
                 `API request failed with status ${response.status}`,
                 response.status,
+                parseRetryAfter(response.headers.get("Retry-After")),
             );
         }
 
