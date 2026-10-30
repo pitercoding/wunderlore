@@ -9,7 +9,9 @@ import ch.qos.logback.classic.spi.ILoggingEvent;
 import jakarta.servlet.ServletException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -22,6 +24,7 @@ import org.springframework.web.client.RestClientException;
 
 import java.net.http.HttpTimeoutException;
 import java.nio.charset.StandardCharsets;
+import java.time.Clock;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -41,6 +44,17 @@ class ExternalBookControllerTest {
     private static final String UNAVAILABLE_DETAIL = "Unable to load books right now";
 
     private static final String UPSTREAM_URL = "https://the-one-api.dev/v2/book";
+
+    // LoreUnavailableAdvice is part of every web slice and needs a Clock; it must
+    // not apply here.
+    @TestConfiguration
+    static class ClockConfiguration {
+
+        @Bean
+        Clock clock() {
+            return Clock.systemUTC();
+        }
+    }
 
     @Autowired
     private MockMvc mockMvc;
@@ -124,7 +138,8 @@ class ExternalBookControllerTest {
         when(theOneApiClient.getBooks()).thenThrow(new IllegalStateException("bug"));
 
         try (LogCapture logs = LogCapture.of(ExternalBookController.class)) {
-            // Unhandled here, so it reaches the default error handling (HTTP 500) instead of a 503.
+            // Unhandled here, so it reaches the default error handling (HTTP 500) instead
+            // of a 503.
             assertThatThrownBy(() -> mockMvc.perform(get("/api/catalog/books")))
                     .isInstanceOf(ServletException.class)
                     .hasRootCauseInstanceOf(IllegalStateException.class);
@@ -141,7 +156,8 @@ class ExternalBookControllerTest {
             mockMvc.perform(get("/api/catalog/books"))
                     .andExpect(status().isServiceUnavailable());
 
-            // Books bypass LoreDataService, so the handler is the only place this is logged.
+            // Books bypass LoreDataService, so the handler is the only place this is
+            // logged.
             assertThat(logs.events()).singleElement()
                     .satisfies(event -> {
                         assertThat(event.getLevel()).isEqualTo(Level.WARN);
