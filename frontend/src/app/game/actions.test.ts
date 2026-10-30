@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { ApiError, ApiResponseError } from "@/lib/api/client";
+import { ApiError, ApiResponseError, ApiTimeoutError } from "@/lib/api/client";
 import { submitAnswer } from "@/lib/api/game";
 import { submitGameAnswer } from "./actions";
 
@@ -37,17 +37,18 @@ describe("submitGameAnswer", () => {
     });
 
     it.each([
-        [400, "Invalid answer. Please try again."],
-        [404, "This round has expired. Start a new round."],
-        [409, "This round has already been answered."],
-        [503, "The game is temporarily unavailable. Please try again."],
-    ])("maps HTTP status %i to a user message", async (status, message) => {
+        [400, "invalid", "That isn't a valid option for this round."],
+        [404, "terminal", "This round has expired or is no longer available."],
+        [409, "terminal", "This round has already been answered."],
+        [503, "temporary", "The game is temporarily unavailable. Please try again."],
+    ])("maps HTTP status %i to a failure kind and a user message", async (status, kind, message) => {
         submitAnswerMock.mockRejectedValue(
             new ApiError(`API request failed with status ${status}`, status),
         );
 
         await expect(submitGameAnswer("round-1", "c1")).resolves.toEqual({
             ok: false,
+            kind,
             message,
         });
         expect(console.error).not.toHaveBeenCalled();
@@ -58,6 +59,7 @@ describe("submitGameAnswer", () => {
 
         await expect(submitGameAnswer("round-1", "c1")).resolves.toEqual({
             ok: false,
+            kind: "terminal",
             message: "This round has already been answered.",
         });
     });
@@ -67,14 +69,16 @@ describe("submitGameAnswer", () => {
         ["a validation error", new Error("roundId must be a non-empty string")],
         ["an invalid payload", new ApiResponseError("/api/game/answer")],
         ["a network error", new TypeError("fetch failed")],
+        ["a timeout", new ApiTimeoutError(15_000)],
         ["a non-numeric status", { status: "404" }],
         ["a thrown string", "unexpected"],
         ["null", null],
-    ])("returns a generic message and logs %s", async (_, error) => {
+    ])("treats %s as temporary, with a generic message and a log", async (_, error) => {
         submitAnswerMock.mockRejectedValue(error);
 
         await expect(submitGameAnswer("", "c1")).resolves.toEqual({
             ok: false,
+            kind: "temporary",
             message: "Something went wrong. Please try again.",
         });
         expect(console.error).toHaveBeenCalledWith(

@@ -197,13 +197,13 @@ describe("GameContent", () => {
         expect(submitGameAnswerMock).toHaveBeenCalledTimes(1);
     });
 
-    it("shows the action's error message and lets the player retry", async () => {
+    it.each([
+        ["invalid", "That isn't a valid option for this round."],
+        ["temporary", "The game is temporarily unavailable. Please try again."],
+    ] as const)("keeps the round open after a %s failure", async (kind, message) => {
         const user = userEvent.setup();
         submitGameAnswerMock
-            .mockResolvedValueOnce({
-                ok: false,
-                message: "Invalid answer. Please try again.",
-            })
+            .mockResolvedValueOnce({ ok: false, kind, message })
             .mockResolvedValueOnce({
                 ok: true,
                 result: {
@@ -217,12 +217,13 @@ describe("GameContent", () => {
 
         await user.click(screen.getByRole("button", { name: "Aragorn" }));
 
-        expect(await screen.findByRole("alert")).toHaveTextContent(
-            "Invalid answer. Please try again.",
-        );
+        expect(await screen.findByRole("alert")).toHaveTextContent(message);
         expect(
-            screen.getByText("Start a new round to continue playing."),
+            screen.getByText("Choose an option again, or start a new round."),
         ).toBeInTheDocument();
+        expect(
+            screen.queryByText("Start a new round to continue playing."),
+        ).not.toBeInTheDocument();
         expect(
             screen.getByRole("button", { name: "Play another round" }),
         ).toBeEnabled();
@@ -250,9 +251,88 @@ describe("GameContent", () => {
             "Something went wrong. Please try again.",
         );
         expect(screen.queryByRole("status")).not.toBeInTheDocument();
+        expect(
+            screen.getByText("Choose an option again, or start a new round."),
+        ).toBeInTheDocument();
         for (const button of answerButtons()) {
             expect(button).toBeEnabled();
         }
+    });
+
+    it.each([
+        ["expired", "This round has expired or is no longer available."],
+        ["already answered", "This round has already been answered."],
+    ])("locks the options when the round is %s", async (_, message) => {
+        const user = userEvent.setup();
+        submitGameAnswerMock.mockResolvedValue({
+            ok: false,
+            kind: "terminal",
+            message,
+        });
+        render(<GameContent round={round} />);
+
+        await user.click(screen.getByRole("button", { name: "Aragorn" }));
+
+        expect(await screen.findByRole("alert")).toHaveTextContent(message);
+        expect(
+            screen.getByText("Start a new round to continue playing."),
+        ).toBeInTheDocument();
+        expect(
+            screen.queryByText("Choose an option again, or start a new round."),
+        ).not.toBeInTheDocument();
+        expect(screen.queryByText(/try again/i)).not.toBeInTheDocument();
+        expect(
+            screen.getByRole("button", { name: "Play another round" }),
+        ).toBeEnabled();
+        for (const button of answerButtons()) {
+            expect(button).toBeDisabled();
+        }
+
+        await user.click(screen.getByRole("button", { name: "Boromir" }));
+
+        expect(submitGameAnswerMock).toHaveBeenCalledTimes(1);
+    });
+
+    it("starts a playable new round from a terminal failure", async () => {
+        const user = userEvent.setup();
+        submitGameAnswerMock.mockResolvedValue({
+            ok: false,
+            kind: "terminal",
+            message: "This round has expired or is no longer available.",
+        });
+        const { rerender } = render(<GameContent key={round.roundId} round={round} />);
+
+        await user.click(screen.getByRole("button", { name: "Aragorn" }));
+        await user.click(
+            await screen.findByRole("button", { name: "Play another round" }),
+        );
+
+        expect(refresh).toHaveBeenCalledTimes(1);
+        expect(screen.getByRole("button", { name: "Loading..." })).toBeDisabled();
+
+        // The page keys GameContent by round, so the refreshed round remounts it.
+        rerender(<GameContent key="round-2" round={{ ...round, roundId: "round-2" }} />);
+
+        expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+        for (const button of answerButtons()) {
+            expect(button).toBeEnabled();
+        }
+
+        submitGameAnswerMock.mockResolvedValue({
+            ok: true,
+            result: {
+                roundId: "round-2",
+                submittedCharacterId: "c1",
+                correct: true,
+                correctCharacterId: "c1",
+            },
+        });
+        await user.click(screen.getByRole("button", { name: "Boromir" }));
+
+        expect(submitGameAnswerMock).toHaveBeenLastCalledWith("round-2", "c1");
+        expect(
+            await screen.findByRole("heading", { name: "Correct!" }),
+        ).toBeInTheDocument();
     });
 
     it("refreshes the route to load a new round", async () => {

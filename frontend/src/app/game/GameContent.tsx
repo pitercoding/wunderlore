@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { GameRound, AnswerResult } from "@/lib/api/game";
-import { submitGameAnswer } from "./actions";
+import { submitGameAnswer, type GameAnswerFailure } from "./actions";
 import styles from "./page.module.css";
 
 interface GameContentProps {
@@ -17,15 +17,17 @@ export default function GameContent({ round }: GameContentProps) {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [result, setResult] = useState<AnswerResult | null>(null);
-    const [errorMessage, setErrorMessage] = useState<string | null>(null);
+    const [failure, setFailure] = useState<GameAnswerFailure | null>(null);
+
+    const isRoundOver = !!result || failure?.kind === "terminal";
 
     async function handleAnswer(characterId: string) {
-        if (isSubmitting || result) {
+        if (isSubmitting || isRoundOver) {
             return;
         }
 
         setIsSubmitting(true);
-        setErrorMessage(null);
+        setFailure(null);
 
         try {
             const response = await submitGameAnswer(
@@ -34,13 +36,17 @@ export default function GameContent({ round }: GameContentProps) {
             );
 
             if (!response.ok) {
-                setErrorMessage(response.message);
+                setFailure(response);
                 return;
             }
 
             setResult(response.result);
         } catch {
-            setErrorMessage("Something went wrong. Please try again.");
+            setFailure({
+                ok: false,
+                kind: "temporary",
+                message: "Something went wrong. Please try again.",
+            });
         } finally {
             setIsSubmitting(false);
         }
@@ -89,7 +95,7 @@ export default function GameContent({ round }: GameContentProps) {
                                 type="button"
                                 className={optionClass}
                                 onClick={() => handleAnswer(option.id)}
-                                disabled={isSubmitting || !!result || isRefreshing}
+                                disabled={isSubmitting || isRoundOver || isRefreshing}
                             >
                                 {option.name}
                             </button>
@@ -103,14 +109,14 @@ export default function GameContent({ round }: GameContentProps) {
                     </p>
                 )}
 
-                {errorMessage && (
+                {failure && (
                     <p role="alert" className={styles.error}>
-                        {errorMessage}
+                        {failure.message}
                     </p>
                 )}
 
 
-                {(result || errorMessage) && (
+                {(result || failure) && (
                     <div className={styles.result} aria-live="polite">
                         {result ? (
                             <>
@@ -126,7 +132,11 @@ export default function GameContent({ round }: GameContentProps) {
                                 </p>
                             </>
                         ) : (
-                            <p>Start a new round to continue playing.</p>
+                            <p>
+                                {isRoundOver
+                                    ? "Start a new round to continue playing."
+                                    : "Choose an option again, or start a new round."}
+                            </p>
                         )}
 
                         <button
