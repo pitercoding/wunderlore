@@ -1,6 +1,7 @@
 import { render, screen, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { redirect } from "next/navigation";
+import { connection } from "next/server";
 import { ApiError } from "@/lib/api/client";
 import { getQuotes, type QuotePage } from "@/lib/api/quotes";
 import QuotesContent from "./QuotesContent";
@@ -12,10 +13,15 @@ vi.mock("next/navigation", () => ({
     }),
 }));
 
+vi.mock("next/server", () => ({
+    connection: vi.fn(),
+}));
+
 vi.mock("@/lib/api/quotes", () => ({
     getQuotes: vi.fn(),
 }));
 
+const connectionMock = vi.mocked(connection);
 const getQuotesMock = vi.mocked(getQuotes);
 const redirectMock = vi.mocked(redirect);
 
@@ -59,6 +65,7 @@ function pagination() {
 }
 
 beforeEach(() => {
+    connectionMock.mockResolvedValue(undefined);
     vi.spyOn(console, "error").mockImplementation(() => {});
 });
 
@@ -68,6 +75,28 @@ afterEach(() => {
 });
 
 describe("QuotesContent", () => {
+    it("waits for a request before fetching the quotes", async () => {
+        let connectionReady!: () => void;
+        connectionMock.mockReturnValue(
+            new Promise<void>((resolve) => {
+                connectionReady = resolve;
+            }),
+        );
+        getQuotesMock.mockResolvedValue(quotePage());
+
+        const rendered = renderQuotes();
+        // Let every pending microtask and timer run while connection() is unresolved.
+        await new Promise((resolve) => setTimeout(resolve));
+
+        expect(connectionMock).toHaveBeenCalledTimes(1);
+        expect(getQuotesMock).not.toHaveBeenCalled();
+
+        connectionReady();
+        await rendered;
+
+        expect(getQuotesMock).toHaveBeenCalledTimes(1);
+    });
+
     it.each([
         ["missing", undefined],
         ["empty", ""],

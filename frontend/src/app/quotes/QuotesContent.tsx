@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { connection } from "next/server";
 import { getQuotes } from "@/lib/api/quotes";
 import styles from "./page.module.css";
 
@@ -12,6 +13,9 @@ interface QuotesPageProps {
 export default async function QuotesContent({
     searchParams,
 }: QuotesPageProps) {
+    // Defer to request time so prerendering never starts the quotes fetch.
+    await connection();
+
     const params = await searchParams;
     const requestedPage = Number(params.page ?? "1");
 
