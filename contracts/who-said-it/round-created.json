@@ -1,0 +1,10 @@
+{
+  "roundId": "3f2b8c1e-5a47-4d0e-9c36-7b1e2a9d4f60",
+  "quote": "Fly, you fools!",
+  "options": [
+    { "id": "5cd99d4bde30eff6ebccfea0", "name": "Gandalf" },
+    { "id": "5cd99d4bde30eff6ebccfc15", "name": "Frodo Baggins" },
+    { "id": "5cd99d4bde30eff6ebccfd23", "name": "Samwise Gamgee" },
+    { "id": "5cd99d4bde30eff6ebccfd81", "name": "Aragorn II Elessar" }
+  ]
+}
