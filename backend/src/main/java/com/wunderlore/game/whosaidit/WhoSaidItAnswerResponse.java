@@ -1,6 +1,6 @@
-package com.wunderlore.game;
+package com.wunderlore.game.whosaidit;
 
-public record AnswerResponse(
+public record WhoSaidItAnswerResponse(
         String roundId,
         String submittedCharacterId,
         boolean correct,

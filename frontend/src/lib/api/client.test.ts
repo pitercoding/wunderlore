@@ -65,10 +65,10 @@ describe("apiFetch", () => {
         const { apiFetch } = await loadClient(baseUrl);
         fetchMock.mockResolvedValue(jsonResponse({}));
 
-        await apiFetch("/api/game/round", acceptAny);
+        await apiFetch("/api/games/who-said-it/rounds", acceptAny);
 
         expect(fetchMock).toHaveBeenCalledWith(
-            "http://api.test/api/game/round",
+            "http://api.test/api/games/who-said-it/rounds",
             expect.any(Object),
         );
     });
@@ -89,7 +89,7 @@ describe("apiFetch", () => {
         const { apiFetch } = await loadClient("http://api.test");
         fetchMock.mockResolvedValue(jsonResponse({}));
 
-        await apiFetch("/api/game/round", acceptAny);
+        await apiFetch("/api/games/who-said-it/rounds", acceptAny);
 
         expect(fetchMock).toHaveBeenCalledWith(expect.any(String), {
             headers: { Accept: "application/json" },
@@ -102,7 +102,7 @@ describe("apiFetch", () => {
         const { apiFetch } = await loadClient("http://api.test");
         fetchMock.mockResolvedValue(jsonResponse({}));
 
-        await apiFetch("/api/game/answer", acceptAny, {
+        await apiFetch("/api/games/who-said-it/rounds/round-1/answer", acceptAny, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: '{"a":1}',
@@ -141,7 +141,7 @@ describe("apiFetch", () => {
         const body = { roundId: "r1", quote: "Hello", options: [] };
         fetchMock.mockResolvedValue(jsonResponse(body));
 
-        await expect(apiFetch("/api/game/round", acceptAny)).resolves.toEqual(body);
+        await expect(apiFetch("/api/games/who-said-it/rounds", acceptAny)).resolves.toEqual(body);
     });
 
     it.each([400, 404, 409, 500, 503])(

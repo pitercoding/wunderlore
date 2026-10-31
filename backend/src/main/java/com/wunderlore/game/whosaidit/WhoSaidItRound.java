@@ -1,8 +1,8 @@
-package com.wunderlore.game;
+package com.wunderlore.game.whosaidit;
 
 import java.util.List;
 
-public record GameRound(
+public record WhoSaidItRound(
         String quote,
         List<CharacterOption> options,
         String correctCharacterId) {

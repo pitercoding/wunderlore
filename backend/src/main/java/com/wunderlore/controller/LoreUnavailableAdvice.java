@@ -1,6 +1,7 @@
 package com.wunderlore.controller;
 
 import com.wunderlore.client.theone.TheOneApiNotConfiguredException;
+import com.wunderlore.game.whosaidit.WhoSaidItController;
 import com.wunderlore.lore.LoreDataUnavailableException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,10 +22,10 @@ import java.time.Clock;
 // that raised the exception. Logging stays on that controller's logger, at DEBUG: upstream
 // failures are already logged at WARN by LoreDataService, and only the exception class is
 // written, since RestClient messages can embed URLs and response bodies.
-@RestControllerAdvice(assignableTypes = { GameController.class, ExternalQuoteController.class })
+@RestControllerAdvice(assignableTypes = { WhoSaidItController.class, ExternalQuoteController.class })
 class LoreUnavailableAdvice {
 
-    private static final Logger GAME_LOG = LoggerFactory.getLogger(GameController.class);
+    private static final Logger GAME_LOG = LoggerFactory.getLogger(WhoSaidItController.class);
     private static final Logger CATALOG_LOG = LoggerFactory.getLogger(ExternalQuoteController.class);
 
     private final Clock clock;
@@ -57,9 +58,9 @@ class LoreUnavailableAdvice {
     }
 
     private static Source sourceOf(HandlerMethod handler) {
-        if (GameController.class.isAssignableFrom(handler.getBeanType())) {
+        if (WhoSaidItController.class.isAssignableFrom(handler.getBeanType())) {
             return new Source(
-                    GAME_LOG, "Game round generation failed", GameController.ROUND_UNAVAILABLE_DETAIL);
+                    GAME_LOG, "Game round generation failed", WhoSaidItController.ROUND_UNAVAILABLE_DETAIL);
         }
 
         return new Source(

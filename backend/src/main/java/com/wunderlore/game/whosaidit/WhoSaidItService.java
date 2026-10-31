@@ -1,4 +1,4 @@
-package com.wunderlore.game;
+package com.wunderlore.game.whosaidit;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -26,13 +26,13 @@ public class WhoSaidItService {
         this.random = random;
     }
 
-    public GameRound generateRound() {
+    public WhoSaidItRound generateRound() {
         LoreData loreData = loreDataService.getData();
 
         List<LoreQuote> quotes = loreData.attributedQuotes();
 
         if (quotes.isEmpty()) {
-            throw new InsufficientGameDataException(
+            throw new WhoSaidItInsufficientDataException(
                     "No valid quotes available to start the game");
         }
 
@@ -52,29 +52,29 @@ public class WhoSaidItService {
         }
 
         if (wrongCharacters.size() < 3) {
-            throw new InsufficientGameDataException(
+            throw new WhoSaidItInsufficientDataException(
                     "At least four distinct characters are required to play");
         }
 
         shuffle(wrongCharacters);
 
-        List<GameRound.CharacterOption> options = new ArrayList<>();
+        List<WhoSaidItRound.CharacterOption> options = new ArrayList<>();
 
-        options.add(new GameRound.CharacterOption(
+        options.add(new WhoSaidItRound.CharacterOption(
                 correctCharacter.id(),
                 correctCharacter.name()));
 
         for (int i = 0; i < 3; i++) {
             LoreCharacter character = wrongCharacters.get(i);
 
-            options.add(new GameRound.CharacterOption(
+            options.add(new WhoSaidItRound.CharacterOption(
                     character.id(),
                     character.name()));
         }
 
         shuffle(options);
 
-        return new GameRound(
+        return new WhoSaidItRound(
                 selectedQuote.dialog(),
                 List.copyOf(options),
                 correctCharacter.id());

@@ -1,10 +1,10 @@
-package com.wunderlore.game;
+package com.wunderlore.game.whosaidit;
 
 // Used when the loaded lore data cannot form a valid round (no attributed quotes or fewer than
 // four distinct characters). The controller will respond with 503 Service Unavailable.
-public class InsufficientGameDataException extends RuntimeException {
+public class WhoSaidItInsufficientDataException extends RuntimeException {
 
-    public InsufficientGameDataException(String message) {
+    public WhoSaidItInsufficientDataException(String message) {
         super(message);
     }
 }

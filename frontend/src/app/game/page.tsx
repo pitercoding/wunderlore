@@ -1,13 +1,13 @@
 import Link from "next/link";
 import { connection } from "next/server";
 import { Suspense } from "react";
-import { getRound } from "@/lib/api/game";
+import { createRound } from "@/lib/api/whoSaidIt";
 import { unavailableMessage } from "@/lib/api/unavailable";
 import RetryButton from "../RetryButton";
-import GameContent from "./GameContent";
+import WhoSaidItContent from "./WhoSaidItContent";
 import styles from "./page.module.css";
 
-function GameFallback() {
+function WhoSaidItFallback() {
     return (
         <main className={styles.container}>
             <p role="status">Loading a new round...</p>
@@ -15,18 +15,18 @@ function GameFallback() {
     );
 }
 
-async function GameLoader() {
+async function WhoSaidItLoader() {
     // Defer to request time so prerendering never starts the round fetch.
     await connection();
 
-    const result = await getRound().then(
+    const result = await createRound().then(
         (round) => ({ ok: true as const, round }),
         (error) => ({ ok: false as const, error }),
     );
 
     if (!result.ok) {
         const { error } = result;
-        console.error("Failed to load game round", error);
+        console.error("Failed to load Who Said It round", error);
 
         return (
             <main className={styles.container}>
@@ -45,13 +45,13 @@ async function GameLoader() {
         );
     }
 
-    return <GameContent key={result.round.roundId} round={result.round} />;
+    return <WhoSaidItContent key={result.round.roundId} round={result.round} />;
 }
 
-export default function GamePage() {
+export default function WhoSaidItPage() {
     return (
-        <Suspense fallback={<GameFallback />}>
-            <GameLoader />
+        <Suspense fallback={<WhoSaidItFallback />}>
+            <WhoSaidItLoader />
         </Suspense>
     );
 }

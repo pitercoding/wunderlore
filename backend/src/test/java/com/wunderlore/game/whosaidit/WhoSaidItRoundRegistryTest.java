@@ -1,4 +1,4 @@
-package com.wunderlore.game;
+package com.wunderlore.game.whosaidit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -25,24 +25,24 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-class GameRoundRegistryTest {
+class WhoSaidItRoundRegistryTest {
 
     private MutableClock clock;
-    private GameRoundRegistry registry;
+    private WhoSaidItRoundRegistry registry;
 
-    private final GameRound round = new GameRound(
+    private final WhoSaidItRound round = new WhoSaidItRound(
             "A quote",
             List.of(
-                    new GameRound.CharacterOption("1", "Frodo"),
-                    new GameRound.CharacterOption("2", "Gandalf"),
-                    new GameRound.CharacterOption("3", "Aragorn"),
-                    new GameRound.CharacterOption("4", "Legolas")),
+                    new WhoSaidItRound.CharacterOption("1", "Frodo"),
+                    new WhoSaidItRound.CharacterOption("2", "Gandalf"),
+                    new WhoSaidItRound.CharacterOption("3", "Aragorn"),
+                    new WhoSaidItRound.CharacterOption("4", "Legolas")),
             "2");
 
     @BeforeEach
     void setUp() {
         clock = new MutableClock(Instant.parse("2026-01-01T12:00:00Z"));
-        registry = new GameRoundRegistry(clock, Duration.ofMinutes(10), 2);
+        registry = new WhoSaidItRoundRegistry(clock, Duration.ofMinutes(10), 2);
     }
 
     @Test
@@ -58,8 +58,7 @@ class GameRoundRegistryTest {
     void answerShouldReturnCorrectResultWhenAnswerIsCorrect() {
         String roundId = registry.register(round);
 
-        AnswerResponse response = registry.answer(
-                new AnswerRequest(roundId, "2"));
+        WhoSaidItAnswerResponse response = registry.answer(roundId, "2");
 
         assertEquals(roundId, response.roundId());
         assertEquals("2", response.submittedCharacterId());
@@ -71,8 +70,7 @@ class GameRoundRegistryTest {
     void answerShouldReturnFalseWhenAnswerIsWrong() {
         String roundId = registry.register(round);
 
-        AnswerResponse response = registry.answer(
-                new AnswerRequest(roundId, "1"));
+        WhoSaidItAnswerResponse response = registry.answer(roundId, "1");
 
         assertFalse(response.correct());
         assertEquals("2", response.correctCharacterId());
@@ -81,8 +79,8 @@ class GameRoundRegistryTest {
     @Test
     void answerShouldRejectUnknownRound() {
         assertThrows(
-                RoundNotFoundException.class,
-                () -> registry.answer(new AnswerRequest("unknown", "2")));
+                WhoSaidItRoundNotFoundException.class,
+                () -> registry.answer("unknown", "2"));
     }
 
     @Test
@@ -90,11 +88,10 @@ class GameRoundRegistryTest {
         String roundId = registry.register(round);
 
         assertThrows(
-                InvalidCharacterOptionException.class,
-                () -> registry.answer(new AnswerRequest(roundId, "999")));
+                WhoSaidItInvalidCharacterOptionException.class,
+                () -> registry.answer(roundId, "999"));
 
-        AnswerResponse response = registry.answer(
-                new AnswerRequest(roundId, "2"));
+        WhoSaidItAnswerResponse response = registry.answer(roundId, "2");
 
         assertTrue(response.correct());
     }
@@ -103,11 +100,11 @@ class GameRoundRegistryTest {
     void answerShouldRejectSecondValidAttempt() {
         String roundId = registry.register(round);
 
-        registry.answer(new AnswerRequest(roundId, "1"));
+        registry.answer(roundId, "1");
 
         assertThrows(
-                RoundAlreadyAnsweredException.class,
-                () -> registry.answer(new AnswerRequest(roundId, "2")));
+                WhoSaidItRoundAlreadyAnsweredException.class,
+                () -> registry.answer(roundId, "2"));
     }
 
     @Test
@@ -117,8 +114,8 @@ class GameRoundRegistryTest {
         clock.advance(Duration.ofMinutes(10));
 
         assertThrows(
-                RoundNotFoundException.class,
-                () -> registry.answer(new AnswerRequest(roundId, "2")));
+                WhoSaidItRoundNotFoundException.class,
+                () -> registry.answer(roundId, "2"));
     }
 
     @Test
@@ -127,13 +124,12 @@ class GameRoundRegistryTest {
 
         clock.advance(Duration.ofMinutes(10).minusNanos(1));
 
-        assertTrue(registry.answer(
-                new AnswerRequest(roundId, "2")).correct());
+        assertTrue(registry.answer(roundId, "2").correct());
     }
 
     @Test
     void registerShouldRejectRoundWhenCorrectCharacterIsNotAnOption() {
-        GameRound invalidRound = new GameRound(
+        WhoSaidItRound invalidRound = new WhoSaidItRound(
                 round.quote(),
                 round.options(),
                 "999");
@@ -147,18 +143,18 @@ class GameRoundRegistryTest {
     void constructorShouldRejectNonPositiveTtl() {
         assertThrows(
                 IllegalArgumentException.class,
-                () -> new GameRoundRegistry(clock, Duration.ZERO, 2));
+                () -> new WhoSaidItRoundRegistry(clock, Duration.ZERO, 2));
 
         assertThrows(
                 IllegalArgumentException.class,
-                () -> new GameRoundRegistry(clock, Duration.ofMinutes(-1), 2));
+                () -> new WhoSaidItRoundRegistry(clock, Duration.ofMinutes(-1), 2));
     }
 
     @Test
     void constructorShouldRejectMaxActiveRoundsBelowOne() {
         assertThrows(
                 IllegalArgumentException.class,
-                () -> new GameRoundRegistry(clock, Duration.ofMinutes(10), 0));
+                () -> new WhoSaidItRoundRegistry(clock, Duration.ofMinutes(10), 0));
     }
 
     @Test
@@ -167,15 +163,13 @@ class GameRoundRegistryTest {
         String secondId = registry.register(round);
 
         assertThrows(
-                RoundCapacityExceededException.class,
+                WhoSaidItRoundCapacityExceededException.class,
                 () -> registry.register(round));
 
         // As rodadas que já existiam continuam respondíveis.
-        assertTrue(registry.answer(
-                new AnswerRequest(firstId, "2")).correct());
+        assertTrue(registry.answer(firstId, "2").correct());
 
-        assertTrue(registry.answer(
-                new AnswerRequest(secondId, "2")).correct());
+        assertTrue(registry.answer(secondId, "2").correct());
     }
 
     @Test
@@ -189,11 +183,10 @@ class GameRoundRegistryTest {
         String newId = registry.register(round);
 
         assertThrows(
-                RoundNotFoundException.class,
-                () -> registry.answer(new AnswerRequest(firstId, "2")));
+                WhoSaidItRoundNotFoundException.class,
+                () -> registry.answer(firstId, "2"));
 
-        assertTrue(registry.answer(
-                new AnswerRequest(newId, "2")).correct());
+        assertTrue(registry.answer(newId, "2").correct());
     }
 
     @Test
@@ -222,10 +215,10 @@ class GameRoundRegistryTest {
                                     "Timed out waiting for concurrent start");
                         }
 
-                        registry.answer(new AnswerRequest(roundId, "2"));
+                        registry.answer(roundId, "2");
                         accepted.incrementAndGet();
 
-                    } catch (RoundAlreadyAnsweredException exception) {
+                    } catch (WhoSaidItRoundAlreadyAnsweredException exception) {
                         alreadyAnswered.incrementAndGet();
 
                     } catch (InterruptedException exception) {
@@ -259,47 +252,47 @@ class GameRoundRegistryTest {
     void answeredRoundShouldStillCountTowardCapacity() {
         String firstId = registry.register(round);
 
-        registry.answer(new AnswerRequest(firstId, "2"));
+        registry.answer(firstId, "2");
         registry.register(round);
 
         // Responder não libera a vaga antes do TTL.
         assertThrows(
-                RoundCapacityExceededException.class,
+                WhoSaidItRoundCapacityExceededException.class,
                 () -> registry.register(round));
     }
 
     @Test
     void answeredRoundShouldBeNotFoundAfterExpirationAndFreeCapacity() {
         String answeredId = registry.register(round);
-        registry.answer(new AnswerRequest(answeredId, "2"));
+        registry.answer(answeredId, "2");
         registry.register(round);
 
         clock.advance(Duration.ofMinutes(10));
 
         // Após o TTL, a rodada respondida é tratada como expirada, não como já respondida.
         assertThrows(
-                RoundNotFoundException.class,
-                () -> registry.answer(new AnswerRequest(answeredId, "2")));
+                WhoSaidItRoundNotFoundException.class,
+                () -> registry.answer(answeredId, "2"));
 
         // A limpeza no registro libera as duas vagas ocupadas.
         registry.register(round);
         registry.register(round);
 
         assertThrows(
-                RoundNotFoundException.class,
-                () -> registry.answer(new AnswerRequest(answeredId, "2")));
+                WhoSaidItRoundNotFoundException.class,
+                () -> registry.answer(answeredId, "2"));
     }
 
     @Test
     void invalidCharacterAfterValidAnswerShouldBeRejectedAsInvalidOption() {
         String roundId = registry.register(round);
 
-        registry.answer(new AnswerRequest(roundId, "2"));
+        registry.answer(roundId, "2");
 
         // A validação das opções acontece antes da verificação de resposta duplicada.
         assertThrows(
-                InvalidCharacterOptionException.class,
-                () -> registry.answer(new AnswerRequest(roundId, "999")));
+                WhoSaidItInvalidCharacterOptionException.class,
+                () -> registry.answer(roundId, "999"));
     }
 
     @Test
@@ -307,7 +300,7 @@ class GameRoundRegistryTest {
         int maxActiveRounds = 5;
         int numberOfThreads = 20;
 
-        GameRoundRegistry limitedRegistry = new GameRoundRegistry(
+        WhoSaidItRoundRegistry limitedRegistry = new WhoSaidItRoundRegistry(
                 clock, Duration.ofMinutes(10), maxActiveRounds);
 
         Set<String> registeredIds = ConcurrentHashMap.newKeySet();
@@ -316,13 +309,13 @@ class GameRoundRegistryTest {
         var tasks = new ArrayList<Runnable>();
 
         for (int i = 0; i < numberOfThreads; i++) {
-            GameRound distinctRound = new GameRound(
+            WhoSaidItRound distinctRound = new WhoSaidItRound(
                     "Quote " + i, round.options(), round.correctCharacterId());
 
             tasks.add(() -> {
                 try {
                     registeredIds.add(limitedRegistry.register(distinctRound));
-                } catch (RoundCapacityExceededException exception) {
+                } catch (WhoSaidItRoundCapacityExceededException exception) {
                     rejected.incrementAndGet();
                 }
             });
@@ -334,8 +327,7 @@ class GameRoundRegistryTest {
         assertEquals(numberOfThreads - maxActiveRounds, rejected.get());
 
         for (String roundId : registeredIds) {
-            assertTrue(limitedRegistry.answer(
-                    new AnswerRequest(roundId, "2")).correct());
+            assertTrue(limitedRegistry.answer(roundId, "2").correct());
         }
     }
 
@@ -355,13 +347,13 @@ class GameRoundRegistryTest {
         for (int i = 0; i < numberOfAnswerThreads; i++) {
             tasks.add(() -> {
                 try {
-                    registry.answer(new AnswerRequest(roundId, "2"));
+                    registry.answer(roundId, "2");
                     accepted.incrementAndGet();
 
-                } catch (RoundAlreadyAnsweredException exception) {
+                } catch (WhoSaidItRoundAlreadyAnsweredException exception) {
                     alreadyAnswered.incrementAndGet();
 
-                } catch (RoundNotFoundException exception) {
+                } catch (WhoSaidItRoundNotFoundException exception) {
                     notFound.incrementAndGet();
                 }
             });
@@ -386,11 +378,10 @@ class GameRoundRegistryTest {
         }
 
         assertThrows(
-                RoundNotFoundException.class,
-                () -> registry.answer(new AnswerRequest(roundId, "2")));
+                WhoSaidItRoundNotFoundException.class,
+                () -> registry.answer(roundId, "2"));
 
-        assertTrue(registry.answer(
-                new AnswerRequest(newRoundId.get(), "2")).correct());
+        assertTrue(registry.answer(newRoundId.get(), "2").correct());
     }
 
     // Libera todas as tarefas ao mesmo tempo; exceções não tratadas falham o teste via Future.get.

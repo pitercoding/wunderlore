@@ -3,21 +3,21 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import type { GameRound, AnswerResult } from "@/lib/api/game";
-import { submitGameAnswer, type GameAnswerFailure } from "./actions";
+import type { WhoSaidItRound, WhoSaidItAnswerResult } from "@/lib/api/whoSaidIt";
+import { submitWhoSaidItAnswer, type WhoSaidItAnswerFailure } from "./actions";
 import styles from "./page.module.css";
 
 interface GameContentProps {
-    round: GameRound;
+    round: WhoSaidItRound;
 }
 
-export default function GameContent({ round }: GameContentProps) {
+export default function WhoSaidItContent({ round }: GameContentProps) {
     const router = useRouter();
 
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isRefreshing, setIsRefreshing] = useState(false);
-    const [result, setResult] = useState<AnswerResult | null>(null);
-    const [failure, setFailure] = useState<GameAnswerFailure | null>(null);
+    const [result, setResult] = useState<WhoSaidItAnswerResult | null>(null);
+    const [failure, setFailure] = useState<WhoSaidItAnswerFailure | null>(null);
 
     const isRoundOver = !!result || failure?.kind === "terminal";
 
@@ -30,7 +30,7 @@ export default function GameContent({ round }: GameContentProps) {
         setFailure(null);
 
         try {
-            const response = await submitGameAnswer(
+            const response = await submitWhoSaidItAnswer(
                 round.roundId,
                 characterId,
             );

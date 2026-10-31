@@ -1,25 +1,25 @@
 import { apiFetch } from "@/lib/api/client";
 import { isNonBlankString, isRecord } from "@/lib/api/guards";
 
-export interface CharacterOption {
+export interface WhoSaidItCharacterOption {
     id: string;
     name: string;
 }
 
-export interface GameRound {
+export interface WhoSaidItRound {
     roundId: string;
     quote: string;
-    options: CharacterOption[];
+    options: WhoSaidItCharacterOption[];
 }
 
-export interface AnswerResult {
+export interface WhoSaidItAnswerResult {
     roundId: string;
     submittedCharacterId: string;
     correct: boolean;
     correctCharacterId: string;
 }
 
-function isCharacterOption(value: unknown): value is CharacterOption {
+function isWhoSaidItCharacterOption(value: unknown): value is WhoSaidItCharacterOption {
     return (
         isRecord(value) &&
         isNonBlankString(value.id) &&
@@ -28,18 +28,18 @@ function isCharacterOption(value: unknown): value is CharacterOption {
 }
 
 // The number of options is not checked: only an empty list makes a round unplayable.
-function isGameRound(value: unknown): value is GameRound {
+function isWhoSaidItRound(value: unknown): value is WhoSaidItRound {
     return (
         isRecord(value) &&
         isNonBlankString(value.roundId) &&
         isNonBlankString(value.quote) &&
         Array.isArray(value.options) &&
         value.options.length > 0 &&
-        value.options.every(isCharacterOption)
+        value.options.every(isWhoSaidItCharacterOption)
     );
 }
 
-function isAnswerResult(value: unknown): value is AnswerResult {
+function isWhoSaidItAnswerResult(value: unknown): value is WhoSaidItAnswerResult {
     return (
         isRecord(value) &&
         isNonBlankString(value.roundId) &&
@@ -49,14 +49,17 @@ function isAnswerResult(value: unknown): value is AnswerResult {
     );
 }
 
-export async function getRound(): Promise<GameRound> {
-    return apiFetch("/api/game/round", isGameRound);
+const ROUNDS_PATH = "/api/games/who-said-it/rounds";
+
+// Creates server-side state, so it is a POST even though it sends nothing.
+export async function createRound(): Promise<WhoSaidItRound> {
+    return apiFetch(ROUNDS_PATH, isWhoSaidItRound, { method: "POST" });
 }
 
 export async function submitAnswer(
     roundId: string,
     characterId: string,
-): Promise<AnswerResult> {
+): Promise<WhoSaidItAnswerResult> {
     if (!roundId.trim()) {
         throw new Error("roundId must be a non-empty string");
     }
@@ -65,9 +68,13 @@ export async function submitAnswer(
         throw new Error("characterId must be a non-empty string");
     }
 
-    return apiFetch("/api/game/answer", isAnswerResult, {
-        method: "POST",
-        headers: { "Content-Type": "application/json",},
-        body: JSON.stringify({roundId, characterId,}),
-    });
+    return apiFetch(
+        `${ROUNDS_PATH}/${encodeURIComponent(roundId)}/answer`,
+        isWhoSaidItAnswerResult,
+        {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ characterId }),
+        },
+    );
 }

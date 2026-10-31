@@ -21,7 +21,7 @@ import java.time.ZoneOffset;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 
-// The advice is limited to GameController and ExternalQuoteController. Their own tests cover
+// The advice is limited to WhoSaidItController and ExternalQuoteController. Their own tests cover
 // what it sends; this checks that a controller outside that scope never gets those responses.
 @WebMvcTest(LoreUnavailableAdviceTest.OutOfScopeController.class)
 @Import(LoreUnavailableAdviceTest.OutOfScopeController.class)

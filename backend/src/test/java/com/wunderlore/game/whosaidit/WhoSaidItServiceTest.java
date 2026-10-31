@@ -1,4 +1,4 @@
-package com.wunderlore.game;
+package com.wunderlore.game.whosaidit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -52,7 +52,7 @@ class WhoSaidItServiceTest {
                                                 "gandalf")),
                                 List.of(FRODO, SAM, GANDALF, ARAGORN, GOLLUM));
 
-                GameRound round = newService(new Random(42)).generateRound();
+                WhoSaidItRound round = newService(new Random(42)).generateRound();
 
                 assertThat(round.quote())
                                 .isEqualTo("All we have to decide is what to do with the time that is given us.");
@@ -66,10 +66,10 @@ class WhoSaidItServiceTest {
                                 List.of(quote("q1", "Po-tay-toes!", "sam")),
                                 List.of(FRODO, SAM, GANDALF, ARAGORN, GOLLUM));
 
-                GameRound round = newService(new Random(42)).generateRound();
+                WhoSaidItRound round = newService(new Random(42)).generateRound();
 
                 assertThat(round.options())
-                                .contains(new GameRound.CharacterOption("sam", "Samwise Gamgee"));
+                                .contains(new WhoSaidItRound.CharacterOption("sam", "Samwise Gamgee"));
         }
 
         @Test
@@ -81,7 +81,7 @@ class WhoSaidItServiceTest {
                 WhoSaidItService service = newService(new Random(42));
 
                 for (int i = 0; i < 20; i++) {
-                        GameRound round = service.generateRound();
+                        WhoSaidItRound round = service.generateRound();
 
                         assertThat(optionIds(round)).hasSize(4);
                 }
@@ -93,9 +93,9 @@ class WhoSaidItServiceTest {
                                 List.of(quote("q1", "I am no man.", "aragorn")),
                                 List.of(FRODO, SAM, GANDALF, ARAGORN, GOLLUM));
 
-                GameRound round = newService(new Random(42)).generateRound();
+                WhoSaidItRound round = newService(new Random(42)).generateRound();
 
-                List<GameRound.CharacterOption> wrongOptions = round.options().stream()
+                List<WhoSaidItRound.CharacterOption> wrongOptions = round.options().stream()
                                 .filter(option -> !option.id().equals(round.correctCharacterId()))
                                 .toList();
 
@@ -125,7 +125,7 @@ class WhoSaidItServiceTest {
                 WhoSaidItService service = newService(new Random(42));
 
                 for (int i = 0; i < 20; i++) {
-                        GameRound round = service.generateRound();
+                        WhoSaidItRound round = service.generateRound();
 
                         assertThat(round.quote()).isEqualTo("I will take the Ring to Mordor.");
                         assertThat(round.correctCharacterId()).isEqualTo("frodo");
@@ -143,7 +143,7 @@ class WhoSaidItServiceTest {
                 WhoSaidItService service = newService(new Random(42));
 
                 assertThatThrownBy(service::generateRound)
-                                .isInstanceOf(InsufficientGameDataException.class)
+                                .isInstanceOf(WhoSaidItInsufficientDataException.class)
                                 .hasMessage("No valid quotes available to start the game");
         }
 
@@ -156,7 +156,7 @@ class WhoSaidItServiceTest {
                 WhoSaidItService service = newService(new Random(42));
 
                 assertThatThrownBy(service::generateRound)
-                                .isInstanceOf(InsufficientGameDataException.class)
+                                .isInstanceOf(WhoSaidItInsufficientDataException.class)
                                 .hasMessage("At least four distinct characters are required to play");
         }
 
@@ -168,10 +168,10 @@ class WhoSaidItServiceTest {
 
                 WhoSaidItService service = newService(new Random(42));
 
-                // Only the known data conditions become InsufficientGameDataException.
+                // Only the known data conditions become WhoSaidItInsufficientDataException.
                 assertThatThrownBy(service::generateRound)
                                 .isSameAs(bug)
-                                .isNotInstanceOf(InsufficientGameDataException.class);
+                                .isNotInstanceOf(WhoSaidItInsufficientDataException.class);
         }
 
         @Test
@@ -204,7 +204,7 @@ class WhoSaidItServiceTest {
                 when(theOneApiClient.getCharacters(2, PAGE_SIZE))
                                 .thenReturn(characterPage(List.of(GANDALF, GOLLUM), 2, 2));
 
-                GameRound round = newService(new Random(42)).generateRound();
+                WhoSaidItRound round = newService(new Random(42)).generateRound();
 
                 // The only valid quote is on the last page and its author on the last character
                 // page
@@ -235,7 +235,7 @@ class WhoSaidItServiceTest {
                 RandomGenerator random = mock(RandomGenerator.class);
                 when(random.nextInt(anyInt())).thenReturn(1);
 
-                GameRound round = newService(random).generateRound();
+                WhoSaidItRound round = newService(random).generateRound();
 
                 assertThat(round.quote()).isEqualTo("Fly, you fools!");
                 assertThat(round.correctCharacterId()).isEqualTo("gandalf");
@@ -273,7 +273,7 @@ class WhoSaidItServiceTest {
                 assertThatThrownBy(service::generateRound)
                                 .isInstanceOf(RestClientException.class);
 
-                GameRound round = service.generateRound();
+                WhoSaidItRound round = service.generateRound();
 
                 assertThat(round.correctCharacterId()).isEqualTo("sam");
                 verify(theOneApiClient, times(2)).getQuotes(1, PAGE_SIZE);
@@ -306,9 +306,9 @@ class WhoSaidItServiceTest {
                 return new ExternalCharacterResponse(characters, characters.size(), PAGE_SIZE, null, page, pages);
         }
 
-        private static Set<String> optionIds(GameRound round) {
+        private static Set<String> optionIds(WhoSaidItRound round) {
                 return round.options().stream()
-                                .map(GameRound.CharacterOption::id)
+                                .map(WhoSaidItRound.CharacterOption::id)
                                 .collect(Collectors.toSet());
         }
 }

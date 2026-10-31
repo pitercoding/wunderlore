@@ -1,16 +1,5 @@
-package com.wunderlore.controller;
+package com.wunderlore.game.whosaidit;
 
-import com.wunderlore.game.GameRound;
-import com.wunderlore.game.GameRoundRegistry;
-import com.wunderlore.game.GameRoundResponse;
-import com.wunderlore.game.InsufficientGameDataException;
-import com.wunderlore.game.WhoSaidItService;
-import com.wunderlore.game.AnswerRequest;
-import com.wunderlore.game.AnswerResponse;
-import com.wunderlore.game.InvalidCharacterOptionException;
-import com.wunderlore.game.RoundAlreadyAnsweredException;
-import com.wunderlore.game.RoundCapacityExceededException;
-import com.wunderlore.game.RoundNotFoundException;
 
 import jakarta.validation.Valid;
 
@@ -19,53 +8,55 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/game")
-public class GameController {
+@RequestMapping("/api/games/who-said-it")
+public class WhoSaidItController {
 
-        private static final Logger log = LoggerFactory.getLogger(GameController.class);
+        private static final Logger log = LoggerFactory.getLogger(WhoSaidItController.class);
 
         // Also the detail LoreUnavailableAdvice sends for lore failures raised by this
         // controller.
-        static final String ROUND_UNAVAILABLE_DETAIL = "Unable to generate a game round right now";
+        public static final String ROUND_UNAVAILABLE_DETAIL = "Unable to generate a game round right now";
 
         private final WhoSaidItService whoSaidItService;
-        private final GameRoundRegistry gameRoundRegistry;
+        private final WhoSaidItRoundRegistry roundRegistry;
 
-        public GameController(
+        public WhoSaidItController(
                         WhoSaidItService whoSaidItService,
-                        GameRoundRegistry gameRoundRegistry) {
+                        WhoSaidItRoundRegistry roundRegistry) {
                 this.whoSaidItService = whoSaidItService;
-                this.gameRoundRegistry = gameRoundRegistry;
+                this.roundRegistry = roundRegistry;
         }
 
-        @GetMapping("/round")
-        public GameRoundResponse getRound() {
-                GameRound round = whoSaidItService.generateRound();
-                String roundId = gameRoundRegistry.register(round);
+        @PostMapping("/rounds")
+        public WhoSaidItRoundResponse createRound() {
+                WhoSaidItRound round = whoSaidItService.generateRound();
+                String roundId = roundRegistry.register(round);
 
-                return GameRoundResponse.from(roundId, round);
+                return WhoSaidItRoundResponse.from(roundId, round);
         }
 
-        @PostMapping("/answer")
-        public AnswerResponse answer(@Valid @RequestBody AnswerRequest request) {
-                return gameRoundRegistry.answer(request);
+        @PostMapping("/rounds/{roundId}/answer")
+        public WhoSaidItAnswerResponse answer(
+                        @PathVariable String roundId,
+                        @Valid @RequestBody WhoSaidItAnswerRequest request) {
+                return roundRegistry.answer(roundId, request.characterId());
         }
 
         // Lore and upstream failures are handled by LoreUnavailableAdvice; this one is
         // specific
         // to rounds: WhoSaidItService raises it when the loaded data cannot form a
         // round.
-        @ExceptionHandler(InsufficientGameDataException.class)
-        public ProblemDetail handleInsufficientGameData(InsufficientGameDataException exception) {
+        @ExceptionHandler(WhoSaidItInsufficientDataException.class)
+        public ProblemDetail handleInsufficientData(WhoSaidItInsufficientDataException exception) {
                 // Not logged anywhere else, and raised with fixed messages.
                 log.warn("Game round generation failed: {}: {}",
                                 exception.getClass().getName(), exception.getMessage());
@@ -85,33 +76,33 @@ public class GameController {
                                 "Invalid answer request");
         }
 
-        @ExceptionHandler(InvalidCharacterOptionException.class)
+        @ExceptionHandler(WhoSaidItInvalidCharacterOptionException.class)
         public ProblemDetail handleInvalidCharacterOption(
-                        InvalidCharacterOptionException exception) {
+                        WhoSaidItInvalidCharacterOptionException exception) {
                 return ProblemDetail.forStatusAndDetail(
                                 HttpStatus.BAD_REQUEST,
                                 exception.getMessage());
         }
 
-        @ExceptionHandler(RoundNotFoundException.class)
+        @ExceptionHandler(WhoSaidItRoundNotFoundException.class)
         public ProblemDetail handleRoundNotFound(
-                        RoundNotFoundException exception) {
+                        WhoSaidItRoundNotFoundException exception) {
                 return ProblemDetail.forStatusAndDetail(
                                 HttpStatus.NOT_FOUND,
                                 exception.getMessage());
         }
 
-        @ExceptionHandler(RoundAlreadyAnsweredException.class)
+        @ExceptionHandler(WhoSaidItRoundAlreadyAnsweredException.class)
         public ProblemDetail handleRoundAlreadyAnswered(
-                        RoundAlreadyAnsweredException exception) {
+                        WhoSaidItRoundAlreadyAnsweredException exception) {
                 return ProblemDetail.forStatusAndDetail(
                                 HttpStatus.CONFLICT,
                                 exception.getMessage());
         }
 
-        @ExceptionHandler(RoundCapacityExceededException.class)
+        @ExceptionHandler(WhoSaidItRoundCapacityExceededException.class)
         public ProblemDetail handleRoundCapacityExceeded(
-                        RoundCapacityExceededException exception) {
+                        WhoSaidItRoundCapacityExceededException exception) {
                 return ProblemDetail.forStatusAndDetail(
                                 HttpStatus.SERVICE_UNAVAILABLE,
                                 "Too many active rounds, try again later");

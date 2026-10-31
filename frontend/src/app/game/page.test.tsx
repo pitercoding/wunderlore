@@ -4,9 +4,9 @@ import type { ReactElement } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { connection } from "next/server";
 import { ApiError, ApiResponseError, ApiTimeoutError } from "@/lib/api/client";
-import { getRound, type GameRound } from "@/lib/api/game";
+import { createRound, type WhoSaidItRound } from "@/lib/api/whoSaidIt";
 import { suspendingRefresh } from "@/test/suspendingRefresh";
-import GamePage from "./page";
+import WhoSaidItPage from "./page";
 
 const refresh = vi.fn();
 
@@ -18,14 +18,14 @@ vi.mock("next/server", () => ({
     connection: vi.fn(),
 }));
 
-vi.mock("@/lib/api/game", () => ({
-    getRound: vi.fn(),
+vi.mock("@/lib/api/whoSaidIt", () => ({
+    createRound: vi.fn(),
 }));
 
-// GameContent has its own tests; here it only needs to show what it received.
-vi.mock("./GameContent", () => ({
-    default: ({ round }: { round: GameRound }) => (
-        <p data-testid="game-content">
+// WhoSaidItContent has its own tests; here it only needs to show what it received.
+vi.mock("./WhoSaidItContent", () => ({
+    default: ({ round }: { round: WhoSaidItRound }) => (
+        <p data-testid="who-said-it-content">
             {round.roundId}: {round.quote}
         </p>
     ),
@@ -37,18 +37,18 @@ const COOLDOWN =
 const UNEXPECTED = "Unable to load a game round. Please try again.";
 
 const connectionMock = vi.mocked(connection);
-const getRoundMock = vi.mocked(getRound);
+const getRoundMock = vi.mocked(createRound);
 
 type SuspenseElement = ReactElement<{
     children: ReactElement;
     fallback: ReactElement;
 }>;
 
-// GamePage wraps an async, non-exported loader in <Suspense>. jsdom cannot
+// WhoSaidItPage wraps an async, non-exported loader in <Suspense>. jsdom cannot
 // render async Server Components, so the loader is awaited directly and its
 // output is rendered, the same way the server would resolve it.
 async function renderLoadedPage(options?: Parameters<typeof render>[1]) {
-    const page = GamePage() as SuspenseElement;
+    const page = WhoSaidItPage() as SuspenseElement;
     const loader = page.props.children.type as () => Promise<ReactElement>;
     return render(await loader(), options);
 }
@@ -63,9 +63,9 @@ afterEach(() => {
     vi.restoreAllMocks();
 });
 
-describe("GamePage", () => {
+describe("WhoSaidItPage", () => {
     it("shows a loading status while the round is loading", () => {
-        const page = GamePage() as SuspenseElement;
+        const page = WhoSaidItPage() as SuspenseElement;
 
         render(page.props.fallback);
 
@@ -80,13 +80,13 @@ describe("GamePage", () => {
             order.push("connection");
         });
         getRoundMock.mockImplementation(async () => {
-            order.push("getRound");
+            order.push("createRound");
             return { roundId: "r1", quote: "q", options: [] };
         });
 
         await renderLoadedPage();
 
-        expect(order).toEqual(["connection", "getRound"]);
+        expect(order).toEqual(["connection", "createRound"]);
     });
 
     it("renders the game with the loaded round", async () => {
@@ -98,7 +98,7 @@ describe("GamePage", () => {
 
         await renderLoadedPage();
 
-        expect(screen.getByTestId("game-content")).toHaveTextContent(
+        expect(screen.getByTestId("who-said-it-content")).toHaveTextContent(
             "round-7: Fly, you fools!",
         );
         expect(screen.queryByRole("alert")).not.toBeInTheDocument();
@@ -153,7 +153,7 @@ describe("GamePage", () => {
         ["a timeout", new ApiTimeoutError(15_000), UNAVAILABLE],
         ["a network error", new TypeError("fetch failed"), UNAVAILABLE],
         ["an unmapped API error", new ApiError("API request failed with status 502", 502), UNEXPECTED],
-        ["an invalid payload", new ApiResponseError("/api/game/round"), UNEXPECTED],
+        ["an invalid payload", new ApiResponseError("/api/games/who-said-it/rounds"), UNEXPECTED],
     ])("shows an error message when loading fails with %s", async (_, error, message) => {
         getRoundMock.mockRejectedValue(error);
 
@@ -168,11 +168,11 @@ describe("GamePage", () => {
             "/",
         );
         expect(screen.getByRole("button", { name: "Try again" })).toBeEnabled();
-        expect(screen.queryByTestId("game-content")).not.toBeInTheDocument();
+        expect(screen.queryByTestId("who-said-it-content")).not.toBeInTheDocument();
         // Retrying is the player's decision, never automatic.
         expect(refresh).not.toHaveBeenCalled();
         expect(console.error).toHaveBeenCalledWith(
-            "Failed to load game round",
+            "Failed to load Who Said It round",
             error,
         );
     });

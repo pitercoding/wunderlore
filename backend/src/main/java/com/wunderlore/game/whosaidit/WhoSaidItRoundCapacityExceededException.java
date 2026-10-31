@@ -1,9 +1,9 @@
-package com.wunderlore.game;
+package com.wunderlore.game.whosaidit;
 
 // Used when the maximum number of active rounds has been reached. The controller will respond with 503 Service Unavailable.
-public class RoundCapacityExceededException extends RuntimeException {
+public class WhoSaidItRoundCapacityExceededException extends RuntimeException {
 
-    public RoundCapacityExceededException() {
+    public WhoSaidItRoundCapacityExceededException() {
         super("Maximum number of active rounds reached");
     }
 }

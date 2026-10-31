@@ -1,29 +1,29 @@
 "use server";
 
-import { submitAnswer, type AnswerResult } from "@/lib/api/game";
+import { submitAnswer, type WhoSaidItAnswerResult } from "@/lib/api/whoSaidIt";
 import { unavailableMessage } from "@/lib/api/unavailable";
 
-// Follows GameRoundRegistry.answer, not the status class:
+// Follows WhoSaidItRoundRegistry.answer, not the status class:
 // - terminal: the round can no longer be answered (404 expired or unknown, 409 answered).
 // - invalid: the backend rejected the answer before consuming the round (400).
 // - temporary: anything else. The round may still be open, so answering again is safe:
 //   if the failed attempt did reach the backend, the next one gets a 409.
-export type GameAnswerFailureKind = "terminal" | "invalid" | "temporary";
+export type WhoSaidItAnswerFailureKind = "terminal" | "invalid" | "temporary";
 
-export interface GameAnswerFailure {
+export interface WhoSaidItAnswerFailure {
     ok: false;
-    kind: GameAnswerFailureKind;
+    kind: WhoSaidItAnswerFailureKind;
     message: string;
 }
 
-export type GameAnswerResponse =
-    | { ok: true; result: AnswerResult }
-    | GameAnswerFailure;
+export type WhoSaidItAnswerResponse =
+    | { ok: true; result: WhoSaidItAnswerResult }
+    | WhoSaidItAnswerFailure;
 
-export async function submitGameAnswer(
+export async function submitWhoSaidItAnswer(
     roundId: string,
     characterId: string,
-): Promise<GameAnswerResponse> {
+): Promise<WhoSaidItAnswerResponse> {
     try {
         const result = await submitAnswer(roundId, characterId);
 
@@ -68,7 +68,7 @@ export async function submitGameAnswer(
 
         // A 503 is expected while the service recovers, so only the other failures are logged.
         if (status !== 503) {
-            console.error("Failed to submit game answer", error);
+            console.error("Failed to submit Who Said It answer", error);
         }
 
         return {

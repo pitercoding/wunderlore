@@ -1,9 +1,9 @@
-package com.wunderlore.game;
+package com.wunderlore.game.whosaidit;
 
 // It will be used when the round does not exist or has already expired. The controller will respond with 404 Not Found.
-public class RoundNotFoundException extends RuntimeException {
+public class WhoSaidItRoundNotFoundException extends RuntimeException {
     
-    public RoundNotFoundException() {
+    public WhoSaidItRoundNotFoundException() {
         super("Round not found or expired");
     }
 }

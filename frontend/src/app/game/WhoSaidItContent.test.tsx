@@ -1,9 +1,9 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { GameRound } from "@/lib/api/game";
-import { submitGameAnswer } from "./actions";
-import GameContent from "./GameContent";
+import type { WhoSaidItRound } from "@/lib/api/whoSaidIt";
+import { submitWhoSaidItAnswer } from "./actions";
+import WhoSaidItContent from "./WhoSaidItContent";
 
 const refresh = vi.fn();
 
@@ -12,12 +12,12 @@ vi.mock("next/navigation", () => ({
 }));
 
 vi.mock("./actions", () => ({
-    submitGameAnswer: vi.fn(),
+    submitWhoSaidItAnswer: vi.fn(),
 }));
 
-const submitGameAnswerMock = vi.mocked(submitGameAnswer);
+const submitWhoSaidItAnswerMock = vi.mocked(submitWhoSaidItAnswer);
 
-const round: GameRound = {
+const round: WhoSaidItRound = {
     roundId: "round-1",
     quote: "One does not simply walk into Mordor.",
     options: [
@@ -47,9 +47,9 @@ afterEach(() => {
     vi.resetAllMocks();
 });
 
-describe("GameContent", () => {
+describe("WhoSaidItContent", () => {
     it("renders the quote, the options and a link back home", () => {
-        render(<GameContent round={round} />);
+        render(<WhoSaidItContent round={round} />);
 
         expect(
             screen.getByRole("heading", { level: 1, name: "Who said this quote?" }),
@@ -71,13 +71,13 @@ describe("GameContent", () => {
 
     it("shows a pending state while the answer is being checked", async () => {
         const user = userEvent.setup();
-        const pending = deferred<Awaited<ReturnType<typeof submitGameAnswer>>>();
-        submitGameAnswerMock.mockReturnValue(pending.promise);
-        render(<GameContent round={round} />);
+        const pending = deferred<Awaited<ReturnType<typeof submitWhoSaidItAnswer>>>();
+        submitWhoSaidItAnswerMock.mockReturnValue(pending.promise);
+        render(<WhoSaidItContent round={round} />);
 
         await user.click(screen.getByRole("button", { name: "Aragorn" }));
 
-        expect(submitGameAnswerMock).toHaveBeenCalledWith("round-1", "c2");
+        expect(submitWhoSaidItAnswerMock).toHaveBeenCalledWith("round-1", "c2");
         expect(screen.getByRole("status")).toHaveTextContent(
             "Checking your answer...",
         );
@@ -106,7 +106,7 @@ describe("GameContent", () => {
 
     it("announces a correct answer and locks the round", async () => {
         const user = userEvent.setup();
-        submitGameAnswerMock.mockResolvedValue({
+        submitWhoSaidItAnswerMock.mockResolvedValue({
             ok: true,
             result: {
                 roundId: "round-1",
@@ -115,7 +115,7 @@ describe("GameContent", () => {
                 correctCharacterId: "c1",
             },
         });
-        render(<GameContent round={round} />);
+        render(<WhoSaidItContent round={round} />);
 
         await user.click(screen.getByRole("button", { name: "Boromir" }));
 
@@ -136,7 +136,7 @@ describe("GameContent", () => {
 
     it("announces a wrong answer and reveals the correct character", async () => {
         const user = userEvent.setup();
-        submitGameAnswerMock.mockResolvedValue({
+        submitWhoSaidItAnswerMock.mockResolvedValue({
             ok: true,
             result: {
                 roundId: "round-1",
@@ -145,7 +145,7 @@ describe("GameContent", () => {
                 correctCharacterId: "c1",
             },
         });
-        render(<GameContent round={round} />);
+        render(<WhoSaidItContent round={round} />);
 
         await user.click(screen.getByRole("button", { name: "Gimli" }));
 
@@ -159,7 +159,7 @@ describe("GameContent", () => {
 
     it("falls back to 'Unknown' when the correct character is not an option", async () => {
         const user = userEvent.setup();
-        submitGameAnswerMock.mockResolvedValue({
+        submitWhoSaidItAnswerMock.mockResolvedValue({
             ok: true,
             result: {
                 roundId: "round-1",
@@ -168,7 +168,7 @@ describe("GameContent", () => {
                 correctCharacterId: "missing",
             },
         });
-        render(<GameContent round={round} />);
+        render(<WhoSaidItContent round={round} />);
 
         await user.click(screen.getByRole("button", { name: "Boromir" }));
 
@@ -179,7 +179,7 @@ describe("GameContent", () => {
 
     it("submits only once even if options are clicked again", async () => {
         const user = userEvent.setup();
-        submitGameAnswerMock.mockResolvedValue({
+        submitWhoSaidItAnswerMock.mockResolvedValue({
             ok: true,
             result: {
                 roundId: "round-1",
@@ -188,13 +188,13 @@ describe("GameContent", () => {
                 correctCharacterId: "c1",
             },
         });
-        render(<GameContent round={round} />);
+        render(<WhoSaidItContent round={round} />);
 
         await user.click(screen.getByRole("button", { name: "Boromir" }));
         await screen.findByRole("heading", { name: "Correct!" });
         await user.click(screen.getByRole("button", { name: "Aragorn" }));
 
-        expect(submitGameAnswerMock).toHaveBeenCalledTimes(1);
+        expect(submitWhoSaidItAnswerMock).toHaveBeenCalledTimes(1);
     });
 
     it.each([
@@ -202,7 +202,7 @@ describe("GameContent", () => {
         ["temporary", "Wunderlore is temporarily unavailable. Please try again."],
     ] as const)("keeps the round open after a %s failure", async (kind, message) => {
         const user = userEvent.setup();
-        submitGameAnswerMock
+        submitWhoSaidItAnswerMock
             .mockResolvedValueOnce({ ok: false, kind, message })
             .mockResolvedValueOnce({
                 ok: true,
@@ -213,7 +213,7 @@ describe("GameContent", () => {
                     correctCharacterId: "c1",
                 },
             });
-        render(<GameContent round={round} />);
+        render(<WhoSaidItContent round={round} />);
 
         await user.click(screen.getByRole("button", { name: "Aragorn" }));
 
@@ -237,13 +237,13 @@ describe("GameContent", () => {
             await screen.findByRole("heading", { name: "Not quite!" }),
         ).toBeInTheDocument();
         expect(screen.queryByRole("alert")).not.toBeInTheDocument();
-        expect(submitGameAnswerMock).toHaveBeenCalledTimes(2);
+        expect(submitWhoSaidItAnswerMock).toHaveBeenCalledTimes(2);
     });
 
     it("shows a generic error when the action call itself fails", async () => {
         const user = userEvent.setup();
-        submitGameAnswerMock.mockRejectedValue(new Error("network down"));
-        render(<GameContent round={round} />);
+        submitWhoSaidItAnswerMock.mockRejectedValue(new Error("network down"));
+        render(<WhoSaidItContent round={round} />);
 
         await user.click(screen.getByRole("button", { name: "Gimli" }));
 
@@ -264,12 +264,12 @@ describe("GameContent", () => {
         ["already answered", "This round has already been answered."],
     ])("locks the options when the round is %s", async (_, message) => {
         const user = userEvent.setup();
-        submitGameAnswerMock.mockResolvedValue({
+        submitWhoSaidItAnswerMock.mockResolvedValue({
             ok: false,
             kind: "terminal",
             message,
         });
-        render(<GameContent round={round} />);
+        render(<WhoSaidItContent round={round} />);
 
         await user.click(screen.getByRole("button", { name: "Aragorn" }));
 
@@ -290,17 +290,17 @@ describe("GameContent", () => {
 
         await user.click(screen.getByRole("button", { name: "Boromir" }));
 
-        expect(submitGameAnswerMock).toHaveBeenCalledTimes(1);
+        expect(submitWhoSaidItAnswerMock).toHaveBeenCalledTimes(1);
     });
 
     it("starts a playable new round from a terminal failure", async () => {
         const user = userEvent.setup();
-        submitGameAnswerMock.mockResolvedValue({
+        submitWhoSaidItAnswerMock.mockResolvedValue({
             ok: false,
             kind: "terminal",
             message: "This round has expired or is no longer available.",
         });
-        const { rerender } = render(<GameContent key={round.roundId} round={round} />);
+        const { rerender } = render(<WhoSaidItContent key={round.roundId} round={round} />);
 
         await user.click(screen.getByRole("button", { name: "Aragorn" }));
         await user.click(
@@ -310,15 +310,15 @@ describe("GameContent", () => {
         expect(refresh).toHaveBeenCalledTimes(1);
         expect(screen.getByRole("button", { name: "Loading..." })).toBeDisabled();
 
-        // The page keys GameContent by round, so the refreshed round remounts it.
-        rerender(<GameContent key="round-2" round={{ ...round, roundId: "round-2" }} />);
+        // The page keys WhoSaidItContent by round, so the refreshed round remounts it.
+        rerender(<WhoSaidItContent key="round-2" round={{ ...round, roundId: "round-2" }} />);
 
         expect(screen.queryByRole("alert")).not.toBeInTheDocument();
         for (const button of answerButtons()) {
             expect(button).toBeEnabled();
         }
 
-        submitGameAnswerMock.mockResolvedValue({
+        submitWhoSaidItAnswerMock.mockResolvedValue({
             ok: true,
             result: {
                 roundId: "round-2",
@@ -329,7 +329,7 @@ describe("GameContent", () => {
         });
         await user.click(screen.getByRole("button", { name: "Boromir" }));
 
-        expect(submitGameAnswerMock).toHaveBeenLastCalledWith("round-2", "c1");
+        expect(submitWhoSaidItAnswerMock).toHaveBeenLastCalledWith("round-2", "c1");
         expect(
             await screen.findByRole("heading", { name: "Correct!" }),
         ).toBeInTheDocument();
@@ -337,7 +337,7 @@ describe("GameContent", () => {
 
     it("refreshes the route to load a new round", async () => {
         const user = userEvent.setup();
-        submitGameAnswerMock.mockResolvedValue({
+        submitWhoSaidItAnswerMock.mockResolvedValue({
             ok: true,
             result: {
                 roundId: "round-1",
@@ -346,7 +346,7 @@ describe("GameContent", () => {
                 correctCharacterId: "c1",
             },
         });
-        render(<GameContent round={round} />);
+        render(<WhoSaidItContent round={round} />);
 
         await user.click(screen.getByRole("button", { name: "Boromir" }));
         await user.click(

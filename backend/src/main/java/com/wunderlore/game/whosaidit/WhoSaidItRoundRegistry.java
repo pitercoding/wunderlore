@@ -1,4 +1,4 @@
-package com.wunderlore.game;
+package com.wunderlore.game.whosaidit;
 
 import java.time.Clock;
 import java.time.Duration;
@@ -13,7 +13,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Component
-public class GameRoundRegistry {
+public class WhoSaidItRoundRegistry {
 
     private final ConcurrentHashMap<String, ActiveRound> rounds = new ConcurrentHashMap<>();
 
@@ -21,7 +21,7 @@ public class GameRoundRegistry {
     private final Duration ttl;
     private final int maxActiveRounds;
 
-    public GameRoundRegistry(
+    public WhoSaidItRoundRegistry(
             Clock clock,
             @Value("${wunderlore.game.round-ttl:PT10M}") Duration ttl,
             @Value("${wunderlore.game.max-active-rounds:10000}") int maxActiveRounds) {
@@ -40,18 +40,18 @@ public class GameRoundRegistry {
         this.maxActiveRounds = maxActiveRounds;
     }
 
-    public synchronized String register(GameRound round) {
+    public synchronized String register(WhoSaidItRound round) {
         Instant now = clock.instant();
 
         rounds.values().removeIf(activeRound -> isExpired(activeRound, now));
 
         if (rounds.size() >= maxActiveRounds) {
-            throw new RoundCapacityExceededException();
+            throw new WhoSaidItRoundCapacityExceededException();
         }
 
         Set<String> optionIds = new HashSet<>();
 
-        for (GameRound.CharacterOption option : round.options()) {
+        for (WhoSaidItRound.CharacterOption option : round.options()) {
             optionIds.add(option.id());
         }
 
@@ -73,27 +73,27 @@ public class GameRoundRegistry {
         return roundId;
     }
 
-    public AnswerResponse answer(AnswerRequest request) {
-        ActiveRound round = rounds.get(request.roundId());
+    public WhoSaidItAnswerResponse answer(String roundId, String characterId) {
+        ActiveRound round = rounds.get(roundId);
 
         if (round == null || isExpired(round, clock.instant())) {
-            throw new RoundNotFoundException();
+            throw new WhoSaidItRoundNotFoundException();
         }
 
-        if (!round.optionIds().contains(request.characterId())) {
-            throw new InvalidCharacterOptionException();
+        if (!round.optionIds().contains(characterId)) {
+            throw new WhoSaidItInvalidCharacterOptionException();
         }
 
         if (!round.answered().compareAndSet(false, true)) {
-            throw new RoundAlreadyAnsweredException();
+            throw new WhoSaidItRoundAlreadyAnsweredException();
         }
 
         boolean correct = round.correctCharacterId()
-                .equals(request.characterId());
+                .equals(characterId);
 
-        return new AnswerResponse(
-                request.roundId(),
-                request.characterId(),
+        return new WhoSaidItAnswerResponse(
+                roundId,
+                characterId,
                 correct,
                 round.correctCharacterId());
     }

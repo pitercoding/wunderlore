@@ -5,11 +5,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 async function loadModules() {
     vi.stubEnv("API_URL", "http://api.test");
     vi.resetModules();
-    const [game, client] = await Promise.all([
-        import("./game"),
+    const [whoSaidIt, client] = await Promise.all([
+        import("./whoSaidIt"),
         import("./client"),
     ]);
-    return { ...game, ...client };
+    return { ...whoSaidIt, ...client };
 }
 
 function jsonResponse(body: unknown, init?: ResponseInit) {
@@ -47,9 +47,9 @@ const validAnswer = {
     correctCharacterId: "c1",
 };
 
-describe("getRound", () => {
+describe("createRound", () => {
     it("requests a new round and returns it", async () => {
-        const { getRound } = await loadModules();
+        const { createRound } = await loadModules();
         const round = {
             roundId: "round-1",
             quote: "You shall not pass!",
@@ -60,30 +60,30 @@ describe("getRound", () => {
         };
         fetchMock.mockResolvedValue(jsonResponse(round));
 
-        await expect(getRound()).resolves.toEqual(round);
+        await expect(createRound()).resolves.toEqual(round);
         expect(fetchMock).toHaveBeenCalledTimes(1);
         expect(fetchMock).toHaveBeenCalledWith(
-            "http://api.test/api/game/round",
-            expect.not.objectContaining({ method: expect.anything() }),
+            "http://api.test/api/games/who-said-it/rounds",
+            expect.objectContaining({ method: "POST" }),
         );
     });
 
     it("propagates API errors with their status", async () => {
-        const { getRound, ApiError } = await loadModules();
+        const { createRound, ApiError } = await loadModules();
         fetchMock.mockResolvedValue(new Response(null, { status: 503 }));
 
-        const error = await getRound().catch((e: unknown) => e);
+        const error = await createRound().catch((e: unknown) => e);
 
         expect(error).toBeInstanceOf(ApiError);
         expect(error).toHaveProperty("status", 503);
     });
 
     it("keeps fields the backend may add in the future", async () => {
-        const { getRound } = await loadModules();
+        const { createRound } = await loadModules();
         const round = { ...validRound, difficulty: "hard" };
         fetchMock.mockResolvedValue(jsonResponse(round));
 
-        await expect(getRound()).resolves.toEqual(round);
+        await expect(createRound()).resolves.toEqual(round);
     });
 
     it.each([
@@ -101,17 +101,28 @@ describe("getRound", () => {
         ["an option without name", { ...validRound, options: [{ id: "c1" }] }],
         ["an option with a numeric id", { ...validRound, options: [{ id: 1, name: "Sam" }] }],
     ])("rejects %s", async (_, body) => {
-        const { getRound, ApiResponseError } = await loadModules();
+        const { createRound, ApiResponseError } = await loadModules();
         fetchMock.mockResolvedValue(jsonResponse(body));
 
-        const error = await getRound().catch((e: unknown) => e);
+        const error = await createRound().catch((e: unknown) => e);
 
         expect(error).toBeInstanceOf(ApiResponseError);
-        expect(error).toHaveProperty("endpoint", "/api/game/round");
+        expect(error).toHaveProperty("endpoint", "/api/games/who-said-it/rounds");
     });
 });
 
 describe("submitAnswer", () => {
+    it("encodes the roundId in the path", async () => {
+        const { submitAnswer } = await loadModules();
+        fetchMock.mockResolvedValue(jsonResponse(validAnswer));
+
+        await submitAnswer("a/b c", "c2");
+
+        expect(fetchMock.mock.calls[0][0]).toBe(
+            "http://api.test/api/games/who-said-it/rounds/a%2Fb%20c/answer",
+        );
+    });
+
     it("posts the answer as JSON and returns the result", async () => {
         const { submitAnswer } = await loadModules();
         const result = {
@@ -126,7 +137,7 @@ describe("submitAnswer", () => {
 
         expect(fetchMock).toHaveBeenCalledTimes(1);
         const [url, init] = fetchMock.mock.calls[0];
-        expect(url).toBe("http://api.test/api/game/answer");
+        expect(url).toBe("http://api.test/api/games/who-said-it/rounds/round-1/answer");
         expect(init).toMatchObject({
             method: "POST",
             headers: {
@@ -134,10 +145,7 @@ describe("submitAnswer", () => {
                 "Content-Type": "application/json",
             },
         });
-        expect(JSON.parse(init?.body as string)).toEqual({
-            roundId: "round-1",
-            characterId: "c2",
-        });
+        expect(JSON.parse(init?.body as string)).toEqual({ characterId: "c2" });
     });
 
     it.each([
@@ -196,6 +204,9 @@ describe("submitAnswer", () => {
         );
 
         expect(error).toBeInstanceOf(ApiResponseError);
-        expect(error).toHaveProperty("endpoint", "/api/game/answer");
+        expect(error).toHaveProperty(
+            "endpoint",
+            "/api/games/who-said-it/rounds/round-1/answer",
+        );
     });
 });
