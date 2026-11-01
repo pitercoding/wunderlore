@@ -51,7 +51,7 @@ public class WhichCharacterScoringService {
                     .stream()
                     .filter(option -> option.id().equals(answer.answerId()))
                     .findFirst()
-                    .orElseThrow(() -> new IllegalArgumentException(
+                    .orElseThrow(() -> new WhichCharacterInvalidAnswersException(
                             "Answer does not belong to the specified question."));
 
             CharacterId primary = selectedOption.primaryCharacter();
@@ -70,7 +70,7 @@ public class WhichCharacterScoringService {
 
     private void validateAnswers(List<QuizAnswer> answers) {
         if (answers == null || answers.size() != WhichCharacterQuiz.QUESTIONS.size()) {
-            throw new IllegalArgumentException(
+            throw new WhichCharacterInvalidAnswersException(
                     "Exactly " + WhichCharacterQuiz.QUESTIONS.size()
                             + " answers are required.");
         }
@@ -88,16 +88,16 @@ public class WhichCharacterScoringService {
                     || answer.questionId().isBlank()
                     || answer.answerId() == null
                     || answer.answerId().isBlank()) {
-                throw new IllegalArgumentException(
+                throw new WhichCharacterInvalidAnswersException(
                         "Every answer must contain a valid question ID and answer ID.");
             }
 
             if (!validQuestionIds.contains(answer.questionId())) {
-                throw new IllegalArgumentException("Unknown question ID.");
+                throw new WhichCharacterInvalidAnswersException("Unknown question ID.");
             }
 
             if (!answeredQuestionIds.add(answer.questionId())) {
-                throw new IllegalArgumentException(
+                throw new WhichCharacterInvalidAnswersException(
                         "Each question must be answered exactly once.");
             }
         }
