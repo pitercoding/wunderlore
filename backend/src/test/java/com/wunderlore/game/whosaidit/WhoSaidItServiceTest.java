@@ -283,7 +283,7 @@ class WhoSaidItServiceTest {
         private WhoSaidItService newService(RandomGenerator random) {
                 // No failure cooldown, so retries are not delayed; the cooldown is covered in LoreDataServiceTest.
                 LoreDataService loreDataService = new LoreDataService(
-                                theOneApiClient, Clock.systemUTC(), Duration.ZERO, 100);
+                                theOneApiClient, Clock.systemUTC(), Duration.ZERO, 100, Duration.ofSeconds(30));
 
                 return new WhoSaidItService(loreDataService, random);
         }

@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.entry;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -12,6 +13,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
+import java.io.InterruptedIOException;
 import java.net.http.HttpTimeoutException;
 import java.nio.charset.StandardCharsets;
 import java.time.Clock;
@@ -23,13 +25,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -62,6 +67,11 @@ class LoreDataServiceTest {
         private static final int PAGE_SIZE = 100;
         private static final Duration COOLDOWN = Duration.ofSeconds(30);
         private static final int MAX_PAGES = 3;
+        private static final Duration LOAD_TIMEOUT = Duration.ofSeconds(30);
+        // Short enough to expire quickly; the tests that use it block the upstream on latches.
+        private static final Duration SHORT_TIMEOUT = Duration.ofMillis(100);
+        // Long enough for several callers to queue up before the deadline.
+        private static final Duration QUEUEING_TIMEOUT = Duration.ofSeconds(1);
 
         private static final ExternalCharacter FRODO = new ExternalCharacter("frodo", "Frodo Baggins");
         private static final ExternalCharacter SAM = new ExternalCharacter("sam", "Samwise Gamgee");
@@ -71,6 +81,15 @@ class LoreDataServiceTest {
         private TheOneApiClient theOneApiClient;
 
         private final MutableClock clock = new MutableClock(Instant.parse("2026-01-01T12:00:00Z"));
+
+        private final List<LoreDataService> services = new ArrayList<>();
+        private final List<Gate> gates = new ArrayList<>();
+
+        @AfterEach
+        void releaseGatesAndStopLoaders() {
+                gates.forEach(gate -> gate.release.countDown());
+                services.forEach(LoreDataService::shutdown);
+        }
 
         @Test
         void shouldLoadEveryPageInUpstreamOrder() {
@@ -573,9 +592,9 @@ class LoreDataServiceTest {
 
         @Test
         void shouldRejectInvalidConfiguration() {
-                assertThatThrownBy(() -> new LoreDataService(theOneApiClient, clock, Duration.ofSeconds(-1), MAX_PAGES))
+                assertThatThrownBy(() -> new LoreDataService(theOneApiClient, clock, Duration.ofSeconds(-1), MAX_PAGES, LOAD_TIMEOUT))
                                 .isInstanceOf(IllegalArgumentException.class);
-                assertThatThrownBy(() -> new LoreDataService(theOneApiClient, clock, COOLDOWN, 0))
+                assertThatThrownBy(() -> new LoreDataService(theOneApiClient, clock, COOLDOWN, 0, LOAD_TIMEOUT))
                                 .isInstanceOf(IllegalArgumentException.class);
         }
 
@@ -1112,6 +1131,474 @@ class LoreDataServiceTest {
                                 });
         }
 
+        @Test
+        void shouldLoadWithinTheDeadlineOnTheDedicatedDaemonLoaderThread() {
+                AtomicReference<Thread> loaderThread = new AtomicReference<>();
+
+                when(theOneApiClient.getQuotes(1, PAGE_SIZE)).thenAnswer(invocation -> {
+                        loaderThread.set(Thread.currentThread());
+                        return quotePage(List.of(quote("q1", "Po-tay-toes!", "sam")), 1, 1);
+                });
+                when(theOneApiClient.getCharacters(1, PAGE_SIZE)).thenReturn(characterPage(List.of(SAM), 1, 1));
+
+                LoreData data = newService().getData();
+
+                assertThat(data.attributedQuotes()).hasSize(1);
+                assertThat(loaderThread.get()).isNotSameAs(Thread.currentThread());
+                assertThat(loaderThread.get().getName()).isEqualTo("lore-data-loader");
+                assertThat(loaderThread.get().isDaemon()).isTrue();
+        }
+
+        @Test
+        void shouldTimeOutWhileAnUpstreamRequestIsBlocked() {
+                blockQuotesPage1(new Gate(true));
+
+                LoreDataService service = newService(COOLDOWN, SHORT_TIMEOUT);
+                Instant failedAt = clock.instant();
+
+                try (LogCapture logs = LogCapture.of(LoreDataService.class)) {
+                        LoreDataUnavailableException timeout = catchUnavailable(service);
+
+                        assertThat(timeout.retryAt()).isEqualTo(failedAt.plus(COOLDOWN));
+                        assertThat(timeout).hasMessageContaining("deadline");
+                        assertThat(logs.events(Level.WARN)).singleElement()
+                                        .extracting(ILoggingEvent::getFormattedMessage)
+                                        .asString()
+                                        .contains("timed out", "dataset=quote", "page=1")
+                                        .doesNotContain("https://");
+                }
+        }
+
+        @Test
+        void shouldFailEveryWaitingCallerWithTheSameTimeoutRecordedOnce() throws Exception {
+                blockQuotesPage1(new Gate(true));
+
+                LoreDataService service = newService(COOLDOWN, QUEUEING_TIMEOUT);
+                Instant failedAt = clock.instant();
+                List<Caller> callers = new ArrayList<>();
+
+                try (LogCapture logs = LogCapture.of(LoreDataService.class)) {
+                        callers.add(startCaller(service));
+                        awaitWaiting(callers.get(0).thread());
+
+                        for (int i = 0; i < 4; i++) {
+                                Caller waiter = startCaller(service);
+
+                                callers.add(waiter);
+                                awaitWaiting(waiter.thread());
+                        }
+
+                        for (Caller caller : callers) {
+                                assertThatThrownBy(caller::result)
+                                                .isInstanceOf(ExecutionException.class)
+                                                .cause()
+                                                .isInstanceOf(LoreDataUnavailableException.class)
+                                                .extracting(cause -> ((LoreDataUnavailableException) cause).retryAt())
+                                                .isEqualTo(failedAt.plus(COOLDOWN));
+                        }
+
+                        // One failure, one cooldown, one log line, however many callers expired it.
+                        assertThat(logs.events(Level.WARN)).hasSize(1);
+                } finally {
+                        callers.forEach(Caller::stop);
+                }
+        }
+
+        @Test
+        void shouldInterruptTheWorkerWhenTheDeadlineExpires() throws Exception {
+                Gate gate = blockQuotesPage1(new Gate(true));
+
+                catchUnavailable(newService(COOLDOWN, SHORT_TIMEOUT));
+
+                assertThat(gate.interrupted.await(5, TimeUnit.SECONDS)).isTrue();
+        }
+
+        @Test
+        void shouldNotCancelTheSharedLoadWhenAWaitingCallerIsInterrupted() throws Exception {
+                Gate gate = blockQuotesPage1(new Gate(true));
+                when(theOneApiClient.getCharacters(1, PAGE_SIZE)).thenReturn(characterPage(List.of(SAM), 1, 1));
+
+                LoreDataService service = newService();
+                AtomicBoolean interruptFlagRestored = new AtomicBoolean();
+                AtomicReference<Throwable> waiterFailure = new AtomicReference<>();
+                Caller starter = startCaller(service);
+
+                try {
+                        assertThat(gate.entered.await(5, TimeUnit.SECONDS)).isTrue();
+
+                        Thread waiter = new Thread(() -> {
+                                try {
+                                        service.getData();
+                                } catch (RuntimeException exception) {
+                                        waiterFailure.set(exception);
+                                        interruptFlagRestored.set(Thread.currentThread().isInterrupted());
+                                }
+                        });
+
+                        waiter.start();
+                        awaitWaiting(waiter);
+                        waiter.interrupt();
+                        waiter.join(TimeUnit.SECONDS.toMillis(5));
+
+                        assertThat(waiter.isAlive()).isFalse();
+                        assertThat(waiterFailure.get()).isInstanceOf(LoreDataUnavailableException.class)
+                                        .hasCauseInstanceOf(InterruptedException.class);
+                        assertThat(((LoreDataUnavailableException) waiterFailure.get()).retryAt()).isNull();
+                        assertThat(interruptFlagRestored).isTrue();
+
+                        // The waiter's own interruption did not reach the worker or the other callers.
+                        assertThat(gate.interrupted.getCount()).isEqualTo(1);
+
+                        gate.release.countDown();
+
+                        assertThat(starter.result().attributedQuotes()).hasSize(1);
+                } finally {
+                        starter.stop();
+                }
+
+                verify(theOneApiClient, times(1)).getQuotes(1, PAGE_SIZE);
+        }
+
+        @Test
+        void shouldKeepTheOperationInFlightAndNotOverlapWhileTheCancelledWorkerIsStillBlocked() throws Exception {
+                assertNoOverlapWhileWorkerRemainsBlocked(COOLDOWN);
+        }
+
+        @Test
+        void shouldNotOverlapWorkersEvenWithoutACooldown() throws Exception {
+                assertNoOverlapWhileWorkerRemainsBlocked(Duration.ZERO);
+        }
+
+        private void assertNoOverlapWhileWorkerRemainsBlocked(Duration cooldown) throws Exception {
+                // The worker swallows the interruption and stays blocked: cancellation is best effort.
+                Gate gate = new Gate(false);
+
+                when(theOneApiClient.getQuotes(1, PAGE_SIZE))
+                                .thenAnswer(invocation -> {
+                                        gate.block();
+                                        return quotePage(List.of(quote("q1", "Po-tay-toes!", "sam")), 1, 1);
+                                })
+                                .thenReturn(quotePage(List.of(quote("q2", "Fly, you fools!", "gandalf")), 1, 1));
+                when(theOneApiClient.getCharacters(1, PAGE_SIZE))
+                                .thenReturn(characterPage(List.of(GANDALF), 1, 1));
+                gates.add(gate);
+
+                LoreDataService service = newService(cooldown, SHORT_TIMEOUT);
+                Instant failedAt = clock.instant();
+
+                LoreDataUnavailableException timeout = catchUnavailable(service);
+
+                assertThat(timeout.retryAt()).isEqualTo(failedAt.plus(cooldown));
+                assertThat(gate.interrupted.await(5, TimeUnit.SECONDS)).isTrue();
+
+                // The cooldown (if any) is over, but the old worker is still physically running.
+                clock.advance(cooldown.plusSeconds(1));
+
+                for (int call = 0; call < 3; call++) {
+                        LoreDataUnavailableException rejected = catchUnavailable(service);
+
+                        assertThat(rejected).hasMessageContaining("still stopping");
+                        assertThat(rejected.retryAt()).isEqualTo(failedAt.plus(cooldown));
+                }
+
+                verify(theOneApiClient, times(1)).getQuotes(1, PAGE_SIZE);
+                verifyNoMoreInteractions(theOneApiClient);
+
+                // Only once the old worker has exited can a new load start and succeed.
+                gate.release.countDown();
+
+                LoreData data = awaitSuccessfulReload(service);
+
+                assertThat(data.quotes()).extracting(LoreQuote::id).containsExactly("q2");
+                verify(theOneApiClient, times(2)).getQuotes(1, PAGE_SIZE);
+                verify(theOneApiClient, times(1)).getCharacters(1, PAGE_SIZE);
+        }
+
+        @Test
+        void shouldDiscardALateSuccessfulResultAndNeverCacheIt() {
+                Gate gate = new Gate(false);
+
+                when(theOneApiClient.getQuotes(1, PAGE_SIZE))
+                                .thenReturn(quotePage(List.of(quote("late", "Late", "sam")), 1, 1))
+                                .thenReturn(quotePage(List.of(quote("fresh", "Fresh", "sam")), 1, 1));
+                when(theOneApiClient.getCharacters(1, PAGE_SIZE))
+                                .thenAnswer(invocation -> {
+                                        gate.block();
+                                        return characterPage(List.of(SAM), 1, 1);
+                                })
+                                .thenReturn(characterPage(List.of(SAM), 1, 1));
+                gates.add(gate);
+
+                LoreDataService service = newService(COOLDOWN, SHORT_TIMEOUT);
+
+                catchUnavailable(service);
+
+                // The worker completes the whole dataset after the deadline.
+                gate.release.countDown();
+
+                LoreData data = awaitSuccessfulReload(service);
+
+                assertThat(data.quotes()).extracting(LoreQuote::id).containsExactly("fresh");
+                verify(theOneApiClient, times(2)).getQuotes(1, PAGE_SIZE);
+        }
+
+        @Test
+        void shouldNotStartAnotherPageRequestAfterTheDeadline() {
+                Gate gate = new Gate(false);
+
+                when(theOneApiClient.getQuotes(1, PAGE_SIZE))
+                                .thenAnswer(invocation -> {
+                                        gate.block();
+                                        return quotePage(List.of(quote("q1", "Po-tay-toes!", "sam")), 1, 2);
+                                })
+                                .thenReturn(quotePage(List.of(quote("q2", "Fly, you fools!", "sam")), 1, 1));
+                when(theOneApiClient.getCharacters(1, PAGE_SIZE)).thenReturn(characterPage(List.of(SAM), 1, 1));
+                gates.add(gate);
+
+                LoreDataService service = newService(COOLDOWN, SHORT_TIMEOUT);
+
+                catchUnavailable(service);
+                gate.release.countDown();
+                awaitSuccessfulReload(service);
+
+                // Page 2 of the expired load was never requested, and the only character
+                // request belongs to the new load.
+                verify(theOneApiClient, never()).getQuotes(2, PAGE_SIZE);
+                verify(theOneApiClient, times(1)).getCharacters(1, PAGE_SIZE);
+        }
+
+        @Test
+        void shouldNotStartTheCharactersPhaseAfterTheDeadline() {
+                Gate gate = new Gate(false);
+
+                when(theOneApiClient.getQuotes(1, PAGE_SIZE)).thenAnswer(invocation -> {
+                        gate.block();
+                        return quotePage(List.of(quote("q1", "Po-tay-toes!", "sam")), 1, 1);
+                });
+                gates.add(gate);
+
+                LoreDataService service = newService(COOLDOWN, SHORT_TIMEOUT);
+
+                try (LogCapture logs = LogCapture.of(LoreDataService.class)) {
+                        catchUnavailable(service);
+                        gate.release.countDown();
+
+                        // The cooldown is still running, so this waits for the worker to exit
+                        // without starting another load.
+                        awaitLoaderExit(service);
+
+                        assertThat(logs.events(Level.WARN)).hasSize(1);
+                }
+
+                verify(theOneApiClient, never()).getCharacters(1, PAGE_SIZE);
+        }
+
+        @Test
+        void shouldNotRecordASecondFailureWhenTheCancelledWorkerEndsWithAnInterruption() {
+                // Like the real HTTP client, the worker ends with a ResourceAccessException and
+                // its interrupt flag restored.
+                blockQuotesPage1(new Gate(true));
+
+                LoreDataService service = newService(COOLDOWN, SHORT_TIMEOUT);
+                Instant failedAt = clock.instant();
+
+                try (LogCapture logs = LogCapture.of(LoreDataService.class)) {
+                        LoreDataUnavailableException timeout = catchUnavailable(service);
+
+                        // A second failure recorded later would restart the cooldown from here.
+                        clock.advance(Duration.ofSeconds(10));
+                        awaitLoaderExit(service);
+
+                        LoreDataUnavailableException rejected = catchUnavailable(service);
+
+                        assertThat(rejected.retryAt()).isEqualTo(failedAt.plus(COOLDOWN)).isEqualTo(timeout.retryAt());
+                        assertThat(rejected).hasCause(timeout);
+                        assertThat(logs.events(Level.WARN)).hasSize(1);
+                }
+        }
+
+        @Test
+        void shouldNotStartCooldownOrWarnWhenShutdownInterruptsTheLoad() throws Exception {
+                Gate gate = blockQuotesPage1(new Gate(true));
+                LoreDataService service = newService();
+
+                try (LogCapture logs = LogCapture.of(LoreDataService.class)) {
+                        Caller caller = startCaller(service);
+
+                        try {
+                                assertThat(gate.entered.await(5, TimeUnit.SECONDS)).isTrue();
+
+                                service.shutdown();
+
+                                assertThatThrownBy(caller::result)
+                                                .isInstanceOf(ExecutionException.class)
+                                                .cause()
+                                                .isInstanceOf(LoreDataUnavailableException.class)
+                                                .hasMessageContaining("interrupted")
+                                                .extracting(cause -> ((LoreDataUnavailableException) cause).retryAt())
+                                                .isNull();
+                        } finally {
+                                caller.stop();
+                        }
+
+                        assertThat(logs.events(Level.WARN)).isEmpty();
+                }
+
+                // No cooldown was recorded: the next call is refused because the loader is
+                // shut down, not because of a failure that is cooling down.
+                LoreDataUnavailableException refused = catchUnavailable(service);
+
+                assertThat(refused.retryAt()).isNull();
+                assertThat(refused).hasMessageContaining("could not be started");
+        }
+
+        @Test
+        void shouldNotFailStartupWhenPreloadTimesOutAndStillRecoverAfterwards() {
+                Gate gate = new Gate(true);
+
+                when(theOneApiClient.getQuotes(1, PAGE_SIZE))
+                                .thenAnswer(invocation -> {
+                                        gate.block();
+                                        return null;
+                                })
+                                .thenReturn(quotePage(List.of(quote("q1", "Po-tay-toes!", "sam")), 1, 1));
+                when(theOneApiClient.getCharacters(1, PAGE_SIZE)).thenReturn(characterPage(List.of(SAM), 1, 1));
+                gates.add(gate);
+
+                LoreDataService service = newService(COOLDOWN, SHORT_TIMEOUT);
+                QueuedExecutor executor = new QueuedExecutor();
+
+                // Scheduling never waits for the load.
+                new LoreDataPreloader(service, executor).preload();
+                verifyNoInteractions(theOneApiClient);
+
+                assertThatCode(() -> executor.tasks.get(0).run()).doesNotThrowAnyException();
+
+                assertThat(awaitSuccessfulReload(service).attributedQuotes()).hasSize(1);
+        }
+
+        @Test
+        void shouldRejectNonPositiveLoadTimeouts() {
+                assertThatThrownBy(() -> new LoreDataService(theOneApiClient, clock, COOLDOWN, MAX_PAGES, Duration.ZERO))
+                                .isInstanceOf(IllegalArgumentException.class);
+                assertThatThrownBy(() -> new LoreDataService(
+                                theOneApiClient, clock, COOLDOWN, MAX_PAGES, Duration.ofMillis(-1)))
+                                .isInstanceOf(IllegalArgumentException.class);
+                assertThatCode(() -> newService(COOLDOWN, Duration.ofNanos(1))).doesNotThrowAnyException();
+                assertThatCode(() -> newService(COOLDOWN, Duration.ofSeconds(Long.MAX_VALUE)))
+                                .doesNotThrowAnyException();
+        }
+
+        @Test
+        void shouldCleanUpTheOperationAfterAnUnexpectedRuntimeFailure() {
+                AtomicInteger calls = new AtomicInteger();
+
+                when(theOneApiClient.getQuotes(1, PAGE_SIZE)).thenAnswer(invocation -> {
+                        if (calls.getAndIncrement() == 0) {
+                                throw new IllegalStateException("bug");
+                        }
+
+                        return quotePage(List.of(quote("q1", "Po-tay-toes!", "sam")), 1, 1);
+                });
+                when(theOneApiClient.getCharacters(1, PAGE_SIZE)).thenReturn(characterPage(List.of(SAM), 1, 1));
+
+                LoreDataService service = newService(Duration.ZERO, LOAD_TIMEOUT);
+
+                try (LogCapture logs = LogCapture.of(LoreDataService.class)) {
+                        assertThatThrownBy(service::getData).isInstanceOf(IllegalStateException.class);
+
+                        // Immediately usable again: the failed operation is gone and no cooldown applies.
+                        assertThat(service.getData().attributedQuotes()).hasSize(1);
+                        assertThat(logs.events(Level.WARN)).isEmpty();
+                }
+        }
+
+        // Moves the clock past the cooldown and calls getData() until the previous worker has
+        // exited and a new load succeeds, spinning instead of sleeping. Once the cooldown is
+        // over, only the old worker can still refuse the call.
+        private LoreData awaitSuccessfulReload(LoreDataService service) {
+                long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(5);
+
+                clock.advance(COOLDOWN.plusSeconds(1));
+
+                while (true) {
+                        try {
+                                return service.getData();
+                        } catch (LoreDataUnavailableException exception) {
+                                assertThat(System.nanoTime()).as("old worker exits").isLessThan(deadline);
+                                Thread.yield();
+                        }
+                }
+        }
+
+        // Waits until the loader has left the expired operation. Needs the cooldown to still be
+        // running, so that the call afterwards is refused instead of starting another load.
+        private void awaitLoaderExit(LoreDataService service) {
+                long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(5);
+
+                while (catchUnavailable(service).getMessage().contains("still stopping")) {
+                        assertThat(System.nanoTime()).as("old worker exits").isLessThan(deadline);
+                        Thread.yield();
+                }
+        }
+
+        private Gate blockQuotesPage1(Gate gate) {
+                when(theOneApiClient.getQuotes(1, PAGE_SIZE)).thenAnswer(invocation -> {
+                        gate.block();
+                        return quotePage(List.of(quote("q1", "Po-tay-toes!", "sam")), 1, 1);
+                });
+                gates.add(gate);
+
+                return gate;
+        }
+
+        // Holds an upstream call until released, recording when the worker is interrupted.
+        // With respondsToInterrupt it behaves like the real HTTP client: the interrupt ends the
+        // call with a ResourceAccessException and the flag restored. Otherwise it swallows the
+        // interrupt and stays blocked, as a worker whose cancellation is only best effort.
+        private static final class Gate {
+
+                private final CountDownLatch entered = new CountDownLatch(1);
+                private final CountDownLatch release = new CountDownLatch(1);
+                private final CountDownLatch interrupted = new CountDownLatch(1);
+                private final boolean respondsToInterrupt;
+
+                private Gate(boolean respondsToInterrupt) {
+                        this.respondsToInterrupt = respondsToInterrupt;
+                }
+
+                void block() {
+                        long end = System.nanoTime() + TimeUnit.SECONDS.toNanos(10);
+                        boolean wasInterrupted = false;
+
+                        entered.countDown();
+
+                        try {
+                                while (true) {
+                                        try {
+                                                release.await(Math.max(end - System.nanoTime(), 0), TimeUnit.NANOSECONDS);
+                                                return;
+                                        } catch (InterruptedException exception) {
+                                                interrupted.countDown();
+
+                                                if (respondsToInterrupt) {
+                                                        Thread.currentThread().interrupt();
+                                                        throw new ResourceAccessException(
+                                                                        "I/O error on GET request",
+                                                                        new InterruptedIOException());
+                                                }
+
+                                                wasInterrupted = true;
+                                        }
+                                }
+                        } finally {
+                                if (wasInterrupted) {
+                                        Thread.currentThread().interrupt();
+                                }
+                        }
+                }
+        }
+
         private static LoreDataUnavailableException catchUnavailable(LoreDataService service) {
                 try {
                         service.getData();
@@ -1122,12 +1609,14 @@ class LoreDataServiceTest {
                 throw new AssertionError("Expected LoreDataUnavailableException");
         }
 
-        // Spins instead of sleeping until the thread is parked waiting for the shared load.
+        // Spins instead of sleeping until the thread is parked waiting for the shared load,
+        // which callers do with a timeout (the load's deadline).
         // BLOCKED would mean it is stuck on the service monitor instead.
         private static void awaitWaiting(Thread thread) {
                 long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(5);
 
-                while (thread.getState() != Thread.State.WAITING) {
+                while (thread.getState() != Thread.State.WAITING
+                                && thread.getState() != Thread.State.TIMED_WAITING) {
                         assertThat(thread.getState()).as("thread must not block on the monitor")
                                         .isNotEqualTo(Thread.State.BLOCKED);
                         assertThat(System.nanoTime()).as("thread waiting for the load").isLessThan(deadline);
@@ -1168,7 +1657,16 @@ class LoreDataServiceTest {
         }
 
         private LoreDataService newService() {
-                return new LoreDataService(theOneApiClient, clock, COOLDOWN, MAX_PAGES);
+                return newService(COOLDOWN, LOAD_TIMEOUT);
+        }
+
+        // Services own a loader thread, so each one is shut down after the test.
+        private LoreDataService newService(Duration cooldown, Duration loadTimeout) {
+                LoreDataService service = new LoreDataService(theOneApiClient, clock, cooldown, MAX_PAGES, loadTimeout);
+
+                services.add(service);
+
+                return service;
         }
 
         private static LoreQuote lore(ExternalQuote quote) {
