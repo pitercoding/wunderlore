@@ -14,6 +14,6 @@ describe("HomePage", () => {
         ).toHaveAttribute("href", "/quotes");
         expect(
             screen.getByRole("link", { name: "Play Who Said It? →" }),
-        ).toHaveAttribute("href", "/game");
+        ).toHaveAttribute("href", "/games/who-said-it");
     });
 });

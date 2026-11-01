@@ -7,7 +7,7 @@ export default function HomePage() {
       <p>Explore stories, characters, and worlds.</p>
 
       <Link href="/quotes">Explore quotes →</Link>
-      <Link href="/game">Play Who Said It? →</Link>
+      <Link href="/games/who-said-it">Play Who Said It? →</Link>
     </main>
   );
 }

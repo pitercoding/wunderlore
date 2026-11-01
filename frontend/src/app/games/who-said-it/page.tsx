@@ -3,7 +3,7 @@ import { connection } from "next/server";
 import { Suspense } from "react";
 import { createRound } from "@/lib/api/whoSaidIt";
 import { unavailableMessage } from "@/lib/api/unavailable";
-import RetryButton from "../RetryButton";
+import RetryButton from "../../RetryButton";
 import WhoSaidItContent from "./WhoSaidItContent";
 import styles from "./page.module.css";
 
