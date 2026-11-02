@@ -1,0 +1,25 @@
+.shell {
+    --shell-max: var(--width-content);
+
+    width: min(100% - 2 * var(--gutter), var(--shell-max));
+    margin-inline: auto;
+    padding-block: var(--space-3) var(--space-7);
+}
+
+.narrow {
+    --shell-max: var(--width-narrow);
+}
+
+.content {
+    --shell-max: var(--width-content);
+}
+
+.wide {
+    --shell-max: var(--width-wide);
+}
+
+@media (min-width: 48em) {
+    .shell {
+        padding-block: var(--space-6) var(--space-8);
+    }
+}

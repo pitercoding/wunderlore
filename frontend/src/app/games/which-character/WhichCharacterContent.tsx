@@ -1,7 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
+import BackLink from "@/components/BackLink/BackLink";
+import Button from "@/components/Button/Button";
+import Card from "@/components/Card/Card";
+import PageShell from "@/components/PageShell/PageShell";
 import type {
     WhichCharacterAnswer,
     WhichCharacterProfile,
@@ -111,12 +114,10 @@ export default function WhichCharacterContent({
 
     if (character) {
         return (
-            <main className={styles.container}>
-                <Link href="/" className={styles.backLink}>
-                    ← Wunderlore
-                </Link>
+            <PageShell size="narrow">
+                <BackLink />
 
-                <section className={styles.card} aria-labelledby="result-title">
+                <Card as="section" elevated aria-labelledby="result-title">
                     <p className={styles.eyebrow}>Quiz complete</p>
                     <p className={styles.resultLead}>Your journey ends. You are…</p>
                     <h1
@@ -130,32 +131,28 @@ export default function WhichCharacterContent({
                     <div className={styles.divider} aria-hidden="true" />
                     <p className={styles.resultDescription}>{character.description}</p>
 
-                    <button
-                        type="button"
-                        className={styles.primary}
-                        onClick={handlePlayAgain}
-                    >
-                        Play again
-                    </button>
-                </section>
-            </main>
+                    <div className={styles.again}>
+                        <Button size="lg" stretch="mobile" onClick={handlePlayAgain}>
+                            Play again
+                        </Button>
+                    </div>
+                </Card>
+            </PageShell>
         );
     }
 
     const legendId = `question-${question.id}`;
 
     return (
-        <main className={styles.container}>
-            <header className={styles.header}>
-                <Link href="/" className={styles.backLink}>
-                    ← Wunderlore
-                </Link>
+        <PageShell size="narrow">
+            <BackLink />
 
+            <header className={styles.header}>
                 <p className={styles.eyebrow}>Which Character Are You?</p>
                 <h1>Find your place in the tale</h1>
             </header>
 
-            <section className={styles.card} aria-busy={isSubmitting}>
+            <Card as="section" elevated aria-busy={isSubmitting}>
                 <div className={styles.progress}>
                     <p className={styles.counter}>
                         Question {index + 1} of {total}
@@ -208,19 +205,18 @@ export default function WhichCharacterContent({
                 )}
 
                 <div className={styles.nav}>
-                    <button
-                        type="button"
-                        className={styles.secondary}
+                    <Button
+                        variant="secondary"
+                        stretch="mobile"
                         onClick={handlePrevious}
                         disabled={index === 0 || isSubmitting}
                     >
                         Previous
-                    </button>
+                    </Button>
 
                     {isLast ? (
-                        <button
-                            type="button"
-                            className={styles.primary}
+                        <Button
+                            stretch="mobile"
                             onClick={handleFinish}
                             disabled={!isComplete || isSubmitting}
                         >
@@ -229,19 +225,18 @@ export default function WhichCharacterContent({
                                 : failure
                                     ? "Try again"
                                     : "See result"}
-                        </button>
+                        </Button>
                     ) : (
-                        <button
-                            type="button"
-                            className={styles.primary}
+                        <Button
+                            stretch="mobile"
                             onClick={handleNext}
                             disabled={!selectedAnswerId || isSubmitting}
                         >
                             Next
-                        </button>
+                        </Button>
                     )}
                 </div>
-            </section>
-        </main>
+            </Card>
+        </PageShell>
     );
 }

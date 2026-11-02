@@ -1,130 +1,200 @@
-.container {
-    width: min(100% - 2rem, 760px);
-    margin: 0 auto;
-    padding: 3rem 0;
-}
-
 .header {
-    margin-bottom: 2rem;
+    margin-bottom: var(--space-5);
     text-align: center;
 }
 
-/* Block-level + fit-content keeps the link left-aligned inside the centered header. */
-.backLink {
-    display: block;
-    width: fit-content;
-    min-height: 44px;
-    margin-bottom: 1.5rem;
-    padding: 0.625rem 0;
-    color: inherit;
-    text-align: left;
-    text-decoration: none;
-}
-
-.backLink:hover {
-    text-decoration: underline;
-}
-
-.backLink:focus-visible {
-    outline: 2px solid currentColor;
-    outline-offset: 2px;
-}
-
 .eyebrow {
-    font-size: 0.8rem;
-    font-weight: 700;
-    letter-spacing: 0.12em;
+    color: var(--color-accent-text);
+    font-size: var(--text-xs);
+    font-weight: var(--weight-semibold);
+    letter-spacing: var(--tracking-wide);
     text-transform: uppercase;
 }
 
 .header h1 {
-    margin: 0.75rem 0;
-    font-size: clamp(2rem, 5vw, 3rem);
+    margin: var(--space-2) 0;
+    font-size: var(--text-3xl);
 }
 
-.gameCard {
-    padding: clamp(1.25rem, 4vw, 2rem);
-    border: 1px solid var(--border, #d1d5db);
-    border-radius: 1rem;
+.header p:last-child {
+    color: var(--color-foreground-muted);
 }
 
-.quote {
-    margin: 0 0 2rem;
-    font-size: clamp(1.25rem, 3vw, 1.75rem);
-    line-height: 1.6;
+.errorTitle {
+    margin-bottom: var(--space-3);
+    font-size: var(--text-3xl);
+}
+
+.loading {
+    padding-block: var(--space-8);
+    color: var(--color-foreground-muted);
     text-align: center;
+    animation: pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    50% {
+        opacity: 0.5;
+    }
+}
+
+/* A short gold rule is the only ornament: literary, not medieval. */
+.quote {
+    margin: 0 0 var(--space-5);
+    font-size: var(--text-2xl);
+    font-style: italic;
+    font-weight: var(--weight-regular);
+    line-height: var(--leading-snug);
+    text-align: center;
+    text-wrap: balance;
+}
+
+.quote::before {
+    content: "";
+    display: block;
+    width: 3rem;
+    height: 2px;
+    margin: 0 auto var(--space-4);
+    background: var(--color-accent);
 }
 
 .options {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.75rem;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-3);
 }
 
-.option,
-.newRound {
-    padding: 0.9rem 1rem;
-    border: 1px solid var(--border, #d1d5db);
-    border-radius: 0.65rem;
-    background: var(--background, #fff);
-    color: var(--foreground, #171717);
+.option {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    min-height: 3.25rem;
+    padding: var(--space-3) var(--space-4);
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-md);
+    background: var(--color-background);
+    color: var(--color-foreground);
     font: inherit;
+    line-height: var(--leading-snug);
+    text-align: center;
     cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
     transition:
-        background-color 150ms ease,
-        border-color 150ms ease;
+        var(--transition-colors),
+        transform var(--duration-fast) var(--ease-standard);
 }
 
-.option:hover:not(:disabled),
-.newRound:hover:not(:disabled) {
-    border-color: var(--foreground, #171717);
+.option:hover:not(:disabled) {
+    border-color: var(--color-primary);
+    background: var(--color-surface-elevated);
 }
 
-.option:focus-visible,
-.newRound:focus-visible {
-    outline: 2px solid var(--foreground, #171717);
-    outline-offset: 3px;
+.option:active:not(:disabled) {
+    transform: scale(0.99);
 }
 
-.option:disabled,
-.newRound:disabled {
+/* Answered options stay fully readable; only the untouched ones recede. */
+.option:disabled {
     cursor: not-allowed;
-    opacity: 0.7;
+}
+
+.option:disabled:not(.correct):not(.incorrect) {
+    opacity: var(--disabled-opacity);
+}
+
+.option.correct,
+.option.incorrect {
+    cursor: default;
+    font-weight: var(--weight-semibold);
 }
 
 .option.correct {
-    border-color: #15803d;
-    background: #dcfce7;
-    color: #14532d;
+    border-color: var(--color-success);
+    background: var(--color-success-surface);
+    color: var(--color-success);
 }
 
 .option.incorrect {
-    border-color: #b91c1c;
-    background: #fee2e2;
-    color: #7f1d1d;
+    border-color: var(--color-error);
+    background: var(--color-error-surface);
+    color: var(--color-error);
+}
+
+/* Color is not the only signal: a mark too. The second declaration gives screen
+   readers an empty alternative; browsers without alt-text syntax keep the first. */
+.option.correct::after {
+    content: "✓";
+    content: "✓" / "";
+}
+
+.option.incorrect::after {
+    content: "✕";
+    content: "✕" / "";
 }
 
 .status,
 .error,
 .result {
-    margin-top: 1.5rem;
+    margin-top: var(--space-5);
     text-align: center;
 }
 
+.status {
+    color: var(--color-foreground-muted);
+}
+
 .error {
-    color: #b91c1c;
+    padding: var(--space-3) var(--space-4);
+    border: 1px solid var(--color-error);
+    border-radius: var(--radius-md);
+    background: var(--color-error-surface);
+    color: var(--color-error);
+}
+
+.result {
+    padding-top: var(--space-5);
+    border-top: 1px solid var(--color-border);
+}
+
+.result p {
+    text-wrap: balance;
+}
+
+.result h2 {
+    margin-bottom: var(--space-2);
+    font-size: var(--text-2xl);
+}
+
+.resultCorrect {
+    color: var(--color-success);
+}
+
+.resultIncorrect {
+    color: var(--color-error);
 }
 
 .newRound {
-    margin-top: 1rem;
+    margin-top: var(--space-4);
 }
 
-@media (max-width: 480px) {
+@media (min-width: 36em) {
     .options {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (min-width: 48em) {
+    .header {
+        margin-bottom: var(--space-6);
     }
 
-    .container {
-        padding: 2rem 0;
+    .header h1 {
+        font-size: var(--text-4xl);
+    }
+
+    .quote {
+        margin-bottom: var(--space-6);
+        font-size: var(--text-3xl);
     }
 }

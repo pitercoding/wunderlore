@@ -1,8 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
+import BackLink from "@/components/BackLink/BackLink";
+import Button from "@/components/Button/Button";
+import Card from "@/components/Card/Card";
+import PageShell from "@/components/PageShell/PageShell";
 import type { WhoSaidItRound, WhoSaidItAnswerResult } from "@/lib/api/whoSaidIt";
 import { submitWhoSaidItAnswer, type WhoSaidItAnswerFailure } from "./actions";
 import styles from "./page.module.css";
@@ -58,18 +61,16 @@ export default function WhoSaidItContent({ round }: GameContentProps) {
     }
 
     return (
-        <main className={styles.container}>
-            <header className={styles.header}>
-                <Link href="/" className={styles.backLink}>
-                    ← Wunderlore
-                </Link>
+        <PageShell>
+            <BackLink />
 
+            <header className={styles.header}>
                 <p className={styles.eyebrow}>WHO SAID IT?</p>
                 <h1>Who said this quote?</h1>
                 <p>Choose the character you think said it.</p>
             </header>
 
-            <section className={styles.gameCard} aria-busy={isSubmitting}>
+            <Card as="section" elevated aria-busy={isSubmitting}>
                 <blockquote className={styles.quote}>
                     “{round.quote}”
                 </blockquote>
@@ -120,7 +121,15 @@ export default function WhoSaidItContent({ round }: GameContentProps) {
                     <div className={styles.result} aria-live="polite">
                         {result ? (
                             <>
-                                <h2>{result.correct ? "Correct!" : "Not quite!"}</h2>
+                                <h2
+                                    className={
+                                        result.correct
+                                            ? styles.resultCorrect
+                                            : styles.resultIncorrect
+                                    }
+                                >
+                                    {result.correct ? "Correct!" : "Not quite!"}
+                                </h2>
                                 <p>
                                     The correct answer is{" "}
                                     <strong>
@@ -139,18 +148,18 @@ export default function WhoSaidItContent({ round }: GameContentProps) {
                             </p>
                         )}
 
-                        <button
-                            type="button"
+                        <Button
                             className={styles.newRound}
+                            stretch="mobile"
                             onClick={handleNewRound}
                             disabled={isRefreshing}
                         >
                             {isRefreshing ? "Loading..." : "Play another round"}
-                        </button>
+                        </Button>
                     </div>
                 )}
 
-            </section>
-        </main>
+            </Card>
+        </PageShell>
     );
 }

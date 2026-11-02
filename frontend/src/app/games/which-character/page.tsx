@@ -1,6 +1,7 @@
-import Link from "next/link";
 import { connection } from "next/server";
 import { Suspense } from "react";
+import BackLink from "@/components/BackLink/BackLink";
+import PageShell from "@/components/PageShell/PageShell";
 import { getQuestions } from "@/lib/api/whichCharacter";
 import { unavailableMessage } from "@/lib/api/unavailable";
 import RetryButton from "../../RetryButton";
@@ -9,9 +10,11 @@ import styles from "./page.module.css";
 
 function WhichCharacterFallback() {
     return (
-        <main className={styles.container}>
-            <p role="status">Loading the questions...</p>
-        </main>
+        <PageShell size="narrow">
+            <p role="status" className={styles.loading}>
+                Loading the questions...
+            </p>
+        </PageShell>
     );
 }
 
@@ -29,10 +32,8 @@ async function WhichCharacterLoader() {
         console.error("Failed to load Which Character Are You questions", error);
 
         return (
-            <main className={styles.container}>
-                <Link href="/" className={styles.backLink}>
-                    ← Wunderlore
-                </Link>
+            <PageShell size="narrow">
+                <BackLink />
 
                 <h1 className={styles.errorTitle}>Which Character Are You?</h1>
                 <p role="alert" className={styles.error}>
@@ -41,7 +42,7 @@ async function WhichCharacterLoader() {
                 </p>
 
                 <RetryButton />
-            </main>
+            </PageShell>
         );
     }
 

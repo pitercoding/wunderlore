@@ -1,0 +1,82 @@
+.button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    min-height: var(--touch-target);
+    padding: 0 var(--space-5);
+    border: 1px solid transparent;
+    border-radius: var(--radius-md);
+    font: inherit;
+    font-weight: var(--weight-medium);
+    line-height: var(--leading-snug);
+    text-align: center;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition:
+        var(--transition-colors),
+        transform var(--duration-fast) var(--ease-standard);
+}
+
+.button:active:not(:disabled) {
+    transform: translateY(1px);
+}
+
+.button:disabled {
+    cursor: not-allowed;
+    opacity: var(--disabled-opacity);
+}
+
+/* Keyboard focus uses the global ring from globals.css. */
+
+.lg {
+    min-height: 3.25rem;
+    padding: 0 var(--space-6);
+    font-size: var(--text-lg);
+}
+
+.primary {
+    background: var(--color-primary);
+    color: var(--color-on-primary);
+}
+
+.primary:hover:not(:disabled) {
+    background: var(--color-primary-hover);
+}
+
+.secondary {
+    border-color: var(--color-border-strong);
+    background: transparent;
+    color: var(--color-foreground);
+}
+
+.secondary:hover:not(:disabled) {
+    background: var(--color-overlay-hover);
+    border-color: var(--color-foreground-muted);
+}
+
+.ghost {
+    background: transparent;
+    color: var(--color-foreground);
+}
+
+.ghost:hover:not(:disabled) {
+    background: var(--color-overlay-hover);
+}
+
+.always {
+    display: flex;
+    width: 100%;
+}
+
+.mobile {
+    display: flex;
+    width: 100%;
+}
+
+@media (min-width: 36em) {
+    .mobile {
+        display: inline-flex;
+        width: auto;
+    }
+}

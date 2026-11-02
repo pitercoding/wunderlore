@@ -1,6 +1,7 @@
-import Link from "next/link";
 import { connection } from "next/server";
 import { Suspense } from "react";
+import BackLink from "@/components/BackLink/BackLink";
+import PageShell from "@/components/PageShell/PageShell";
 import { createRound } from "@/lib/api/whoSaidIt";
 import { unavailableMessage } from "@/lib/api/unavailable";
 import RetryButton from "../../RetryButton";
@@ -9,9 +10,11 @@ import styles from "./page.module.css";
 
 function WhoSaidItFallback() {
     return (
-        <main className={styles.container}>
-            <p role="status">Loading a new round...</p>
-        </main>
+        <PageShell>
+            <p role="status" className={styles.loading}>
+                Loading a new round...
+            </p>
+        </PageShell>
     );
 }
 
@@ -29,19 +32,17 @@ async function WhoSaidItLoader() {
         console.error("Failed to load Who Said It round", error);
 
         return (
-            <main className={styles.container}>
-                <Link href="/" className={styles.backLink}>
-                    ← Wunderlore
-                </Link>
+            <PageShell>
+                <BackLink />
 
-                <h1>Who Said It?</h1>
-                <p role="alert">
+                <h1 className={styles.errorTitle}>Who Said It?</h1>
+                <p role="alert" className={styles.error}>
                     {unavailableMessage(error) ??
                         "Unable to load a game round. Please try again."}
                 </p>
 
                 <RetryButton />
-            </main>
+            </PageShell>
         );
     }
 
