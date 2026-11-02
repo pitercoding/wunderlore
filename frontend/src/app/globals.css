@@ -121,6 +121,21 @@
   --focus-ring-offset: 3px;
   --disabled-opacity: 0.5;
 
+  /* ---- Scene: Enchanted Worlds ---------------------------------------
+     A fixed dark forest palette for immersive pages (the Home). It does not
+     change with the OS theme; a page that uses it re-points the semantic
+     --color-* tokens to these values in its own scope. */
+  --scene-abyss: #050806;
+  --scene-night: #0b1410;
+  --scene-surface: #111c17;
+  --scene-moss: #3e5a3a;
+  --scene-moss-light: #4f6b45;
+  --scene-glow: #b8e07a;
+  --scene-glow-soft: #c9f08a;
+  --scene-text: #e4e6d8; /* 14.8:1 on night */
+  --scene-text-muted: #a9b0a0; /* 8.4:1 on night */
+  --scene-border: rgba(255, 255, 255, 0.08);
+
   /* ---- Legacy aliases ------------------------------------------------
      Existing CSS Modules still read these names. Keep them until every
      module has moved to the --color-* tokens above. `--border` was never
