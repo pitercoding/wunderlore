@@ -376,6 +376,22 @@
     font-weight: 300;
     line-height: var(--leading-relaxed);
     text-wrap: balance;
+    position: relative;
+    isolation: isolate;
+}
+
+/* The photograph is lit right behind the lower lines (moss and the glowing roots).
+   A soft, feathered dark patch behind the paragraph alone keeps its translucent
+   text at 4.5:1 or better without darkening the rest of the scene. */
+.subtitle::before {
+    content: "";
+    position: absolute;
+    inset: -1rem -1.25rem;
+    z-index: -1;
+    border-radius: var(--radius-xl);
+    background: color-mix(in srgb, var(--scene-abyss) 56%, transparent);
+    filter: blur(14px);
+    pointer-events: none;
 }
 
 .actions {
@@ -428,6 +444,25 @@
 
 .ctaGhost:hover {
     background: var(--color-overlay-hover);
+}
+
+/* The photograph is brightest right behind this link (lit moss and the glowing
+   tunnel). A soft, feathered dark patch behind the label alone keeps its text at
+   4.5:1 or better without darkening the rest of the scene. */
+.ghostLabel {
+    position: relative;
+    isolation: isolate;
+}
+
+.ghostLabel::before {
+    content: "";
+    position: absolute;
+    inset: -0.95rem -1.5rem;
+    z-index: -1;
+    border-radius: var(--radius-full);
+    background: color-mix(in srgb, var(--scene-abyss) 50%, transparent);
+    filter: blur(10px);
+    pointer-events: none;
 }
 
 /* ---- Strip: the experiences, as a second way in ------------------- */

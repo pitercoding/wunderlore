@@ -164,7 +164,7 @@ export default function HomePage() {
                 Explore the games
               </Link>
               <Link href="/quotes" className={styles.ctaGhost}>
-                Explore the quotes
+                <span className={styles.ghostLabel}>Explore the quotes</span>
               </Link>
             </div>
           </section>
