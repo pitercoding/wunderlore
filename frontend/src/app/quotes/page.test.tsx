@@ -23,7 +23,7 @@ describe("QuotesPage", () => {
         render(page.props.fallback);
 
         expect(
-            screen.getByRole("heading", { level: 1, name: "Who said it?" }),
+            screen.getByRole("heading", { level: 1, name: "Quotes" }),
         ).toBeInTheDocument();
         expect(screen.getByText("Loading quotes...")).toBeInTheDocument();
     });

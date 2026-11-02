@@ -143,7 +143,7 @@ describe("QuotesContent", () => {
         await renderQuotes();
 
         expect(
-            screen.getByRole("heading", { level: 1, name: "Who said it?" }),
+            screen.getByRole("heading", { level: 1, name: "Quotes" }),
         ).toBeInTheDocument();
         const catalog = within(
             screen.getByRole("region", { name: "Quote catalog" }),
@@ -195,9 +195,17 @@ describe("QuotesContent", () => {
         await renderQuotes();
 
         expect(
-            screen.getByText("No quotes found on this page."),
+            screen.getByText("No quotes found."),
         ).toBeInTheDocument();
         expect(screen.queryByRole("article")).not.toBeInTheDocument();
+        // No pages: no "Page 1 of 0" and no Previous/Next.
+        expect(
+            screen.queryByRole("navigation", { name: "Quote pagination" }),
+        ).not.toBeInTheDocument();
+        expect(screen.queryByText(/Page \d+ of/)).not.toBeInTheDocument();
+        expect(screen.queryByText("Previous")).not.toBeInTheDocument();
+        expect(screen.queryByText("Next")).not.toBeInTheDocument();
+        expect(screen.getByText("0 quotes available")).toBeInTheDocument();
         expect(redirectMock).not.toHaveBeenCalled();
     });
 

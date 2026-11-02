@@ -1,5 +1,7 @@
 import { Suspense } from "react";
 import QuotesContent from "./QuotesContent";
+import QuotesFrame from "./QuotesFrame";
+import styles from "./page.module.css";
 
 interface QuotesPageProps {
     searchParams: Promise<{
@@ -9,10 +11,11 @@ interface QuotesPageProps {
 
 function QuotesFallback() {
     return (
-        <main>
-            <h1>Who said it?</h1>
-            <p>Loading quotes...</p>
-        </main>
+        <QuotesFrame title="Quotes">
+            <p className={styles.loading} role="status">
+                Loading quotes...
+            </p>
+        </QuotesFrame>
     );
 }
 

@@ -4,6 +4,7 @@ import { connection } from "next/server";
 import { getQuotes } from "@/lib/api/quotes";
 import { unavailableMessage } from "@/lib/api/unavailable";
 import RetryButton from "../RetryButton";
+import QuotesFrame from "./QuotesFrame";
 import styles from "./page.module.css";
 
 interface QuotesPageProps {
@@ -34,19 +35,16 @@ export default async function QuotesContent({
         console.error("Failed to load quotes", error);
 
         return (
-            <main className={styles.container}>
-                <Link href="/" className={styles.backLink}>
-                    ← Wunderlore
-                </Link>
+            <QuotesFrame title="Quotes" compactNav>
+                <div className={styles.notice}>
+                    <p role="alert" className={styles.noticeText}>
+                        {unavailableMessage(error) ??
+                            "We couldn't load the quotes. Please try again."}
+                    </p>
 
-                <h1>Quotes</h1>
-                <p role="alert">
-                    {unavailableMessage(error) ??
-                        "We couldn't load the quotes. Please try again."}
-                </p>
-
-                <RetryButton />
-            </main>
+                    <RetryButton />
+                </div>
+            </QuotesFrame>
         );
     }
 
@@ -55,26 +53,17 @@ export default async function QuotesContent({
     }
 
     return (
-        <main className={styles.container}>
-            <header className={styles.header}>
-                <Link href="/" className={styles.backLink}>
-                    ← Wunderlore
-                </Link>
-
-                <p className={styles.eyebrow}>EXPLORE MIDDLE-EARTH</p>
-                <h1>Who said it?</h1>
-                <p className={styles.description}>
-                    Explore memorable quotes from the world of The Lord of the Rings.
-                </p>
-            </header>
-
+        <QuotesFrame
+            title="Quotes"
+            description="Explore memorable quotes from the world of The Lord of the Rings."
+        >
             <section aria-label="Quote catalog" className={styles.quoteList}>
                 {quotePage.docs.length === 0 ? (
-                    <p>No quotes found on this page.</p>
+                    <p className={styles.empty}>No quotes found.</p>
                 ) : (
                     quotePage.docs.map((quote) => (
-                        <article key={quote._id} className={styles.quoteCard}>
-                            <blockquote>{quote.dialog}</blockquote>
+                        <article key={quote._id} className={styles.quote}>
+                            <blockquote className={styles.text}>{quote.dialog}</blockquote>
 
                             <p className={styles.metadata}>
                                 {quote.characterName?.trim()
@@ -86,41 +75,43 @@ export default async function QuotesContent({
                 )}
             </section>
 
-            <nav aria-label="Quote pagination" className={styles.pagination}>
-                {quotePage.page > 1 ? (
-                    <Link
-                        href={`/quotes?page=${quotePage.page - 1}`}
-                        className={styles.pageLink}
-                    >
-                        Previous
-                    </Link>
-                ) : (
-                    <span className={styles.disabledLink} aria-disabled="true">
-                        Previous
-                    </span>
-                )}
+            {quotePage.pages > 0 && (
+                <nav aria-label="Quote pagination" className={styles.pagination}>
+                    {quotePage.page > 1 ? (
+                        <Link
+                            href={`/quotes?page=${quotePage.page - 1}`}
+                            className={styles.pageLink}
+                        >
+                            Previous
+                        </Link>
+                    ) : (
+                        <span className={styles.disabledLink} aria-disabled="true">
+                            Previous
+                        </span>
+                    )}
 
-                <span>
-                    Page {quotePage.page} of {quotePage.pages}
-                </span>
-
-                {quotePage.page < quotePage.pages ? (
-                    <Link
-                        href={`/quotes?page=${quotePage.page + 1}`}
-                        className={styles.pageLink}
-                    >
-                        Next
-                    </Link>
-                ) : (
-                    <span className={styles.disabledLink} aria-disabled="true">
-                        Next
+                    <span className={styles.pageStatus}>
+                        Page {quotePage.page} of {quotePage.pages}
                     </span>
-                )}
-            </nav>
+
+                    {quotePage.page < quotePage.pages ? (
+                        <Link
+                            href={`/quotes?page=${quotePage.page + 1}`}
+                            className={styles.pageLink}
+                        >
+                            Next
+                        </Link>
+                    ) : (
+                        <span className={styles.disabledLink} aria-disabled="true">
+                            Next
+                        </span>
+                    )}
+                </nav>
+            )}
 
             <p className={styles.total}>
                 {quotePage.total} quotes available
             </p>
-        </main>
+        </QuotesFrame>
     );
 }
