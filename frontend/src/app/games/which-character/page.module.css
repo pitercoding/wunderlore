@@ -1,0 +1,286 @@
+.container {
+    --gold: #8a6a1f;
+    --gold-soft: rgba(138, 106, 31, 0.14);
+    --parchment: #faf6ec;
+    --ink: var(--foreground, #171717);
+    --line: #cdbf99;
+    --danger: #b91c1c;
+
+    width: min(100% - 2rem, 720px);
+    margin: 0 auto;
+    padding: 3rem 0;
+    font-family: Georgia, "Times New Roman", serif;
+}
+
+@media (prefers-color-scheme: dark) {
+    .container {
+        --gold: #d4af5a;
+        --gold-soft: rgba(212, 175, 90, 0.16);
+        --parchment: #15130e;
+        --line: #4a4129;
+        --danger: #f87171;
+    }
+}
+
+.header {
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+/* Block-level + fit-content keeps the link left-aligned inside the centered header. */
+.backLink {
+    display: block;
+    width: fit-content;
+    min-height: 44px;
+    margin-bottom: 1.5rem;
+    padding: 0.625rem 0;
+    color: inherit;
+    text-align: left;
+    text-decoration: none;
+}
+
+.backLink:hover {
+    text-decoration: underline;
+}
+
+.backLink:focus-visible {
+    outline: 2px solid var(--gold);
+    outline-offset: 2px;
+}
+
+.eyebrow {
+    color: var(--gold);
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-align: center;
+    text-transform: uppercase;
+}
+
+.header h1 {
+    margin: 0.75rem 0;
+    font-size: clamp(1.9rem, 5vw, 2.75rem);
+    font-weight: 600;
+}
+
+.errorTitle {
+    margin-bottom: 1rem;
+}
+
+.card {
+    padding: clamp(1.25rem, 4vw, 2.25rem);
+    border: 1px solid var(--line);
+    border-radius: 1rem;
+    background: var(--parchment);
+    box-shadow: 0 0 0 4px var(--gold-soft);
+}
+
+.progress {
+    margin-bottom: 1.75rem;
+}
+
+.counter {
+    margin-bottom: 0.5rem;
+    color: var(--gold);
+    font-size: 0.9rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.bar {
+    display: block;
+    width: 100%;
+    height: 0.5rem;
+    border: 0;
+    border-radius: 999px;
+    background: var(--gold-soft);
+    overflow: hidden;
+    appearance: none;
+}
+
+.bar::-webkit-progress-bar {
+    background: var(--gold-soft);
+}
+
+.bar::-webkit-progress-value {
+    background: var(--gold);
+    transition: width 200ms ease;
+}
+
+.bar::-moz-progress-bar {
+    background: var(--gold);
+}
+
+.fieldset {
+    min-width: 0;
+    border: 0;
+}
+
+.question {
+    margin-bottom: 1.5rem;
+    font-size: clamp(1.25rem, 3vw, 1.6rem);
+    line-height: 1.45;
+}
+
+.options {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.option {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-height: 3.25rem;
+    padding: 0.85rem 1rem;
+    border: 1px solid var(--line);
+    border-radius: 0.65rem;
+    background: var(--background, #fff);
+    line-height: 1.4;
+    cursor: pointer;
+    transition:
+        background-color 150ms ease,
+        border-color 150ms ease;
+}
+
+.option:hover {
+    border-color: var(--gold);
+}
+
+.option:focus-within {
+    outline: 2px solid var(--gold);
+    outline-offset: 3px;
+}
+
+.option.selected {
+    border-color: var(--gold);
+    background: var(--gold-soft);
+    font-weight: 600;
+}
+
+.radio {
+    flex: none;
+    width: 1.1rem;
+    height: 1.1rem;
+    accent-color: var(--gold);
+    cursor: inherit;
+}
+
+.fieldset:disabled .option {
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.status,
+.error {
+    margin-top: 1.25rem;
+    text-align: center;
+}
+
+.error {
+    color: var(--danger);
+}
+
+.nav {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-top: 1.75rem;
+}
+
+.primary,
+.secondary {
+    min-height: 44px;
+    padding: 0.7rem 1.5rem;
+    border: 1px solid var(--gold);
+    border-radius: 0.65rem;
+    font: inherit;
+    cursor: pointer;
+    transition:
+        background-color 150ms ease,
+        opacity 150ms ease;
+}
+
+.primary {
+    background: var(--gold);
+    color: var(--background, #fff);
+}
+
+.secondary {
+    background: transparent;
+    color: var(--foreground, #171717);
+}
+
+.primary:hover:not(:disabled) {
+    opacity: 0.88;
+}
+
+.secondary:hover:not(:disabled) {
+    background: var(--gold-soft);
+}
+
+.primary:focus-visible,
+.secondary:focus-visible {
+    outline: 2px solid var(--foreground, #171717);
+    outline-offset: 3px;
+}
+
+.primary:disabled,
+.secondary:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+}
+
+.resultLead {
+    margin-top: 1rem;
+    text-align: center;
+    font-style: italic;
+}
+
+.resultName {
+    margin: 0.5rem 0 0;
+    font-size: clamp(2rem, 6vw, 3rem);
+    font-weight: 600;
+    text-align: center;
+}
+
+.resultName:focus {
+    outline: none;
+}
+
+.divider {
+    width: 6rem;
+    height: 2px;
+    margin: 1.5rem auto;
+    background: var(--gold);
+}
+
+.resultDescription {
+    font-size: 1.1rem;
+    line-height: 1.7;
+    text-align: center;
+}
+
+.card .primary {
+    display: block;
+    margin: 2rem auto 0;
+}
+
+.nav .primary {
+    margin: 0;
+}
+
+@media (max-width: 480px) {
+    .container {
+        padding: 2rem 0;
+    }
+
+    .nav {
+        flex-direction: column-reverse;
+    }
+
+    .primary,
+    .secondary {
+        width: 100%;
+    }
+}
