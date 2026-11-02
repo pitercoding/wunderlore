@@ -16,4 +16,15 @@ describe("HomePage", () => {
             screen.getByRole("link", { name: "Play Who Said It? →" }),
         ).toHaveAttribute("href", "/games/who-said-it");
     });
+
+    it("links to the Which Character Are You? game", () => {
+        render(<HomePage />);
+
+        expect(
+            screen.getByRole("link", { name: "Which Character Are You? →" }),
+        ).toHaveAttribute("href", "/games/which-character");
+        expect(
+            screen.getByText(/personality questions.*Tolkien character/),
+        ).toBeInTheDocument();
+    });
 });

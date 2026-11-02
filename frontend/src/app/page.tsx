@@ -8,6 +8,12 @@ export default function HomePage() {
 
       <Link href="/quotes">Explore quotes →</Link>
       <Link href="/games/who-said-it">Play Who Said It? →</Link>
+
+      <p>
+        Answer personality questions to discover which Tolkien character
+        matches you.
+      </p>
+      <Link href="/games/which-character">Which Character Are You? →</Link>
     </main>
   );
 }
