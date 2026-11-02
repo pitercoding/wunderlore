@@ -1,93 +1,93 @@
-.header {
-    margin-bottom: var(--space-5);
-    text-align: center;
+/* The scene (palette tokens, banner, title) lives in WhoSaidItFrame. */
+
+/* ---- The quote: the page's reading moment -------------------------- */
+
+/* A quiet surface: the quote and answers never sit directly on the photograph. */
+.stage {
+    padding: var(--space-5) var(--space-4) var(--space-5);
+    border: 1px solid var(--scene-border);
+    border-radius: var(--radius-xl);
+    background: color-mix(in srgb, var(--scene-night) 84%, transparent);
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+    box-shadow: 0 1.5rem 3rem -1.5rem color-mix(in srgb, var(--scene-abyss) 90%, transparent);
 }
 
-.eyebrow {
-    color: var(--color-accent-text);
-    font-size: var(--text-xs);
-    font-weight: var(--weight-semibold);
-    letter-spacing: var(--tracking-wide);
-    text-transform: uppercase;
-}
-
-.header h1 {
-    margin: var(--space-2) 0;
-    font-size: var(--text-3xl);
-}
-
-.header p:last-child {
-    color: var(--color-foreground-muted);
-}
-
-.errorTitle {
-    margin-bottom: var(--space-3);
-    font-size: var(--text-3xl);
-}
-
-.loading {
-    padding-block: var(--space-8);
-    color: var(--color-foreground-muted);
-    text-align: center;
-    animation: pulse 1.6s ease-in-out infinite;
-}
-
-@keyframes pulse {
-    50% {
-        opacity: 0.5;
-    }
-}
-
-/* A short gold rule is the only ornament: literary, not medieval. */
 .quote {
-    margin: 0 0 var(--space-5);
-    font-size: var(--text-2xl);
-    font-style: italic;
+    margin: 0;
+    padding-block: var(--space-2) var(--space-5);
+    color: var(--scene-text);
+    font-size: clamp(1.5rem, 1.05rem + 2vw, 2.4rem);
     font-weight: var(--weight-regular);
-    line-height: var(--leading-snug);
-    text-align: center;
-    text-wrap: balance;
+    letter-spacing: -0.005em;
+    line-height: 1.4;
+    text-wrap: pretty;
+    overflow-wrap: anywhere;
 }
 
+/* A short glowing rule, like a lantern's reflection, before the words. */
 .quote::before {
     content: "";
     display: block;
     width: 3rem;
     height: 2px;
-    margin: 0 auto var(--space-4);
-    background: var(--color-accent);
+    margin-bottom: var(--space-4);
+    background: linear-gradient(
+        to right,
+        var(--scene-glow),
+        transparent
+    );
+    box-shadow: 0 0 12px color-mix(in srgb, var(--scene-glow) 55%, transparent);
 }
+
+/* ---- Answers ------------------------------------------------------- */
 
 .options {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     gap: var(--space-3);
+    counter-reset: option;
 }
 
 .option {
     display: flex;
     align-items: center;
-    justify-content: center;
-    gap: var(--space-2);
-    min-height: 3.25rem;
+    gap: var(--space-3);
+    min-height: 3.5rem;
     padding: var(--space-3) var(--space-4);
     border: 1px solid var(--color-border-strong);
-    border-radius: var(--radius-md);
-    background: var(--color-background);
-    color: var(--color-foreground);
+    border-radius: var(--radius-xl);
+    background: color-mix(in srgb, var(--scene-surface) 70%, transparent);
+    color: var(--scene-text);
     font: inherit;
+    font-size: var(--text-lg);
     line-height: var(--leading-snug);
-    text-align: center;
+    text-align: left;
+    overflow-wrap: anywhere;
     cursor: pointer;
     -webkit-tap-highlight-color: transparent;
     transition:
         var(--transition-colors),
         transform var(--duration-fast) var(--ease-standard);
+    counter-increment: option;
+}
+
+/* A quiet numeral, so the choices read as a list of names. Decorative: the second
+   declaration gives screen readers an empty alternative. */
+.option::before {
+    content: counter(option, upper-roman);
+    content: counter(option, upper-roman) / "";
+    flex: none;
+    min-width: 1.75rem;
+    color: var(--scene-text-muted);
+    font-family: var(--font-serif);
+    font-size: var(--text-base);
+    letter-spacing: 0.04em;
 }
 
 .option:hover:not(:disabled) {
-    border-color: var(--color-primary);
-    background: var(--color-surface-elevated);
+    border-color: color-mix(in srgb, var(--scene-glow) 55%, transparent);
+    background: color-mix(in srgb, var(--scene-glow) 8%, var(--scene-surface));
 }
 
 .option:active:not(:disabled) {
@@ -121,8 +121,18 @@
     color: var(--color-error);
 }
 
-/* Color is not the only signal: a mark too. The second declaration gives screen
-   readers an empty alternative; browsers without alt-text syntax keep the first. */
+.option.correct::before,
+.option.incorrect::before {
+    color: inherit;
+}
+
+/* Color is not the only signal: a mark too, pushed to the end of the row. The second
+   declaration gives screen readers an empty alternative. */
+.option.correct::after,
+.option.incorrect::after {
+    margin-left: auto;
+}
+
 .option.correct::after {
     content: "✓";
     content: "✓" / "";
@@ -133,37 +143,45 @@
     content: "✕" / "";
 }
 
+/* ---- Feedback ------------------------------------------------------ */
+
 .status,
 .error,
 .result {
     margin-top: var(--space-5);
-    text-align: center;
 }
 
 .status {
-    color: var(--color-foreground-muted);
+    color: var(--scene-text-muted);
 }
 
 .error {
     padding: var(--space-3) var(--space-4);
     border: 1px solid var(--color-error);
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-lg);
     background: var(--color-error-surface);
     color: var(--color-error);
 }
 
 .result {
     padding-top: var(--space-5);
-    border-top: 1px solid var(--color-border);
+    border-top: 1px solid var(--scene-border);
 }
 
 .result p {
+    color: var(--scene-text);
     text-wrap: balance;
+}
+
+.result strong {
+    color: var(--scene-glow);
+    font-weight: var(--weight-semibold);
 }
 
 .result h2 {
     margin-bottom: var(--space-2);
-    font-size: var(--text-2xl);
+    font-size: var(--text-3xl);
+    font-weight: var(--weight-regular);
 }
 
 .resultCorrect {
@@ -174,8 +192,51 @@
     color: var(--color-error);
 }
 
-.newRound {
+/* The Home's call to action, set in the shared Button. */
+.result .newRound {
     margin-top: var(--space-4);
+    border-color: color-mix(in srgb, var(--scene-glow) 34%, transparent);
+    box-shadow:
+        inset 0 1px 0 color-mix(in srgb, var(--scene-text) 14%, transparent),
+        0 0 1.5rem -0.35rem color-mix(in srgb, var(--scene-glow) 40%, transparent);
+}
+
+.result .newRound:hover:not(:disabled) {
+    border-color: color-mix(in srgb, var(--scene-glow) 55%, transparent);
+}
+
+/* ---- States -------------------------------------------------------- */
+
+.loading,
+.noticeText {
+    color: var(--scene-text-muted);
+    font-family: var(--font-serif);
+    font-size: var(--text-xl);
+    line-height: var(--leading-snug);
+}
+
+.loading {
+    animation: pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    50% {
+        opacity: 0.5;
+    }
+}
+
+.notice {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: var(--space-5);
+    border: 1px solid var(--scene-border);
+    border-radius: var(--radius-xl);
+    background: color-mix(in srgb, var(--scene-surface) 70%, transparent);
+}
+
+.noticeText {
+    color: var(--scene-text);
 }
 
 @media (min-width: 36em) {
@@ -185,16 +246,11 @@
 }
 
 @media (min-width: 48em) {
-    .header {
-        margin-bottom: var(--space-6);
-    }
-
-    .header h1 {
-        font-size: var(--text-4xl);
+    .stage {
+        padding: var(--space-6) var(--space-6) var(--space-6);
     }
 
     .quote {
-        margin-bottom: var(--space-6);
-        font-size: var(--text-3xl);
+        padding-block: var(--space-3) var(--space-6);
     }
 }

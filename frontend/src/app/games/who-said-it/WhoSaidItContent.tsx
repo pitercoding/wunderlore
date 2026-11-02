@@ -2,12 +2,10 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import BackLink from "@/components/BackLink/BackLink";
 import Button from "@/components/Button/Button";
-import Card from "@/components/Card/Card";
-import PageShell from "@/components/PageShell/PageShell";
 import type { WhoSaidItRound, WhoSaidItAnswerResult } from "@/lib/api/whoSaidIt";
 import { submitWhoSaidItAnswer, type WhoSaidItAnswerFailure } from "./actions";
+import WhoSaidItFrame from "./WhoSaidItFrame";
 import styles from "./page.module.css";
 
 interface GameContentProps {
@@ -61,21 +59,20 @@ export default function WhoSaidItContent({ round }: GameContentProps) {
     }
 
     return (
-        <PageShell>
-            <BackLink />
-
-            <header className={styles.header}>
-                <p className={styles.eyebrow}>WHO SAID IT?</p>
-                <h1>Who said this quote?</h1>
-                <p>Choose the character you think said it.</p>
-            </header>
-
-            <Card as="section" elevated aria-busy={isSubmitting}>
+        <WhoSaidItFrame
+            title="Who said this quote?"
+            description="Choose the character you think said it."
+        >
+            <section className={styles.stage} aria-busy={isSubmitting}>
                 <blockquote className={styles.quote}>
                     “{round.quote}”
                 </blockquote>
 
-                <div className={styles.options}>
+                <div
+                    className={styles.options}
+                    role="group"
+                    aria-label="Answer choices"
+                >
                     {round.options.map((option) => {
                         const isCorrect =
                             result?.correctCharacterId === option.id;
@@ -159,7 +156,7 @@ export default function WhoSaidItContent({ round }: GameContentProps) {
                     </div>
                 )}
 
-            </Card>
-        </PageShell>
+            </section>
+        </WhoSaidItFrame>
     );
 }
