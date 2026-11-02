@@ -1,0 +1,224 @@
+{
+  "questions": [
+    {
+      "id": "q01",
+      "text": "When everything around you starts falling apart, what is your first instinct?",
+      "options": [
+        {
+          "id": "q01_a",
+          "text": "Take responsibility and find a way forward, even if the burden falls on you."
+        },
+        {
+          "id": "q01_b",
+          "text": "Make sure everyone is safe and supported before anything else."
+        },
+        {
+          "id": "q01_c",
+          "text": "Step forward, organize people, and lead them through the crisis."
+        },
+        {
+          "id": "q01_d",
+          "text": "Look beyond the immediate problem and search for the deeper cause."
+        }
+      ]
+    },
+    {
+      "id": "q02",
+      "text": "When someone you barely know asks for your trust, how do you respond?",
+      "options": [
+        {
+          "id": "q02_a",
+          "text": "I remain cautious and look for signs of their true intentions."
+        },
+        {
+          "id": "q02_b",
+          "text": "I want to believe them, even when my own judgment tells me to be careful."
+        },
+        {
+          "id": "q02_c",
+          "text": "I observe their actions before deciding whether they deserve my trust."
+        },
+        {
+          "id": "q02_d",
+          "text": "I give them a chance, but I expect honesty and loyalty in return."
+        }
+      ]
+    },
+    {
+      "id": "q03",
+      "text": "What motivates you most when you set yourself a difficult goal?",
+      "options": [
+        {
+          "id": "q03_a",
+          "text": "The chance to accomplish something meaningful, even if it requires sacrifice."
+        },
+        {
+          "id": "q03_b",
+          "text": "The opportunity to prove that I am capable of more than others expect."
+        },
+        {
+          "id": "q03_c",
+          "text": "The desire to protect something or someone I deeply care about."
+        },
+        {
+          "id": "q03_d",
+          "text": "The satisfaction of achieving something together with people I trust."
+        }
+      ]
+    },
+    {
+      "id": "q04",
+      "text": "You must make an important decision, but you have very little information. What do you do?",
+      "options": [
+        {
+          "id": "q04_a",
+          "text": "Trust my instincts and take action rather than remain paralyzed."
+        },
+        {
+          "id": "q04_b",
+          "text": "Wait, observe, and gather as much information as possible."
+        },
+        {
+          "id": "q04_c",
+          "text": "Consider the consequences carefully and avoid unnecessary risks."
+        },
+        {
+          "id": "q04_d",
+          "text": "Choose the path that feels right, even if I cannot explain why."
+        }
+      ]
+    },
+    {
+      "id": "q05",
+      "text": "When someone strongly disagrees with you, what is your usual reaction?",
+      "options": [
+        {
+          "id": "q05_a",
+          "text": "I stay calm and try to understand the bigger picture."
+        },
+        {
+          "id": "q05_b",
+          "text": "I defend my position directly and refuse to back down easily."
+        },
+        {
+          "id": "q05_c",
+          "text": "I look for a solution that preserves everyone's dignity."
+        },
+        {
+          "id": "q05_d",
+          "text": "I try to understand what is really driving the disagreement."
+        }
+      ]
+    },
+    {
+      "id": "q06",
+      "text": "You are offered something you deeply desire, but accepting it could change who you are. What do you do?",
+      "options": [
+        {
+          "id": "q06_a",
+          "text": "Refuse it, even if giving it up is painful."
+        },
+        {
+          "id": "q06_b",
+          "text": "Think about whether I could use it responsibly for a greater purpose."
+        },
+        {
+          "id": "q06_c",
+          "text": "Consider whether the opportunity is too important to let go."
+        },
+        {
+          "id": "q06_d",
+          "text": "Question why I want it so badly and what it might cost me."
+        }
+      ]
+    },
+    {
+      "id": "q07",
+      "text": "When working with a group, which role comes most naturally to you?",
+      "options": [
+        {
+          "id": "q07_a",
+          "text": "The strategist who thinks several steps ahead."
+        },
+        {
+          "id": "q07_b",
+          "text": "The one who notices details others tend to overlook."
+        },
+        {
+          "id": "q07_c",
+          "text": "The dependable person who keeps everyone motivated."
+        },
+        {
+          "id": "q07_d",
+          "text": "The practical teammate who brings energy and determination."
+        }
+      ]
+    },
+    {
+      "id": "q08",
+      "text": "When something important goes wrong because of a decision you made, how do you react?",
+      "options": [
+        {
+          "id": "q08_a",
+          "text": "I accept responsibility and try to make things right."
+        },
+        {
+          "id": "q08_b",
+          "text": "I feel the weight of the failure, but I keep moving forward."
+        },
+        {
+          "id": "q08_c",
+          "text": "I analyze what happened so I can avoid the same mistake."
+        },
+        {
+          "id": "q08_d",
+          "text": "I focus on supporting the people affected by the situation."
+        }
+      ]
+    },
+    {
+      "id": "q09",
+      "text": "How do you feel when life forces you into an unfamiliar situation?",
+      "options": [
+        {
+          "id": "q09_a",
+          "text": "I adapt and take the opportunity to grow into something new."
+        },
+        {
+          "id": "q09_b",
+          "text": "I prefer to understand the situation before making any changes."
+        },
+        {
+          "id": "q09_c",
+          "text": "I resist losing what is familiar and important to me."
+        },
+        {
+          "id": "q09_d",
+          "text": "I feel conflicted, but eventually follow the path that seems necessary."
+        }
+      ]
+    },
+    {
+      "id": "q10",
+      "text": "If you were given a responsibility that could affect many people's lives, what would matter most to you?",
+      "options": [
+        {
+          "id": "q10_a",
+          "text": "Making the difficult decisions that others are unwilling to make."
+        },
+        {
+          "id": "q10_b",
+          "text": "Ensuring that nobody is abandoned along the way."
+        },
+        {
+          "id": "q10_c",
+          "text": "Using wisdom and experience to guide people toward the right direction."
+        },
+        {
+          "id": "q10_d",
+          "text": "Protecting what matters, even if the responsibility becomes a personal burden."
+        }
+      ]
+    }
+  ]
+}
