@@ -266,6 +266,20 @@ class WhichCharacterControllerTest {
         verify(scoringService, never()).calculateResult(any());
     }
 
+    // The body-size filter is part of the web slice: an oversized body never reaches the controller.
+    @Test
+    void shouldRefuseABodyAboveTheRequestLimitBeforeTheControllerSeesIt() throws Exception {
+        String oversized = "{\"answers\":[" + "{\"questionId\":\"q01\",\"answerId\":\"q01_a\"},".repeat(200)
+                + "{\"questionId\":\"q01\",\"answerId\":\"q01_a\"}]}";
+
+        mockMvc.perform(post(RESULT_PATH)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(oversized))
+                .andExpect(status().is(413));
+
+        verifyNoInteractions(scoringService);
+    }
+
     @Test
     void shouldNotTurnUnexpectedExceptionsIntoBadRequest() {
         when(scoringService.calculateResult(any()))

@@ -16,6 +16,14 @@ const COOLDOWN =
     "Wunderlore is temporarily unavailable. Please try again in about 30 seconds.";
 const UNEXPECTED = "Unable to load a game round. Please try again.";
 
+// The format WhoSaidItRoundRegistry issues (UUID.randomUUID()).
+const ROUND_ID = "123e4567-e89b-42d3-a456-426614174000";
+const INVALID_OPTION = {
+    ok: false,
+    kind: "invalid",
+    message: "That isn't a valid option for this round.",
+};
+
 beforeEach(() => {
     vi.spyOn(console, "error").mockImplementation(() => {});
 });
@@ -78,18 +86,18 @@ describe("createWhoSaidItRound", () => {
 describe("submitWhoSaidItAnswer", () => {
     it("forwards the round and character and returns the result", async () => {
         const result = {
-            roundId: "round-1",
+            roundId: ROUND_ID,
             submittedCharacterId: "c1",
             correct: true,
             correctCharacterId: "c1",
         };
         submitAnswerMock.mockResolvedValue(result);
 
-        await expect(submitWhoSaidItAnswer("round-1", "c1")).resolves.toEqual({
+        await expect(submitWhoSaidItAnswer(ROUND_ID, "c1")).resolves.toEqual({
             ok: true,
             result,
         });
-        expect(submitAnswerMock).toHaveBeenCalledWith("round-1", "c1");
+        expect(submitAnswerMock).toHaveBeenCalledWith(ROUND_ID, "c1");
         expect(console.error).not.toHaveBeenCalled();
     });
 
@@ -103,7 +111,7 @@ describe("submitWhoSaidItAnswer", () => {
             new ApiError(`API request failed with status ${status}`, status),
         );
 
-        await expect(submitWhoSaidItAnswer("round-1", "c1")).resolves.toEqual({
+        await expect(submitWhoSaidItAnswer(ROUND_ID, "c1")).resolves.toEqual({
             ok: false,
             kind,
             message,
@@ -114,7 +122,7 @@ describe("submitWhoSaidItAnswer", () => {
     it("uses the status of any error-like object, not only ApiError", async () => {
         submitAnswerMock.mockRejectedValue({ status: 409 });
 
-        await expect(submitWhoSaidItAnswer("round-1", "c1")).resolves.toEqual({
+        await expect(submitWhoSaidItAnswer(ROUND_ID, "c1")).resolves.toEqual({
             ok: false,
             kind: "terminal",
             message: "This round has already been answered.",
@@ -126,7 +134,7 @@ describe("submitWhoSaidItAnswer", () => {
             new ApiError("API request failed with status 503", 503, 30),
         );
 
-        await expect(submitWhoSaidItAnswer("round-1", "c1")).resolves.toEqual({
+        await expect(submitWhoSaidItAnswer(ROUND_ID, "c1")).resolves.toEqual({
             ok: false,
             kind: "temporary",
             message:
@@ -141,7 +149,7 @@ describe("submitWhoSaidItAnswer", () => {
     ])("treats %s as temporarily unavailable, with a log", async (_, error) => {
         submitAnswerMock.mockRejectedValue(error);
 
-        await expect(submitWhoSaidItAnswer("round-1", "c1")).resolves.toEqual({
+        await expect(submitWhoSaidItAnswer(ROUND_ID, "c1")).resolves.toEqual({
             ok: false,
             kind: "temporary",
             message: "Wunderlore is temporarily unavailable. Please try again.",
@@ -155,14 +163,14 @@ describe("submitWhoSaidItAnswer", () => {
     it.each([
         ["an unmapped HTTP status", new ApiError("boom", 500)],
         ["a validation error", new Error("roundId must be a non-empty string")],
-        ["an invalid payload", new ApiResponseError("/api/games/who-said-it/rounds/round-1/answer")],
+        ["an invalid payload", new ApiResponseError(`/api/games/who-said-it/rounds/${ROUND_ID}/answer`)],
         ["a non-numeric status", { status: "404" }],
         ["a thrown string", "unexpected"],
         ["null", null],
     ])("treats %s as temporary, with a generic message and a log", async (_, error) => {
         submitAnswerMock.mockRejectedValue(error);
 
-        await expect(submitWhoSaidItAnswer("", "c1")).resolves.toEqual({
+        await expect(submitWhoSaidItAnswer(ROUND_ID, "c1")).resolves.toEqual({
             ok: false,
             kind: "temporary",
             message: "Something went wrong. Please try again.",
@@ -171,5 +179,102 @@ describe("submitWhoSaidItAnswer", () => {
             "Failed to submit Who Said It answer",
             error,
         );
+    });
+
+    describe("argument validation", () => {
+        it("accepts a UUID in any letter case and a character id of up to 64 characters", async () => {
+            const result = {
+                roundId: ROUND_ID,
+                submittedCharacterId: "x".repeat(64),
+                correct: false,
+                correctCharacterId: "c1",
+            };
+            submitAnswerMock.mockResolvedValue(result);
+
+            await expect(
+                submitWhoSaidItAnswer(ROUND_ID.toUpperCase(), "x".repeat(64)),
+            ).resolves.toEqual({ ok: true, result });
+            expect(submitAnswerMock).toHaveBeenCalledWith(
+                ROUND_ID.toUpperCase(),
+                "x".repeat(64),
+            );
+        });
+
+        it("accepts the 24-character ids The One API issues", async () => {
+            submitAnswerMock.mockResolvedValue({
+                roundId: ROUND_ID,
+                submittedCharacterId: "5cd99d4bde30eff6ebccfbbe",
+                correct: true,
+                correctCharacterId: "5cd99d4bde30eff6ebccfbbe",
+            });
+
+            await expect(
+                submitWhoSaidItAnswer(ROUND_ID, "5cd99d4bde30eff6ebccfbbe"),
+            ).resolves.toMatchObject({ ok: true });
+        });
+
+        it.each([
+            ["a short placeholder", "round-1"],
+            ["an empty string", ""],
+            ["only spaces", "   "],
+            ["text that is not a UUID", "not-a-uuid"],
+            ["a UUID with trailing text", `${ROUND_ID}x`],
+            ["a UUID with a trailing newline", `${ROUND_ID}
+`],
+            ["a UUID with a leading space", ` ${ROUND_ID}`],
+            ["a UUID without hyphens", ROUND_ID.replaceAll("-", "")],
+            ["a path traversal", "../../admin"],
+            ["a URL-encoded id", "%2e%2e%2f"],
+            ["an oversized string", "a".repeat(100_000)],
+            ["null", null],
+            ["undefined", undefined],
+            ["a number", 123],
+            ["a boolean", true],
+            ["an array", [ROUND_ID]],
+            ["an object", { toString: () => ROUND_ID }],
+        ])("rejects a round id that is %s without calling the backend", async (_, roundId) => {
+            await expect(submitWhoSaidItAnswer(roundId, "c1")).resolves.toEqual(INVALID_OPTION);
+
+            expect(submitAnswerMock).not.toHaveBeenCalled();
+            expect(console.error).not.toHaveBeenCalled();
+        });
+
+        it.each([
+            ["an empty string", ""],
+            ["only spaces", "   "],
+            ["one character over the limit", "x".repeat(65)],
+            ["an oversized string", "x".repeat(100_000)],
+            ["null", null],
+            ["undefined", undefined],
+            ["a number", 42],
+            ["a boolean", false],
+            ["an array", ["c1"]],
+            ["an object", { id: "c1" }],
+        ])("rejects a character id that is %s without calling the backend", async (_, characterId) => {
+            await expect(submitWhoSaidItAnswer(ROUND_ID, characterId)).resolves.toEqual(
+                INVALID_OPTION,
+            );
+
+            expect(submitAnswerMock).not.toHaveBeenCalled();
+            expect(console.error).not.toHaveBeenCalled();
+        });
+
+        it("rejects missing arguments without calling the backend", async () => {
+            const withoutArguments = submitWhoSaidItAnswer as (
+                ...args: unknown[]
+            ) => ReturnType<typeof submitWhoSaidItAnswer>;
+
+            await expect(withoutArguments()).resolves.toEqual(INVALID_OPTION);
+            await expect(withoutArguments(ROUND_ID)).resolves.toEqual(INVALID_OPTION);
+
+            expect(submitAnswerMock).not.toHaveBeenCalled();
+            expect(console.error).not.toHaveBeenCalled();
+        });
+
+        it("does not echo the rejected input back", async () => {
+            const response = await submitWhoSaidItAnswer("secret-looking-value", "c1");
+
+            expect(JSON.stringify(response)).not.toContain("secret-looking-value");
+        });
     });
 });

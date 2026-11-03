@@ -8,6 +8,29 @@ import {
 } from "@/lib/api/whoSaidIt";
 import { unavailableMessage } from "@/lib/api/unavailable";
 
+// Server Actions are public endpoints: their arguments come from the client and are checked
+// here before anything reaches the backend. The limits follow the backend contract:
+// - round ids are UUIDs, as issued by WhoSaidItRoundRegistry.
+// - character ids are the upstream ids (24 hex characters in The One API); the backend accepts
+//   at most 64 characters (WhoSaidItAnswerRequest), which also covers a UUID.
+const ROUND_ID_PATTERN =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const MAX_CHARACTER_ID_LENGTH = 64;
+
+function isValidRoundId(value: unknown): value is string {
+    return typeof value === "string" && ROUND_ID_PATTERN.test(value);
+}
+
+function isValidCharacterId(value: unknown): value is string {
+    return (
+        typeof value === "string" &&
+        value.trim() !== "" &&
+        value.length <= MAX_CHARACTER_ID_LENGTH
+    );
+}
+
+const INVALID_OPTION_MESSAGE = "That isn't a valid option for this round.";
+
 function statusOf(error: unknown): number | undefined {
     return typeof error === "object" &&
         error !== null &&
@@ -49,7 +72,8 @@ export async function createWhoSaidItRound(): Promise<WhoSaidItCreateResponse> {
 
 // Follows WhoSaidItRoundRegistry.answer, not the status class:
 // - terminal: the round can no longer be answered (404 expired or unknown, 409 answered).
-// - invalid: the backend rejected the answer before consuming the round (400).
+// - invalid: the answer was rejected before consuming the round: by the backend (400) or by
+//   the checks above, which never call the backend.
 // - temporary: anything else. The round may still be open, so answering again is safe:
 //   if the failed attempt did reach the backend, the next one gets a 409.
 export type WhoSaidItAnswerFailureKind = "terminal" | "invalid" | "temporary";
@@ -64,10 +88,20 @@ export type WhoSaidItAnswerResponse =
     | { ok: true; result: WhoSaidItAnswerResult }
     | WhoSaidItAnswerFailure;
 
+// The arguments are unknown, not string: nothing guarantees what a caller sent. Malformed ones
+// are an expected, quiet outcome, not a server error, so they are neither logged nor forwarded.
 export async function submitWhoSaidItAnswer(
-    roundId: string,
-    characterId: string,
+    roundId: unknown,
+    characterId: unknown,
 ): Promise<WhoSaidItAnswerResponse> {
+    if (!isValidRoundId(roundId) || !isValidCharacterId(characterId)) {
+        return {
+            ok: false as const,
+            kind: "invalid",
+            message: INVALID_OPTION_MESSAGE,
+        };
+    }
+
     try {
         const result = await submitAnswer(roundId, characterId);
 
@@ -82,7 +116,7 @@ export async function submitWhoSaidItAnswer(
             return {
                 ok: false as const,
                 kind: "invalid",
-                message: "That isn't a valid option for this round.",
+                message: INVALID_OPTION_MESSAGE,
             };
         }
 

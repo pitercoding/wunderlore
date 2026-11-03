@@ -361,6 +361,125 @@ class WhoSaidItControllerTest {
         }
 
         @Test
+        void shouldAcceptACharacterIdOfExactlyTheMaximumLength() throws Exception {
+                String longestId = "a".repeat(WhoSaidItAnswerRequest.MAX_CHARACTER_ID_LENGTH);
+                when(roundRegistry.answer(ROUND_ID, longestId))
+                                .thenReturn(new WhoSaidItAnswerResponse(ROUND_ID, longestId, false, "gandalf"));
+
+                mockMvc.perform(post(ANSWER_PATH, ROUND_ID)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(answerJson(longestId)))
+                                .andExpect(status().isOk());
+
+                verify(roundRegistry).answer(ROUND_ID, longestId);
+        }
+
+        @Test
+        void shouldAcceptATypicalTwentyFourCharacterId() throws Exception {
+                String upstreamId = "5cd99d4bde30eff6ebccfbbe";
+                when(roundRegistry.answer(ROUND_ID, upstreamId))
+                                .thenReturn(new WhoSaidItAnswerResponse(ROUND_ID, upstreamId, true, upstreamId));
+
+                mockMvc.perform(post(ANSWER_PATH, ROUND_ID)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(answerJson(upstreamId)))
+                                .andExpect(status().isOk());
+        }
+
+        @Test
+        void shouldReturnBadRequestWhenCharacterIdIsOneCharacterOverTheMaximum() throws Exception {
+                mockMvc.perform(post(ANSWER_PATH, ROUND_ID)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(answerJson("a".repeat(WhoSaidItAnswerRequest.MAX_CHARACTER_ID_LENGTH + 1))))
+                                .andExpect(status().isBadRequest())
+                                .andExpect(jsonPath("$.status").value(400))
+                                .andExpect(jsonPath("$.detail").value(INVALID_REQUEST_DETAIL));
+
+                verify(roundRegistry, never()).answer(any(), any());
+        }
+
+        @Test
+        void shouldReturnBadRequestWhenCharacterIdIsLargeButWithinTheBodyLimit() throws Exception {
+                // About 3 KB: under the request-body limit, so it reaches validation.
+                mockMvc.perform(post(ANSWER_PATH, ROUND_ID)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(answerJson("a".repeat(3_000))))
+                                .andExpect(status().isBadRequest())
+                                .andExpect(jsonPath("$.detail").value(INVALID_REQUEST_DETAIL));
+
+                verify(roundRegistry, never()).answer(any(), any());
+        }
+
+        @Test
+        void shouldReturnBadRequestWhenCharacterIdIsOnlyWhitespace() throws Exception {
+                mockMvc.perform(post(ANSWER_PATH, ROUND_ID)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(answerJson("   ")))
+                                .andExpect(status().isBadRequest())
+                                .andExpect(jsonPath("$.detail").value(INVALID_REQUEST_DETAIL));
+
+                verify(roundRegistry, never()).answer(any(), any());
+        }
+
+        @Test
+        void shouldReturnBadRequestWhenCharacterIdIsNullOrNotAString() throws Exception {
+                for (String body : List.of(
+                                "{\"characterId\":null}",
+                                "{\"characterId\":[\"gandalf\"]}",
+                                "{\"characterId\":{\"id\":\"gandalf\"}}",
+                                "[]",
+                                "\"gandalf\"")) {
+                        mockMvc.perform(post(ANSWER_PATH, ROUND_ID)
+                                        .contentType(MediaType.APPLICATION_JSON)
+                                        .content(body))
+                                        .andExpect(status().isBadRequest())
+                                        .andExpect(jsonPath("$.status").value(400))
+                                        .andExpect(jsonPath("$.detail").value(INVALID_REQUEST_DETAIL));
+                }
+
+                verify(roundRegistry, never()).answer(any(), any());
+        }
+
+        @Test
+        void shouldNotRevealValidationDetailsOrClassNames() throws Exception {
+                mockMvc.perform(post(ANSWER_PATH, ROUND_ID)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(answerJson("a".repeat(WhoSaidItAnswerRequest.MAX_CHARACTER_ID_LENGTH + 1))))
+                                .andExpect(status().isBadRequest())
+                                .andExpect(content().string(not(containsString("Size"))))
+                                .andExpect(content().string(not(containsString("characterId"))))
+                                .andExpect(content().string(not(containsString("com.wunderlore"))))
+                                .andExpect(content().string(not(containsString("jakarta"))));
+        }
+
+        // The body-size filter is part of the web slice: an oversized body never reaches the controller.
+        @Test
+        void shouldRefuseABodyAboveTheRequestLimitBeforeTheControllerSeesIt() throws Exception {
+                mockMvc.perform(post(ANSWER_PATH, ROUND_ID)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(answerJson("a".repeat(5_000))))
+                                .andExpect(status().is(413));
+
+                verify(roundRegistry, never()).answer(any(), any());
+        }
+
+        @Test
+        void shouldReturnNotFoundForARoundIdThatCannotBeOneWeIssued() throws Exception {
+                // The id is only a lookup key: the registry never issues anything but a UUID, so
+                // any other text is simply an unknown round and keeps the 404 contract.
+                when(roundRegistry.answer(any(), any()))
+                                .thenThrow(new WhoSaidItRoundNotFoundException());
+
+                for (String roundId : List.of("not-a-uuid", "a".repeat(2_000), "%20", "..")) {
+                        mockMvc.perform(post(ANSWER_PATH, roundId)
+                                        .contentType(MediaType.APPLICATION_JSON)
+                                        .content(answerJson("gandalf")))
+                                        .andExpect(status().isNotFound())
+                                        .andExpect(jsonPath("$.status").value(404));
+                }
+        }
+
+        @Test
         void shouldReturnBadRequestWhenRequiredFieldIsMissing() throws Exception {
                 mockMvc.perform(post(ANSWER_PATH, ROUND_ID)
                                 .contentType(MediaType.APPLICATION_JSON)
