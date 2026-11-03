@@ -45,8 +45,8 @@ class ExternalBookControllerTest {
 
     private static final String UPSTREAM_URL = "https://the-one-api.dev/v2/book";
 
-    // LoreUnavailableAdvice is part of every web slice and needs a Clock; it must
-    // not apply here.
+    // LoreUnavailableAdvice is part of every web slice and needs a Clock; the controller's own
+    // handler must take precedence over it (books keep their own detail).
     @TestConfiguration
     static class ClockConfiguration {
 

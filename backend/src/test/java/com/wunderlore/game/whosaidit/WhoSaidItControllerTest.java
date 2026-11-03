@@ -514,7 +514,7 @@ class WhoSaidItControllerTest {
 
         @Test
         void shouldBeCoveredByLoreUnavailableAdvice() throws Exception {
-                // Only an advice scoped to this controller can turn the lore failure into a 503.
+                // The controller declares no handler for lore failures; the shared advice turns it into a 503.
                 when(whoSaidItService.generateRound())
                                 .thenThrow(new LoreDataUnavailableException("cooldown", null, NOW.plusSeconds(30)));
 

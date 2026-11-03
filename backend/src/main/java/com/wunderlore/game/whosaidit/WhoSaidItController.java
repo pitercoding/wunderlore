@@ -1,6 +1,8 @@
 package com.wunderlore.game.whosaidit;
 
 
+import com.wunderlore.lore.LoreBacked;
+
 import jakarta.validation.Valid;
 
 import org.slf4j.Logger;
@@ -18,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/games/who-said-it/rounds")
+@LoreBacked(unavailableDetail = WhoSaidItController.ROUND_UNAVAILABLE_DETAIL, failure = "Game round generation failed")
 public class WhoSaidItController {
 
         private static final Logger log = LoggerFactory.getLogger(WhoSaidItController.class);

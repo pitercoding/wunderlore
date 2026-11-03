@@ -1,6 +1,7 @@
 package com.wunderlore.controller;
 
 import com.wunderlore.lore.LoreCharacter;
+import com.wunderlore.lore.LoreBacked;
 import com.wunderlore.lore.LoreData;
 import com.wunderlore.lore.LoreDataService;
 import com.wunderlore.lore.LoreQuote;
@@ -16,6 +17,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/catalog")
+@LoreBacked(unavailableDetail = ExternalQuoteController.UNAVAILABLE_DETAIL, failure = "Catalog quotes request failed")
 public class ExternalQuoteController {
 
     // The detail LoreUnavailableAdvice sends for lore failures raised by this controller.
