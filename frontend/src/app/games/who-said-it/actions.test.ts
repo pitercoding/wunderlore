@@ -1,13 +1,20 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ApiError, ApiResponseError, ApiTimeoutError } from "@/lib/api/client";
-import { submitAnswer } from "@/lib/api/whoSaidIt";
-import { submitWhoSaidItAnswer } from "./actions";
+import { createRound, submitAnswer } from "@/lib/api/whoSaidIt";
+import { createWhoSaidItRound, submitWhoSaidItAnswer } from "./actions";
 
 vi.mock("@/lib/api/whoSaidIt", () => ({
+    createRound: vi.fn(),
     submitAnswer: vi.fn(),
 }));
 
+const createRoundMock = vi.mocked(createRound);
 const submitAnswerMock = vi.mocked(submitAnswer);
+
+const UNAVAILABLE = "Wunderlore is temporarily unavailable. Please try again.";
+const COOLDOWN =
+    "Wunderlore is temporarily unavailable. Please try again in about 30 seconds.";
+const UNEXPECTED = "Unable to load a game round. Please try again.";
 
 beforeEach(() => {
     vi.spyOn(console, "error").mockImplementation(() => {});
@@ -16,6 +23,56 @@ beforeEach(() => {
 afterEach(() => {
     vi.resetAllMocks();
     vi.restoreAllMocks();
+});
+
+describe("createWhoSaidItRound", () => {
+    it("returns the round the backend created", async () => {
+        const round = {
+            roundId: "round-1",
+            quote: "Fly, you fools!",
+            options: [{ id: "c1", name: "Gandalf" }],
+        };
+        createRoundMock.mockResolvedValue(round);
+
+        await expect(createWhoSaidItRound()).resolves.toEqual({ ok: true, round });
+        expect(createRoundMock).toHaveBeenCalledTimes(1);
+        expect(console.error).not.toHaveBeenCalled();
+    });
+
+    it.each([
+        ["a 503 without a retry time", new ApiError("API request failed with status 503", 503), UNAVAILABLE],
+        ["a 503 with an invalid retry time", new ApiError("API request failed with status 503", 503, Number.NaN), UNAVAILABLE],
+        ["a 503 with a retry time", new ApiError("API request failed with status 503", 503, 30), COOLDOWN],
+    ])("reports %s as temporarily unavailable without logging it", async (_, error, message) => {
+        createRoundMock.mockRejectedValue(error);
+
+        await expect(createWhoSaidItRound()).resolves.toEqual({ ok: false, message });
+        expect(console.error).not.toHaveBeenCalled();
+    });
+
+    it.each([
+        ["a timeout", new ApiTimeoutError(15_000), UNAVAILABLE],
+        ["a network error", new TypeError("fetch failed"), UNAVAILABLE],
+        ["an unmapped API error", new ApiError("API request failed with status 502", 502), UNEXPECTED],
+        ["an invalid payload", new ApiResponseError("/api/games/who-said-it/rounds"), UNEXPECTED],
+        ["an unexpected error", new Error("boom: internal detail"), UNEXPECTED],
+    ])("maps %s to a message and logs it", async (_, error, message) => {
+        createRoundMock.mockRejectedValue(error);
+
+        await expect(createWhoSaidItRound()).resolves.toEqual({ ok: false, message });
+        expect(console.error).toHaveBeenCalledWith(
+            "Failed to create Who Said It round",
+            error,
+        );
+    });
+
+    it("never puts error details in the message", async () => {
+        createRoundMock.mockRejectedValue(new Error("secret internal detail"));
+
+        const response = await createWhoSaidItRound();
+
+        expect(JSON.stringify(response)).not.toContain("secret internal detail");
+    });
 });
 
 describe("submitWhoSaidItAnswer", () => {

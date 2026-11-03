@@ -1,7 +1,51 @@
 "use server";
 
-import { submitAnswer, type WhoSaidItAnswerResult } from "@/lib/api/whoSaidIt";
+import {
+    createRound,
+    submitAnswer,
+    type WhoSaidItAnswerResult,
+    type WhoSaidItRound,
+} from "@/lib/api/whoSaidIt";
 import { unavailableMessage } from "@/lib/api/unavailable";
+
+function statusOf(error: unknown): number | undefined {
+    return typeof error === "object" &&
+        error !== null &&
+        "status" in error &&
+        typeof error.status === "number"
+        ? error.status
+        : undefined;
+}
+
+// Creating a round has one failure kind: nothing was started, so asking again is always safe.
+export type WhoSaidItCreateResponse =
+    | { ok: true; round: WhoSaidItRound }
+    | { ok: false; message: string };
+
+// The only way the game starts a round: the page itself never does, so rendering or
+// reloading it creates no backend state.
+export async function createWhoSaidItRound(): Promise<WhoSaidItCreateResponse> {
+    try {
+        const round = await createRound();
+
+        return {
+            ok: true as const,
+            round,
+        };
+    } catch (error: unknown) {
+        const unavailable = unavailableMessage(error);
+
+        // A 503 is expected while the service recovers, so only the other failures are logged.
+        if (statusOf(error) !== 503) {
+            console.error("Failed to create Who Said It round", error);
+        }
+
+        return {
+            ok: false as const,
+            message: unavailable ?? "Unable to load a game round. Please try again.",
+        };
+    }
+}
 
 // Follows WhoSaidItRoundRegistry.answer, not the status class:
 // - terminal: the round can no longer be answered (404 expired or unknown, 409 answered).
@@ -32,13 +76,7 @@ export async function submitWhoSaidItAnswer(
             result,
         };
     } catch (error: unknown) {
-        const status =
-            typeof error === "object" &&
-                error !== null &&
-                "status" in error &&
-                typeof error.status === "number"
-                ? error.status
-                : undefined;
+        const status = statusOf(error);
 
         if (status === 400) {
             return {

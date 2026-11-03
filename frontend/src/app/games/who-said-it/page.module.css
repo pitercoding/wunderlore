@@ -193,7 +193,8 @@
 }
 
 /* The Home's call to action, set in the shared Button. */
-.result .newRound {
+.result .newRound,
+.play {
     margin-top: var(--space-4);
     border-color: color-mix(in srgb, var(--scene-glow) 34%, transparent);
     box-shadow:
@@ -201,42 +202,25 @@
         0 0 1.5rem -0.35rem color-mix(in srgb, var(--scene-glow) 40%, transparent);
 }
 
-.result .newRound:hover:not(:disabled) {
+.result .newRound:hover:not(:disabled),
+.play:hover:not(:disabled) {
     border-color: color-mix(in srgb, var(--scene-glow) 55%, transparent);
 }
 
-/* ---- States -------------------------------------------------------- */
+/* ---- Introduction (before a round exists) ------------------------- */
 
-.loading,
-.noticeText {
-    color: var(--scene-text-muted);
+.introText {
+    max-width: 40rem;
+    margin: 0;
+    color: var(--scene-text);
     font-family: var(--font-serif);
     font-size: var(--text-xl);
     line-height: var(--leading-snug);
+    text-wrap: pretty;
 }
 
-.loading {
-    animation: pulse 1.6s ease-in-out infinite;
-}
-
-@keyframes pulse {
-    50% {
-        opacity: 0.5;
-    }
-}
-
-.notice {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    padding: var(--space-5);
-    border: 1px solid var(--scene-border);
-    border-radius: var(--radius-xl);
-    background: color-mix(in srgb, var(--scene-surface) 70%, transparent);
-}
-
-.noticeText {
-    color: var(--scene-text);
+.play {
+    margin-top: var(--space-5);
 }
 
 @media (min-width: 36em) {
