@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import ColdStartHint from "@/components/ColdStartHint/ColdStartHint";
 import QuotesContent from "./QuotesContent";
 import QuotesFrame from "./QuotesFrame";
 import styles from "./page.module.css";
@@ -15,6 +16,7 @@ function QuotesFallback() {
             <p className={styles.loading} role="status">
                 Loading quotes...
             </p>
+            <ColdStartHint />
         </QuotesFrame>
     );
 }

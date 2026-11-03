@@ -2,6 +2,18 @@ const API_URL = process.env.API_URL;
 
 export const API_TIMEOUT_MS = 15_000;
 
+// For the first calls of a visit, which may reach a sleeping backend (Render Free): waking
+// takes about a minute, and the lore load that follows can take up to 60 s more
+// (wunderlore.lore.load-timeout). Stays well under the 300 s a Vercel Hobby function may run.
+// Only for calls that are safe to wait for; everything else keeps API_TIMEOUT_MS, because by
+// then the backend is awake and a long wait would only hide a real failure.
+export const COLD_START_TIMEOUT_MS = 130_000;
+
+export interface ApiFetchOptions {
+    // Overrides API_TIMEOUT_MS for this call.
+    timeoutMs?: number;
+}
+
 // Longer waits are treated as unknown rather than shown to the user.
 const MAX_RETRY_AFTER_SECONDS = 3600;
 
@@ -67,6 +79,7 @@ export async function apiFetch<T>(
     path: string,
     isValid: PayloadGuard<T>,
     init?: RequestInit,
+    { timeoutMs = API_TIMEOUT_MS }: ApiFetchOptions = {},
 ): Promise<T> {
     if (!API_URL) {
         throw new Error("API_URL is not configured");
@@ -76,7 +89,7 @@ export async function apiFetch<T>(
     // the caller's own signal aborts, so neither cancels the other out.
     const controller = new AbortController();
     const callerSignal = init?.signal;
-    const timeoutError = new ApiTimeoutError(API_TIMEOUT_MS);
+    const timeoutError = new ApiTimeoutError(timeoutMs);
     const abortFromCaller = () => controller.abort(callerSignal?.reason);
 
     if (callerSignal?.aborted) {
@@ -87,7 +100,7 @@ export async function apiFetch<T>(
 
     const timeoutId = setTimeout(
         () => controller.abort(timeoutError),
-        API_TIMEOUT_MS,
+        timeoutMs,
     );
 
     try {

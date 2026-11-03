@@ -1,4 +1,4 @@
-import { apiFetch } from "@/lib/api/client";
+import { apiFetch, COLD_START_TIMEOUT_MS } from "@/lib/api/client";
 import {
     isIntegerFrom,
     isNonBlankString,
@@ -75,5 +75,7 @@ export async function getQuotes(
     return apiFetch(
         `/api/catalog/quotes?${params.toString()}`,
         isQuotePage,
+        undefined,
+        { timeoutMs: COLD_START_TIMEOUT_MS },
     );
 }

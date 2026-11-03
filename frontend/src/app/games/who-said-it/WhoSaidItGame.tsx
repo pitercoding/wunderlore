@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import Button from "@/components/Button/Button";
+import ColdStartHint from "@/components/ColdStartHint/ColdStartHint";
 import type { WhoSaidItRound } from "@/lib/api/whoSaidIt";
 import { createWhoSaidItRound } from "./actions";
 import WhoSaidItContent from "./WhoSaidItContent";
@@ -73,9 +74,12 @@ export default function WhoSaidItGame() {
                 </p>
 
                 {isCreating && (
-                    <p role="status" className={styles.status}>
-                        Preparing your round...
-                    </p>
+                    <>
+                        <p role="status" className={styles.status}>
+                            Preparing your round...
+                        </p>
+                        <ColdStartHint />
+                    </>
                 )}
 
                 {creationError && (

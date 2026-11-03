@@ -2,6 +2,7 @@ import { connection } from "next/server";
 import { Suspense } from "react";
 import { getQuestions } from "@/lib/api/whichCharacter";
 import { unavailableMessage } from "@/lib/api/unavailable";
+import ColdStartHint from "@/components/ColdStartHint/ColdStartHint";
 import RetryButton from "../../RetryButton";
 import WhichCharacterContent from "./WhichCharacterContent";
 import WhichCharacterFrame from "./WhichCharacterFrame";
@@ -13,6 +14,7 @@ function WhichCharacterFallback() {
             <p role="status" className={styles.loading}>
                 Loading the questions...
             </p>
+            <ColdStartHint />
         </WhichCharacterFrame>
     );
 }

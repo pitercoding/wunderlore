@@ -1,0 +1,8 @@
+.hint {
+    max-width: 38rem;
+    color: var(--scene-text-muted, var(--color-foreground-muted));
+    font-family: var(--font-serif);
+    font-size: var(--text-base);
+    font-style: italic;
+    line-height: var(--leading-snug);
+}

@@ -1,4 +1,4 @@
-import { apiFetch } from "@/lib/api/client";
+import { apiFetch, COLD_START_TIMEOUT_MS } from "@/lib/api/client";
 import { isNonBlankString, isRecord } from "@/lib/api/guards";
 
 export interface WhichCharacterOption {
@@ -89,7 +89,9 @@ const QUESTIONS_PATH = "/api/games/which-character/questions";
 const RESULT_PATH = "/api/games/which-character/result";
 
 export async function getQuestions(): Promise<WhichCharacterQuestions> {
-    return apiFetch(QUESTIONS_PATH, isWhichCharacterQuestions);
+    return apiFetch(QUESTIONS_PATH, isWhichCharacterQuestions, undefined, {
+        timeoutMs: COLD_START_TIMEOUT_MS,
+    });
 }
 
 // Only the shape is checked: the backend validates and scores the answers.

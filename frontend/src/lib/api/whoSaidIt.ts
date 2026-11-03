@@ -1,4 +1,4 @@
-import { apiFetch } from "@/lib/api/client";
+import { apiFetch, COLD_START_TIMEOUT_MS } from "@/lib/api/client";
 import { isNonBlankString, isRecord } from "@/lib/api/guards";
 
 export interface WhoSaidItCharacterOption {
@@ -53,7 +53,13 @@ const ROUNDS_PATH = "/api/games/who-said-it/rounds";
 
 // Creates server-side state, so it is a POST even though it sends nothing.
 export async function createRound(): Promise<WhoSaidItRound> {
-    return apiFetch(ROUNDS_PATH, isWhoSaidItRound, { method: "POST" });
+    // The first round of a visit may wake the backend; an unused round costs nothing.
+    return apiFetch(
+        ROUNDS_PATH,
+        isWhoSaidItRound,
+        { method: "POST" },
+        { timeoutMs: COLD_START_TIMEOUT_MS },
+    );
 }
 
 export async function submitAnswer(

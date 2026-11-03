@@ -356,6 +356,32 @@ describe("apiFetch timeout and cancellation", () => {
         expect(API_TIMEOUT_MS).toBe(15_000);
     });
 
+    it("uses a 130 second timeout for cold start calls, under the 300 second Vercel Hobby limit", async () => {
+        const { COLD_START_TIMEOUT_MS, API_TIMEOUT_MS } = await loadClient("http://api.test");
+
+        expect(COLD_START_TIMEOUT_MS).toBe(130_000);
+        expect(COLD_START_TIMEOUT_MS).toBeGreaterThan(API_TIMEOUT_MS);
+        expect(COLD_START_TIMEOUT_MS).toBeLessThan(300_000);
+    });
+
+    it("honours a per-call timeout instead of the default", async () => {
+        const { apiFetch, ApiTimeoutError } = await loadClient("http://api.test");
+        hangingFetch();
+
+        const result = apiFetch("/api/x", acceptAny, undefined, { timeoutMs: 40_000 }).catch(
+            (e: unknown) => e,
+        );
+
+        await vi.advanceTimersByTimeAsync(39_999);
+        expect(signalPassedToFetch().aborted).toBe(false);
+
+        await vi.advanceTimersByTimeAsync(1);
+        const error = await result;
+
+        expect(error).toBeInstanceOf(ApiTimeoutError);
+        expect(error).toMatchObject({ timeoutMs: 40_000 });
+    });
+
     it("resolves normally and clears the timer when the response arrives in time", async () => {
         const { apiFetch } = await loadClient("http://api.test");
         fetchMock.mockResolvedValue(jsonResponse({ ok: true }));
