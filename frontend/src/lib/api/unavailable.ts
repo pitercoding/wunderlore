@@ -1,7 +1,7 @@
 import { ApiError, ApiTimeoutError } from "@/lib/api/client";
 
 // Wording shared by /games/who-said-it and /quotes for a temporarily unavailable service.
-function formatWait(seconds: number): string {
+export function formatWait(seconds: number): string {
     if (seconds < 60) {
         return `${seconds} ${seconds === 1 ? "second" : "seconds"}`;
     }

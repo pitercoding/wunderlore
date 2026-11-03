@@ -178,6 +178,18 @@ describe("apiFetch", () => {
         expect(error).toMatchObject({ status: 503, retryAfterSeconds: seconds });
     });
 
+    it("reads Retry-After from a 429 too", async () => {
+        const { apiFetch, ApiError } = await loadClient("http://api.test");
+        fetchMock.mockResolvedValue(
+            new Response(null, { status: 429, headers: { "Retry-After": "42" } }),
+        );
+
+        const error = await apiFetch("/api/x", acceptAny).catch((e: unknown) => e);
+
+        expect(error).toBeInstanceOf(ApiError);
+        expect(error).toMatchObject({ status: 429, retryAfterSeconds: 42 });
+    });
+
     it.each([
         ["absent", undefined],
         ["empty", ""],

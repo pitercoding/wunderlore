@@ -39,7 +39,9 @@ services:
       # postgres service reachable (add back depends_on with condition: service_healthy).
       WUNDERLORE_PERSISTENCE_ENABLED: ${WUNDERLORE_PERSISTENCE_ENABLED:-false}
     ports:
-      - "${BACKEND_PORT:-8080}:8080"
+      # Published on the host loopback only. Containers on the Compose network still reach the
+      # backend at backend:8080 and do not go through this mapping.
+      - "127.0.0.1:${BACKEND_PORT:-8080}:8080"
 
   # Uncomment when the frontend is ready to be containerized
   # (and fill in the FRONTEND section of .env).

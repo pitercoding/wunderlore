@@ -15,6 +15,7 @@ const UNAVAILABLE = "Wunderlore is temporarily unavailable. Please try again.";
 const COOLDOWN =
     "Wunderlore is temporarily unavailable. Please try again in about 30 seconds.";
 const UNEXPECTED = "Unable to load a game round. Please try again.";
+const TOO_MANY = "Too many rounds were started in a short time.";
 
 // The format WhoSaidItRoundRegistry issues (UUID.randomUUID()).
 const ROUND_ID = "123e4567-e89b-42d3-a456-426614174000";
@@ -56,6 +57,30 @@ describe("createWhoSaidItRound", () => {
 
         await expect(createWhoSaidItRound()).resolves.toEqual({ ok: false, message });
         expect(console.error).not.toHaveBeenCalled();
+    });
+
+    it.each([
+        ["a 429 with a retry time", new ApiError("API request failed with status 429", 429, 30), `${TOO_MANY} Please try again in about 30 seconds.`],
+        ["a 429 with a retry time of one second", new ApiError("API request failed with status 429", 429, 1), `${TOO_MANY} Please try again in about 1 second.`],
+        ["a 429 with a retry time over a minute", new ApiError("API request failed with status 429", 429, 61), `${TOO_MANY} Please try again in about 2 minutes.`],
+        ["a 429 without a retry time", new ApiError("API request failed with status 429", 429), `${TOO_MANY} Please try again in a moment.`],
+        ["a 429 with an invalid retry time", new ApiError("API request failed with status 429", 429, Number.NaN), `${TOO_MANY} Please try again in a moment.`],
+        ["a 429 with a zero retry time", new ApiError("API request failed with status 429", 429, 0), `${TOO_MANY} Please try again in a moment.`],
+    ])("reports %s as too many rounds without logging it", async (_, error, message) => {
+        createRoundMock.mockRejectedValue(error);
+
+        await expect(createWhoSaidItRound()).resolves.toEqual({ ok: false, message });
+        expect(console.error).not.toHaveBeenCalled();
+    });
+
+    it("does not retry after a 429", async () => {
+        createRoundMock.mockRejectedValue(
+            new ApiError("API request failed with status 429", 429, 5),
+        );
+
+        await createWhoSaidItRound();
+
+        expect(createRoundMock).toHaveBeenCalledTimes(1);
     });
 
     it.each([

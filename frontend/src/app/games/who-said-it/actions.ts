@@ -6,7 +6,8 @@ import {
     type WhoSaidItAnswerResult,
     type WhoSaidItRound,
 } from "@/lib/api/whoSaidIt";
-import { unavailableMessage } from "@/lib/api/unavailable";
+import { ApiError } from "@/lib/api/client";
+import { formatWait, unavailableMessage } from "@/lib/api/unavailable";
 
 // Server Actions are public endpoints: their arguments come from the client and are checked
 // here before anything reaches the backend. The limits follow the backend contract:
@@ -40,6 +41,18 @@ function statusOf(error: unknown): number | undefined {
         : undefined;
 }
 
+// The backend limits how many rounds all players together may start per minute (429). Not a
+// failure to log: it is expected under load. The wait is named only when Retry-After is usable.
+function tooManyRoundsMessage(error: ApiError): string {
+    const wait = error.retryAfterSeconds;
+
+    if (wait !== undefined && Number.isInteger(wait) && wait > 0) {
+        return `Too many rounds were started in a short time. Please try again in about ${formatWait(wait)}.`;
+    }
+
+    return "Too many rounds were started in a short time. Please try again in a moment.";
+}
+
 // Creating a round has one failure kind: nothing was started, so asking again is always safe.
 export type WhoSaidItCreateResponse =
     | { ok: true; round: WhoSaidItRound }
@@ -56,6 +69,13 @@ export async function createWhoSaidItRound(): Promise<WhoSaidItCreateResponse> {
             round,
         };
     } catch (error: unknown) {
+        if (error instanceof ApiError && error.status === 429) {
+            return {
+                ok: false as const,
+                message: tooManyRoundsMessage(error),
+            };
+        }
+
         const unavailable = unavailableMessage(error);
 
         // A 503 is expected while the service recovers, so only the other failures are logged.

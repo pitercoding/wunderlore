@@ -159,6 +159,27 @@ describe("WhoSaidItGame", () => {
         expect(createMock).toHaveBeenCalledTimes(2);
     });
 
+    it("shows the too-many-rounds message, and Try again sends one new request only when clicked", async () => {
+        const user = userEvent.setup();
+        const message =
+            "Too many rounds were started in a short time. Please try again in about 30 seconds.";
+        createMock
+            .mockResolvedValueOnce({ ok: false, message })
+            .mockResolvedValueOnce({ ok: true, round: firstRound });
+        render(<WhoSaidItGame />);
+
+        await user.click(play());
+
+        expect(await screen.findByRole("alert")).toHaveTextContent(message);
+        // No automatic retry: the one request is all there is until the player asks again.
+        expect(createMock).toHaveBeenCalledTimes(1);
+
+        await user.click(screen.getByRole("button", { name: "Try again" }));
+
+        expect(await screen.findByText(quote(firstRound))).toBeInTheDocument();
+        expect(createMock).toHaveBeenCalledTimes(2);
+    });
+
     it("shows a generic alert when the action call itself fails", async () => {
         const user = userEvent.setup();
         createMock.mockRejectedValue(new Error("network down"));
