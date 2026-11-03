@@ -620,6 +620,173 @@ class WhoSaidItRoundRegistryTest {
         assertTrue(registry.answer(newRoundId.get(), "2").correct());
     }
 
+    @Test
+    void totalRetentionShouldBeBoundedAndDropTheOldestCompletedRoundsFirst() {
+        WhoSaidItRoundRegistry bounded = new WhoSaidItRoundRegistry(clock, Duration.ofMinutes(10), 2, 4);
+        List<String> ids = new ArrayList<>();
+
+        for (int i = 0; i < 10; i++) {
+            String id = bounded.register(round);
+
+            bounded.answer(id, "2");
+            ids.add(id);
+        }
+
+        // Only the four most recently answered records remain: they still read as 409.
+        for (int i = 6; i < 10; i++) {
+            String id = ids.get(i);
+
+            assertThrows(
+                    WhoSaidItRoundAlreadyAnsweredException.class,
+                    () -> bounded.answer(id, "2"));
+        }
+
+        // The older ones were dropped to stay within the bound: they read as unknown.
+        for (int i = 0; i < 6; i++) {
+            String id = ids.get(i);
+
+            assertThrows(
+                    WhoSaidItRoundNotFoundException.class,
+                    () -> bounded.answer(id, "2"));
+        }
+    }
+
+    @Test
+    void completedRoundsShouldBeDroppedInTheOrderTheyWereAnswered() {
+        WhoSaidItRoundRegistry bounded = new WhoSaidItRoundRegistry(clock, Duration.ofMinutes(10), 3, 3);
+
+        String a = bounded.register(round);
+        String b = bounded.register(round);
+        String c = bounded.register(round);
+
+        // b is answered before a, although a was created first.
+        bounded.answer(b, "2");
+        bounded.answer(a, "2");
+
+        String d = bounded.register(round);
+
+        assertThrows(WhoSaidItRoundNotFoundException.class, () -> bounded.answer(b, "2"));
+        assertThrows(WhoSaidItRoundAlreadyAnsweredException.class, () -> bounded.answer(a, "2"));
+        assertTrue(bounded.answer(c, "2").correct());
+        assertTrue(bounded.answer(d, "2").correct());
+    }
+
+    @Test
+    void openRoundsShouldNeverBeDroppedToMakeRoom() {
+        WhoSaidItRoundRegistry bounded = new WhoSaidItRoundRegistry(clock, Duration.ofMinutes(10), 2, 2);
+
+        String a = bounded.register(round);
+        String b = bounded.register(round);
+
+        assertThrows(
+                WhoSaidItRoundCapacityExceededException.class,
+                () -> bounded.register(round));
+
+        bounded.answer(a, "2");
+
+        // The only thing that can make room is the completed round.
+        String c = bounded.register(round);
+
+        assertThrows(WhoSaidItRoundNotFoundException.class, () -> bounded.answer(a, "2"));
+        assertTrue(bounded.answer(b, "2").correct());
+        assertTrue(bounded.answer(c, "2").correct());
+    }
+
+    @Test
+    void expiredRoundsShouldReleaseBothTheActiveAndTheTotalCapacity() {
+        WhoSaidItRoundRegistry bounded = new WhoSaidItRoundRegistry(clock, Duration.ofMinutes(10), 2, 3);
+
+        String answeredA = bounded.register(round);
+        String answeredB = bounded.register(round);
+        bounded.answer(answeredA, "2");
+        bounded.answer(answeredB, "2");
+        bounded.register(round);
+
+        clock.advance(Duration.ofMinutes(10));
+
+        // Expired answered rounds read as unknown, not as already answered.
+        assertThrows(WhoSaidItRoundNotFoundException.class, () -> bounded.answer(answeredA, "2"));
+        assertThrows(WhoSaidItRoundNotFoundException.class, () -> bounded.answer(answeredB, "2"));
+
+        // The expired open round no longer counts either: exactly two fit.
+        bounded.register(round);
+        bounded.register(round);
+
+        assertThrows(
+                WhoSaidItRoundCapacityExceededException.class,
+                () -> bounded.register(round));
+    }
+
+    @Test
+    void defaultRetainedLimitShouldBeTwiceTheActiveLimit() {
+        // registry is built with two active rounds and no explicit retained limit.
+        List<String> ids = new ArrayList<>();
+
+        for (int i = 0; i < 5; i++) {
+            String id = registry.register(round);
+
+            registry.answer(id, "2");
+            ids.add(id);
+        }
+
+        assertThrows(
+                WhoSaidItRoundNotFoundException.class,
+                () -> registry.answer(ids.get(0), "2"));
+
+        for (int i = 1; i < 5; i++) {
+            String id = ids.get(i);
+
+            assertThrows(
+                    WhoSaidItRoundAlreadyAnsweredException.class,
+                    () -> registry.answer(id, "2"));
+        }
+    }
+
+    @Test
+    void constructorShouldRejectRetainedLimitBelowTheActiveLimit() {
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> new WhoSaidItRoundRegistry(clock, Duration.ofMinutes(10), 5, 4));
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> new WhoSaidItRoundRegistry(clock, Duration.ofMinutes(10), 5, -1));
+
+        // Equal limits are allowed: no room for completed records beyond the open ones.
+        new WhoSaidItRoundRegistry(clock, Duration.ofMinutes(10), 5, 5);
+    }
+
+    @Test
+    void concurrentRegistrationAndAnsweringAtCapacityShouldLeaveConsistentCounts() throws Exception {
+        int maxActive = 5;
+        WhoSaidItRoundRegistry storm = new WhoSaidItRoundRegistry(
+                clock, Duration.ofMinutes(10), maxActive, 8);
+        var tasks = new ArrayList<Runnable>();
+
+        for (int i = 0; i < 40; i++) {
+            tasks.add(() -> {
+                try {
+                    String id = storm.register(round);
+
+                    storm.answer(id, "2");
+                } catch (WhoSaidItRoundCapacityExceededException exception) {
+                    // Expected while many rounds are open at once.
+                }
+            });
+        }
+
+        runConcurrently(tasks);
+
+        // Every round that was created has been answered, so none may still count as open:
+        // exactly maxActive new rounds fit, which fails if the open count leaked or went negative.
+        for (int i = 0; i < maxActive; i++) {
+            storm.register(round);
+        }
+
+        assertThrows(
+                WhoSaidItRoundCapacityExceededException.class,
+                () -> storm.register(round));
+    }
+
     // Libera todas as tarefas ao mesmo tempo; exceções não tratadas falham o teste via Future.get.
     private static void runConcurrently(List<Runnable> tasks) throws Exception {
         ExecutorService executor = Executors.newFixedThreadPool(tasks.size());
