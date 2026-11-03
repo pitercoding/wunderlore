@@ -15,7 +15,8 @@ import java.nio.charset.StandardCharsets;
 import static org.assertj.core.api.Assertions.assertThat;
 
 // Runs against the real embedded Tomcat, so a body can be sent with a declared Content-Length
-// or chunked, with no length the server can trust. Needs the same PostgreSQL as the context test.
+// or chunked, with no length the server can trust. Needs no database: persistence is disabled
+// by default.
 // The target is the Who Said It answer endpoint with a round id that was never issued: a body
 // that gets past the limit is a 400 (invalid) or a 404 (unknown round), never a 413.
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)

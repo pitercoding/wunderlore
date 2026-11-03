@@ -34,11 +34,12 @@ services:
       DB_USERNAME: ${DB_USERNAME:?Set DB_USERNAME in .env}
       DB_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in .env}
       THE_ONE_API_ACCESS_TOKEN: ${THE_ONE_API_ACCESS_TOKEN:-}
+      # Nothing stores data yet, so the backend starts without touching PostgreSQL and does
+      # not wait for it. Set to true once persistence is used; the backend then needs the
+      # postgres service reachable (add back depends_on with condition: service_healthy).
+      WUNDERLORE_PERSISTENCE_ENABLED: ${WUNDERLORE_PERSISTENCE_ENABLED:-false}
     ports:
       - "${BACKEND_PORT:-8080}:8080"
-    depends_on:
-      postgres:
-        condition: service_healthy
 
   # Uncomment when the frontend is ready to be containerized
   # (and fill in the FRONTEND section of .env).
