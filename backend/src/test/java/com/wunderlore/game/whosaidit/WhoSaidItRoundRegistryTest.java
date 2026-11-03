@@ -249,16 +249,252 @@ class WhoSaidItRoundRegistryTest {
     }
 
     @Test
-    void answeredRoundShouldStillCountTowardCapacity() {
+    void answeringShouldFreeCapacityImmediately() {
         String firstId = registry.register(round);
-
-        registry.answer(firstId, "2");
         registry.register(round);
 
-        // Responder não libera a vaga antes do TTL.
         assertThrows(
                 WhoSaidItRoundCapacityExceededException.class,
                 () -> registry.register(round));
+
+        registry.answer(firstId, "2");
+
+        // The slot is free right away, without waiting for the TTL; and only one slot.
+        registry.register(round);
+
+        assertThrows(
+                WhoSaidItRoundCapacityExceededException.class,
+                () -> registry.register(round));
+    }
+
+    @Test
+    void answeredRoundShouldRemainStoredAndKeepReturningAlreadyAnswered() {
+        String answeredId = registry.register(round);
+
+        registry.answer(answeredId, "1");
+
+        // Registering new rounds, which sweeps the map, must not drop the answered one.
+        registry.register(round);
+        registry.register(round);
+
+        assertThrows(
+                WhoSaidItRoundAlreadyAnsweredException.class,
+                () -> registry.answer(answeredId, "2"));
+        assertThrows(
+                WhoSaidItRoundAlreadyAnsweredException.class,
+                () -> registry.answer(answeredId, "1"));
+    }
+
+    @Test
+    void invalidAnswerShouldNotFreeCapacity() {
+        String firstId = registry.register(round);
+        registry.register(round);
+
+        assertThrows(
+                WhoSaidItInvalidCharacterOptionException.class,
+                () -> registry.answer(firstId, "999"));
+
+        assertThrows(
+                WhoSaidItRoundCapacityExceededException.class,
+                () -> registry.register(round));
+
+        // The round is still open and answerable.
+        assertTrue(registry.answer(firstId, "2").correct());
+    }
+
+    @Test
+    void unknownOrExpiredAnswerShouldNotFreeCapacity() {
+        registry.register(round);
+        registry.register(round);
+
+        assertThrows(
+                WhoSaidItRoundNotFoundException.class,
+                () -> registry.answer("unknown", "2"));
+
+        assertThrows(
+                WhoSaidItRoundCapacityExceededException.class,
+                () -> registry.register(round));
+    }
+
+    @Test
+    void answeringTheSameRoundTwiceShouldFreeOnlyOneSlot() {
+        String firstId = registry.register(round);
+        registry.register(round);
+
+        registry.answer(firstId, "2");
+
+        assertThrows(
+                WhoSaidItRoundAlreadyAnsweredException.class,
+                () -> registry.answer(firstId, "2"));
+
+        registry.register(round);
+
+        assertThrows(
+                WhoSaidItRoundCapacityExceededException.class,
+                () -> registry.register(round));
+    }
+
+    @Test
+    void multipleAnsweredRoundsShouldFreeTheCorrespondingNumberOfSlots() {
+        WhoSaidItRoundRegistry larger = new WhoSaidItRoundRegistry(clock, Duration.ofMinutes(10), 4);
+        List<String> ids = new ArrayList<>();
+
+        for (int i = 0; i < 4; i++) {
+            ids.add(larger.register(round));
+        }
+
+        assertThrows(
+                WhoSaidItRoundCapacityExceededException.class,
+                () -> larger.register(round));
+
+        larger.answer(ids.get(0), "2");
+        larger.answer(ids.get(1), "1");
+        larger.answer(ids.get(2), "2");
+
+        for (int i = 0; i < 3; i++) {
+            larger.register(round);
+        }
+
+        assertThrows(
+                WhoSaidItRoundCapacityExceededException.class,
+                () -> larger.register(round));
+    }
+
+    @Test
+    void expiredAnsweredAndOpenRoundsShouldBeCountedSeparately() {
+        WhoSaidItRoundRegistry larger = new WhoSaidItRoundRegistry(clock, Duration.ofMinutes(10), 3);
+
+        String expiredId = larger.register(round);
+        String answeredId = larger.register(round);
+        larger.answer(answeredId, "2");
+
+        clock.advance(Duration.ofMinutes(5));
+
+        larger.register(round);
+        larger.register(round);
+
+        clock.advance(Duration.ofMinutes(5));
+
+        // The first two rounds are expired and gone; two open rounds remain, so one slot is free.
+        larger.register(round);
+
+        assertThrows(
+                WhoSaidItRoundCapacityExceededException.class,
+                () -> larger.register(round));
+        assertThrows(
+                WhoSaidItRoundNotFoundException.class,
+                () -> larger.answer(expiredId, "2"));
+        assertThrows(
+                WhoSaidItRoundNotFoundException.class,
+                () -> larger.answer(answeredId, "2"));
+    }
+
+    @Test
+    void concurrentAnswersToTheSameRoundShouldFreeExactlyOneSlot() throws Exception {
+        String contestedId = registry.register(round);
+        registry.register(round);
+
+        AtomicInteger accepted = new AtomicInteger();
+        var tasks = new ArrayList<Runnable>();
+
+        for (int i = 0; i < 16; i++) {
+            tasks.add(() -> {
+                try {
+                    registry.answer(contestedId, "2");
+                    accepted.incrementAndGet();
+                } catch (WhoSaidItRoundAlreadyAnsweredException exception) {
+                    // Expected for every loser.
+                }
+            });
+        }
+
+        runConcurrently(tasks);
+
+        assertEquals(1, accepted.get());
+
+        registry.register(round);
+
+        assertThrows(
+                WhoSaidItRoundCapacityExceededException.class,
+                () -> registry.register(round));
+    }
+
+    @Test
+    void concurrentAnswersToDifferentRoundsShouldFreeOneSlotEach() throws Exception {
+        int capacity = 10;
+        WhoSaidItRoundRegistry larger = new WhoSaidItRoundRegistry(clock, Duration.ofMinutes(10), capacity);
+        List<String> ids = new ArrayList<>();
+
+        for (int i = 0; i < capacity; i++) {
+            ids.add(larger.register(round));
+        }
+
+        var tasks = new ArrayList<Runnable>();
+
+        for (String id : ids) {
+            tasks.add(() -> assertTrue(larger.answer(id, "2").correct()));
+        }
+
+        runConcurrently(tasks);
+
+        for (int i = 0; i < capacity; i++) {
+            larger.register(round);
+        }
+
+        assertThrows(
+                WhoSaidItRoundCapacityExceededException.class,
+                () -> larger.register(round));
+
+        for (String id : ids) {
+            assertThrows(
+                    WhoSaidItRoundAlreadyAnsweredException.class,
+                    () -> larger.answer(id, "2"));
+        }
+    }
+
+    @Test
+    void concurrentRegistrationAndAnsweringShouldNeverExceedCapacity() throws Exception {
+        int capacity = 5;
+        WhoSaidItRoundRegistry limited = new WhoSaidItRoundRegistry(clock, Duration.ofMinutes(10), capacity);
+
+        List<String> initialIds = new ArrayList<>();
+
+        for (int i = 0; i < capacity; i++) {
+            initialIds.add(limited.register(round));
+        }
+
+        Set<String> newIds = ConcurrentHashMap.newKeySet();
+        Set<String> answeredIds = ConcurrentHashMap.newKeySet();
+        AtomicInteger rejected = new AtomicInteger();
+        var tasks = new ArrayList<Runnable>();
+
+        for (String id : initialIds) {
+            tasks.add(() -> {
+                limited.answer(id, "2");
+                answeredIds.add(id);
+            });
+        }
+
+        for (int i = 0; i < 20; i++) {
+            tasks.add(() -> {
+                try {
+                    newIds.add(limited.register(round));
+                } catch (WhoSaidItRoundCapacityExceededException exception) {
+                    rejected.incrementAndGet();
+                }
+            });
+        }
+
+        runConcurrently(tasks);
+
+        // Only the five answers could have freed slots.
+        assertTrue(newIds.size() <= capacity, "At most five registrations can fit");
+        assertEquals(20, newIds.size() + rejected.get());
+
+        // Nothing answered yet among the new rounds, so they are exactly the open ones.
+        long open = initialIds.stream().filter(id -> !answeredIds.contains(id)).count() + newIds.size();
+
+        assertTrue(open <= capacity, "Open rounds must never exceed capacity");
     }
 
     @Test

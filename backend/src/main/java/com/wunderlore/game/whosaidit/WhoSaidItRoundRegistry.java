@@ -4,6 +4,7 @@ import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -40,12 +41,27 @@ public class WhoSaidItRoundRegistry {
         this.maxActiveRounds = maxActiveRounds;
     }
 
+    // Capacity counts only rounds that are neither expired nor answered. The count is derived
+    // from the map during the same sweep that drops expired rounds, so there is no counter to
+    // keep in step with it. Answered rounds stay stored until their TTL so that a repeated
+    // answer is still a 409. Only register() adds entries, and under this monitor; answer()
+    // can only flip a round to answered, which lowers the count, so a concurrent answer can
+    // make this sweep over-count (a spurious 503 at the boundary) but never exceed the limit.
     public synchronized String register(WhoSaidItRound round) {
         Instant now = clock.instant();
+        int unanswered = 0;
 
-        rounds.values().removeIf(activeRound -> isExpired(activeRound, now));
+        for (Iterator<ActiveRound> iterator = rounds.values().iterator(); iterator.hasNext();) {
+            ActiveRound activeRound = iterator.next();
 
-        if (rounds.size() >= maxActiveRounds) {
+            if (isExpired(activeRound, now)) {
+                iterator.remove();
+            } else if (!activeRound.answered().get()) {
+                unanswered++;
+            }
+        }
+
+        if (unanswered >= maxActiveRounds) {
             throw new WhoSaidItRoundCapacityExceededException();
         }
 
