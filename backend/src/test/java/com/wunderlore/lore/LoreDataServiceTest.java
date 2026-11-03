@@ -739,6 +739,110 @@ class LoreDataServiceTest {
         }
 
         @Test
+        void shouldLogOneWarnWhenConcurrentCallersShareAnUpstreamFailure() throws Exception {
+                Gate gate = new Gate(false);
+                RestClientException upstreamFailure = new RestClientException("The One API unavailable");
+
+                when(theOneApiClient.getQuotes(1, PAGE_SIZE)).thenAnswer(invocation -> {
+                        gate.block();
+                        throw upstreamFailure;
+                });
+                gates.add(gate);
+
+                LoreDataService service = newService();
+                List<Caller> callers = new ArrayList<>();
+
+                try (LogCapture logs = LogCapture.of(LoreDataService.class)) {
+                        // The first caller starts the load, which stays blocked upstream.
+                        callers.add(startCaller(service));
+                        assertThat(gate.entered.await(5, TimeUnit.SECONDS)).isTrue();
+
+                        for (int i = 0; i < 4; i++) {
+                                callers.add(startCaller(service));
+                        }
+
+                        for (Caller caller : callers) {
+                                awaitWaiting(caller.thread());
+                        }
+
+                        gate.release.countDown();
+
+                        // The starter gets the original failure; every other waiter a
+                        // LoreDataUnavailableException caused by it.
+                        assertThatThrownBy(callers.get(0)::result)
+                                        .isInstanceOf(ExecutionException.class)
+                                        .cause()
+                                        .isSameAs(upstreamFailure);
+
+                        for (Caller waiter : callers.subList(1, callers.size())) {
+                                assertThatThrownBy(waiter::result)
+                                                .isInstanceOf(ExecutionException.class)
+                                                .cause()
+                                                .isInstanceOf(LoreDataUnavailableException.class)
+                                                .hasCause(upstreamFailure);
+                        }
+
+                        // One shared load, one failure, one WARN.
+                        verify(theOneApiClient, times(1)).getQuotes(1, PAGE_SIZE);
+                        assertThat(logs.events(Level.WARN)).singleElement()
+                                        .extracting(ILoggingEvent::getFormattedMessage)
+                                        .asString()
+                                        .startsWith("Lore data load failed");
+
+                        // Calls during the cooldown get the failure fast and add no WARN.
+                        for (int call = 0; call < 3; call++) {
+                                assertThat(catchUnavailable(service)).hasCause(upstreamFailure);
+                        }
+
+                        assertThat(logs.events(Level.WARN)).hasSize(1);
+                        verify(theOneApiClient, times(1)).getQuotes(1, PAGE_SIZE);
+                } finally {
+                        callers.forEach(Caller::stop);
+                }
+        }
+
+        @Test
+        void shouldLogOneWarnPerFailedLoadAcrossCooldownPeriods() {
+                when(theOneApiClient.getQuotes(1, PAGE_SIZE))
+                                .thenThrow(new RestClientException("The One API unavailable"));
+
+                LoreDataService service = newService();
+
+                try (LogCapture logs = LogCapture.of(LoreDataService.class)) {
+                        // First period: one failure, one WARN, quiet cooldown.
+                        assertThatThrownBy(service::getData).isInstanceOf(RestClientException.class);
+
+                        for (int call = 0; call < 3; call++) {
+                                assertThatThrownBy(service::getData).isInstanceOf(LoreDataUnavailableException.class);
+                        }
+
+                        assertThat(logs.events(Level.WARN)).singleElement()
+                                        .extracting(ILoggingEvent::getFormattedMessage)
+                                        .asString()
+                                        .startsWith("Lore data load failed")
+                                        .contains("next attempt allowed at 2026-01-01T12:00:30Z");
+
+                        // The cooldown ends: a new load runs and fails on its own.
+                        clock.advance(COOLDOWN);
+
+                        assertThatThrownBy(service::getData).isInstanceOf(RestClientException.class);
+
+                        assertThat(logs.events(Level.WARN)).hasSize(2);
+                        assertThat(logs.events(Level.WARN).get(1).getFormattedMessage())
+                                        .startsWith("Lore data load failed")
+                                        .contains("next attempt allowed at 2026-01-01T12:01:00Z");
+
+                        // Second period: its cooldown calls are quiet as well.
+                        for (int call = 0; call < 3; call++) {
+                                assertThatThrownBy(service::getData).isInstanceOf(LoreDataUnavailableException.class);
+                        }
+
+                        assertThat(logs.events(Level.WARN)).hasSize(2);
+                        verify(theOneApiClient, times(2)).getQuotes(1, PAGE_SIZE);
+                }
+        }
+
+        @Test
         void shouldLogRecoveryOnceAfterFailure() {
                 when(theOneApiClient.getQuotes(1, PAGE_SIZE))
                                 .thenThrow(new RestClientException("The One API unavailable"))
