@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/games/who-said-it")
+@RequestMapping("/api/games/who-said-it/rounds")
 public class WhoSaidItController {
 
         private static final Logger log = LoggerFactory.getLogger(WhoSaidItController.class);
@@ -36,7 +36,7 @@ public class WhoSaidItController {
                 this.roundRegistry = roundRegistry;
         }
 
-        @PostMapping("/rounds")
+        @PostMapping
         public WhoSaidItRoundResponse createRound() {
                 WhoSaidItRound round = whoSaidItService.generateRound();
                 String roundId = roundRegistry.register(round);
@@ -44,7 +44,7 @@ public class WhoSaidItController {
                 return WhoSaidItRoundResponse.from(roundId, round);
         }
 
-        @PostMapping("/rounds/{roundId}/answer")
+        @PostMapping("/{roundId}/answer")
         public WhoSaidItAnswerResponse answer(
                         @PathVariable String roundId,
                         @Valid @RequestBody WhoSaidItAnswerRequest request) {
