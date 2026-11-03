@@ -1,10 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import BackLink from "@/components/BackLink/BackLink";
 import Button from "@/components/Button/Button";
-import Card from "@/components/Card/Card";
-import PageShell from "@/components/PageShell/PageShell";
 import type {
     WhichCharacterAnswer,
     WhichCharacterProfile,
@@ -14,10 +11,28 @@ import {
     submitWhichCharacterAnswers,
     type WhichCharacterSubmitFailure,
 } from "./actions";
+import CharacterSymbol, { getCharacterSymbol } from "./characterSymbols";
+import WhichCharacterFrame from "./WhichCharacterFrame";
 import styles from "./page.module.css";
 
 interface WhichCharacterContentProps {
     questions: WhichCharacterQuestion[];
+}
+
+// The symbol of the character the backend returned. When there is none for an
+// identifier, the plate keeps the page whole with the character's initial.
+function CharacterPlate({ id, name }: { id: string; name: string }) {
+    return (
+        <div className={styles.plate}>
+            {getCharacterSymbol(id) ? (
+                <CharacterSymbol id={id} name={name} className={styles.plateImage} />
+            ) : (
+                <div className={styles.plateFallback} aria-hidden="true">
+                    {name.charAt(0)}
+                </div>
+            )}
+        </div>
+    );
 }
 
 export default function WhichCharacterContent({
@@ -114,45 +129,44 @@ export default function WhichCharacterContent({
 
     if (character) {
         return (
-            <PageShell size="narrow">
-                <BackLink />
+            <WhichCharacterFrame>
+                <section className={styles.result} aria-labelledby="result-title">
+                    <CharacterPlate key={character.id} id={character.id} name={character.name} />
 
-                <Card as="section" elevated aria-labelledby="result-title">
-                    <p className={styles.eyebrow}>Quiz complete</p>
-                    <p className={styles.resultLead}>Your journey ends. You are…</p>
-                    <h1
-                        id="result-title"
-                        ref={resultHeading}
-                        tabIndex={-1}
-                        className={styles.resultName}
-                    >
-                        {character.name}
-                    </h1>
-                    <div className={styles.divider} aria-hidden="true" />
-                    <p className={styles.resultDescription}>{character.description}</p>
+                    <div className={styles.resultText}>
+                        <p className={styles.eyebrow}>Quiz complete</p>
+                        <p className={styles.resultLead}>Your journey ends. You are…</p>
+                        <h1
+                            id="result-title"
+                            ref={resultHeading}
+                            tabIndex={-1}
+                            className={styles.resultName}
+                        >
+                            {character.name}
+                        </h1>
+                        <div className={styles.divider} aria-hidden="true" />
+                        <p className={styles.resultDescription}>{character.description}</p>
 
-                    <div className={styles.again}>
-                        <Button size="lg" stretch="mobile" onClick={handlePlayAgain}>
-                            Play again
-                        </Button>
+                        <div className={styles.again}>
+                            <Button size="lg" stretch="mobile" onClick={handlePlayAgain}>
+                                Play again
+                            </Button>
+                        </div>
                     </div>
-                </Card>
-            </PageShell>
+                </section>
+            </WhichCharacterFrame>
         );
     }
 
     const legendId = `question-${question.id}`;
 
     return (
-        <PageShell size="narrow">
-            <BackLink />
-
-            <header className={styles.header}>
-                <p className={styles.eyebrow}>Which Character Are You?</p>
-                <h1>Find your place in the tale</h1>
-            </header>
-
-            <Card as="section" elevated aria-busy={isSubmitting}>
+        <WhichCharacterFrame
+            title="Which Character Are You?"
+            description="Ten questions, an emblem waiting in the archives."
+            spread={index === 0}
+        >
+            <section className={styles.stage} aria-busy={isSubmitting}>
                 <div className={styles.progress}>
                     <p className={styles.counter}>
                         Question {index + 1} of {total}
@@ -186,7 +200,7 @@ export default function WhichCharacterContent({
                                     checked={selectedAnswerId === option.id}
                                     onChange={() => handleSelect(option.id)}
                                 />
-                                <span>{option.text}</span>
+                                <span className={styles.optionText}>{option.text}</span>
                             </label>
                         ))}
                     </div>
@@ -236,7 +250,7 @@ export default function WhichCharacterContent({
                         </Button>
                     )}
                 </div>
-            </Card>
-        </PageShell>
+            </section>
+        </WhichCharacterFrame>
     );
 }

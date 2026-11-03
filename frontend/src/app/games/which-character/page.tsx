@@ -1,20 +1,19 @@
 import { connection } from "next/server";
 import { Suspense } from "react";
-import BackLink from "@/components/BackLink/BackLink";
-import PageShell from "@/components/PageShell/PageShell";
 import { getQuestions } from "@/lib/api/whichCharacter";
 import { unavailableMessage } from "@/lib/api/unavailable";
 import RetryButton from "../../RetryButton";
 import WhichCharacterContent from "./WhichCharacterContent";
+import WhichCharacterFrame from "./WhichCharacterFrame";
 import styles from "./page.module.css";
 
 function WhichCharacterFallback() {
     return (
-        <PageShell size="narrow">
+        <WhichCharacterFrame title="Which Character Are You?">
             <p role="status" className={styles.loading}>
                 Loading the questions...
             </p>
-        </PageShell>
+        </WhichCharacterFrame>
     );
 }
 
@@ -32,17 +31,16 @@ async function WhichCharacterLoader() {
         console.error("Failed to load Which Character Are You questions", error);
 
         return (
-            <PageShell size="narrow">
-                <BackLink />
+            <WhichCharacterFrame title="Which Character Are You?" compactNav>
+                <div className={styles.notice}>
+                    <p role="alert" className={styles.noticeText}>
+                        {unavailableMessage(error) ??
+                            "Unable to load the quiz. Please try again."}
+                    </p>
 
-                <h1 className={styles.errorTitle}>Which Character Are You?</h1>
-                <p role="alert" className={styles.error}>
-                    {unavailableMessage(error) ??
-                        "Unable to load the quiz. Please try again."}
-                </p>
-
-                <RetryButton />
-            </PageShell>
+                    <RetryButton />
+                </div>
+            </WhichCharacterFrame>
         );
     }
 

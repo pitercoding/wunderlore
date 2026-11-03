@@ -1,0 +1,247 @@
+/* A fixed dark scene whatever the OS theme, like the Home, Quotes and Who Said It:
+   re-point the semantic tokens to the Enchanted Worlds palette (globals.css). */
+.page {
+    --color-background: var(--scene-night);
+    --color-surface: var(--scene-surface);
+    --color-surface-elevated: var(--scene-surface);
+    --color-foreground: var(--scene-text);
+    --color-foreground-muted: var(--scene-text-muted);
+    --color-border: var(--scene-border);
+    --color-border-strong: color-mix(in srgb, var(--scene-text) 40%, transparent);
+    --color-accent-text: var(--scene-glow);
+    --color-focus-ring: var(--scene-glow-soft);
+    --color-overlay-hover: color-mix(in srgb, var(--scene-glow) 8%, transparent);
+
+    --color-primary: var(--scene-moss);
+    --color-primary-hover: var(--scene-moss-light);
+    --color-on-primary: var(--scene-text);
+
+    --color-error: #f39a8d;
+    --color-error-surface: color-mix(in srgb, #f39a8d 13%, var(--scene-surface));
+
+    /* The sketchbook: pale sage paper, graphite ink. */
+    --paper: #d7ddc8;
+    --graphite: #212b23;
+
+    --banner-height: 30rem;
+
+    position: relative;
+    isolation: isolate;
+    flex: 1;
+    background: var(--scene-night);
+    color: var(--scene-text);
+    color-scheme: dark;
+}
+
+/* ---- Scene: the forest, fading into night -------------------------- */
+
+.scene {
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    z-index: -1;
+    height: var(--banner-height);
+    overflow: hidden;
+    pointer-events: none;
+    background: var(--scene-abyss);
+    -webkit-mask-image: linear-gradient(to bottom, #000 62%, transparent 100%);
+    mask-image: linear-gradient(to bottom, #000 62%, transparent 100%);
+}
+
+.image {
+    object-fit: cover;
+    object-position: 50% 40%;
+}
+
+.tint {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        color-mix(in srgb, var(--scene-moss) 30%, transparent),
+        color-mix(in srgb, var(--scene-night) 66%, transparent)
+    );
+}
+
+.shade {
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(
+            ellipse 70% 60% at 25% 40%,
+            color-mix(in srgb, var(--scene-abyss) 70%, transparent),
+            transparent 100%
+        ),
+        linear-gradient(
+            to bottom,
+            color-mix(in srgb, var(--scene-abyss) 80%, transparent) 0%,
+            color-mix(in srgb, var(--scene-abyss) 50%, transparent) 45%,
+            transparent 100%
+        );
+}
+
+/* ---- Hero ---------------------------------------------------------- */
+
+.main {
+    width: min(100% - 2 * var(--gutter), 60rem);
+    margin-inline: auto;
+    padding-block: var(--space-5) var(--space-8);
+}
+
+.hero {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    margin-bottom: var(--space-5);
+}
+
+.heroText {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    min-width: 0;
+}
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: 0.35rem 0.9rem;
+    border: 1px solid var(--scene-border);
+    border-radius: var(--radius-full);
+    background: color-mix(in srgb, var(--scene-surface) 50%, transparent);
+    color: var(--scene-text-muted);
+    font-size: var(--text-xs);
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+}
+
+.badgeDot {
+    width: 0.4rem;
+    height: 0.4rem;
+    border-radius: 50%;
+    background: var(--scene-glow);
+    box-shadow: 0 0 8px var(--scene-glow);
+}
+
+.title {
+    margin-top: var(--space-4);
+    color: color-mix(in srgb, var(--scene-glow-soft) 30%, var(--scene-text));
+    font-size: clamp(2.1rem, 1.3rem + 4vw, 3.75rem);
+    font-weight: var(--weight-regular);
+    line-height: 1.06;
+    letter-spacing: -0.015em;
+    text-shadow: 0 0 2.5rem color-mix(in srgb, var(--scene-glow) 28%, transparent);
+    overflow-wrap: anywhere;
+}
+
+.description {
+    max-width: 28rem;
+    margin-top: var(--space-3);
+    color: color-mix(in srgb, var(--scene-text) 86%, transparent);
+    font-size: var(--text-lg);
+    font-weight: 300;
+    line-height: var(--leading-relaxed);
+}
+
+/* ---- Notebook spread: three studies, pinned and slightly askew ------ */
+
+.spread {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    align-self: center;
+    margin-top: var(--space-5);
+    padding-inline: var(--space-3);
+    list-style: none;
+}
+
+.sheet {
+    position: relative;
+    flex: none;
+    width: 6.75rem;
+    padding: 0.3rem;
+    border-radius: 2px;
+    background: var(--paper);
+    box-shadow:
+        0 0.9rem 1.6rem -0.6rem color-mix(in srgb, var(--scene-abyss) 90%, transparent),
+        0 0 0 1px color-mix(in srgb, var(--graphite) 25%, transparent);
+    transform: rotate(var(--tilt, 0deg)) translateY(var(--lift, 0));
+}
+
+.sheet:nth-child(1) {
+    --tilt: -6deg;
+    --lift: 0.5rem;
+    z-index: 1;
+}
+
+.sheet:nth-child(2) {
+    --tilt: 2deg;
+    z-index: 2;
+    width: 7.5rem;
+    margin-inline: -0.9rem;
+}
+
+.sheet:nth-child(3) {
+    --tilt: 7deg;
+    --lift: 0.75rem;
+    z-index: 1;
+}
+
+/* A strip of masking tape on each sheet. */
+.sheet::before {
+    content: "";
+    position: absolute;
+    top: -0.55rem;
+    left: 50%;
+    z-index: 1;
+    width: 2.2rem;
+    height: 0.9rem;
+    background: color-mix(in srgb, var(--scene-glow-soft) 38%, transparent);
+    transform: translateX(-50%) rotate(-3deg);
+}
+
+.sheetImage {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+@media (min-width: 48em) {
+    .main {
+        padding-block: var(--space-6) var(--space-9);
+    }
+
+    .hero {
+        margin-bottom: var(--space-6);
+    }
+}
+
+@media (min-width: 64em) {
+    .page {
+        --banner-height: 34rem;
+    }
+
+    .heroSpread {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--space-6);
+    }
+
+    .spread {
+        align-self: auto;
+        margin-top: 0;
+        padding-inline: 0;
+    }
+
+    .sheet {
+        width: 9.5rem;
+        padding: 0.4rem;
+    }
+
+    .sheet:nth-child(2) {
+        width: 10.5rem;
+        margin-inline: -1.25rem;
+    }
+}
