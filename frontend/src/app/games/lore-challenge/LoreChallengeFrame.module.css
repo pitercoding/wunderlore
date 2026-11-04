@@ -1,0 +1,205 @@
+/* A fixed dark scene whatever the OS theme, like the Home and the other games: re-point the
+   semantic tokens to the Enchanted Worlds palette (globals.css) inside this scope. */
+.page {
+    --color-background: var(--scene-night);
+    --color-surface: var(--scene-surface);
+    --color-surface-elevated: var(--scene-surface);
+    --color-foreground: var(--scene-text);
+    --color-foreground-muted: var(--scene-text-muted);
+    --color-border: var(--scene-border);
+    --color-border-strong: color-mix(in srgb, var(--scene-text) 40%, transparent);
+    --color-accent-text: var(--scene-glow);
+    --color-focus-ring: var(--scene-glow-soft);
+    --color-overlay-hover: color-mix(in srgb, var(--scene-glow) 8%, transparent);
+
+    /* The shared Button's primary: the Home's moss call to action. */
+    --color-primary: var(--scene-moss);
+    --color-primary-hover: var(--scene-moss-light);
+    --color-on-primary: var(--scene-text);
+
+    /* Answer feedback needs the readable (dark-theme) hues on a dark ground. */
+    --color-success: #7fcf96;
+    --color-success-surface: color-mix(in srgb, #7fcf96 14%, var(--scene-surface));
+    --color-error: #f39a8d;
+    --color-error-surface: color-mix(in srgb, #f39a8d 13%, var(--scene-surface));
+
+    --banner-height: 28rem;
+
+    position: relative;
+    isolation: isolate;
+    flex: 1;
+    background: var(--scene-night);
+    color: var(--scene-text);
+    color-scheme: dark;
+}
+
+/* ---- Scene: the old library banner, fading into night -------------- */
+
+.scene {
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    z-index: -1;
+    height: var(--banner-height);
+    overflow: hidden;
+    pointer-events: none;
+    background: var(--scene-abyss);
+    /* Dissolve into the page instead of ending on an edge. */
+    -webkit-mask-image: linear-gradient(to bottom, #000 72%, transparent 100%);
+    mask-image: linear-gradient(to bottom, #000 72%, transparent 100%);
+}
+
+/* The shelves and the corridor (right of center) stay in view when cropped. */
+.image {
+    object-fit: cover;
+    object-position: 62% 45%;
+}
+
+/* A dark green wash, so the warm photograph reads as part of the Enchanted Worlds night. */
+.tint {
+    position: absolute;
+    inset: 0;
+    background:
+        linear-gradient(
+            color-mix(in srgb, var(--scene-moss) 40%, transparent),
+            color-mix(in srgb, var(--scene-night) 50%, transparent)
+        );
+}
+
+.fog {
+    position: absolute;
+    top: 52%;
+    left: -25%;
+    width: 150%;
+    height: 36%;
+    background: radial-gradient(
+        ellipse 50% 50% at 50% 50%,
+        color-mix(in srgb, var(--scene-text) 8%, transparent),
+        transparent 70%
+    );
+    animation: mist 60s ease-in-out infinite alternate;
+}
+
+@keyframes mist {
+    from {
+        transform: translateX(-5%);
+    }
+
+    to {
+        transform: translateX(5%);
+    }
+}
+
+/* Dark under the navigation and behind the title, so the words always have calm ground. */
+.shade {
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(
+            ellipse 75% 60% at 18% 40%,
+            color-mix(in srgb, var(--scene-abyss) 72%, transparent),
+            transparent 100%
+        ),
+        linear-gradient(
+            to right,
+            color-mix(in srgb, var(--scene-abyss) 55%, transparent) 0%,
+            transparent 65%
+        ),
+        linear-gradient(
+            to bottom,
+            color-mix(in srgb, var(--scene-abyss) 78%, transparent) 0%,
+            color-mix(in srgb, var(--scene-abyss) 58%, transparent) 40%,
+            transparent 64%,
+            transparent 100%
+        );
+}
+
+/* ---- Hero ---------------------------------------------------------- */
+
+.main {
+    width: min(100% - 2 * var(--gutter), 46rem);
+    margin-inline: auto;
+    padding-bottom: var(--space-8);
+}
+
+.hero {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding-block: var(--space-6) 9rem;
+}
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: 0.35rem 0.9rem;
+    border: 1px solid var(--scene-border);
+    border-radius: var(--radius-full);
+    background: color-mix(in srgb, var(--scene-surface) 50%, transparent);
+    color: var(--scene-text-muted);
+    font-size: var(--text-xs);
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+}
+
+.badgeDot {
+    width: 0.4rem;
+    height: 0.4rem;
+    border-radius: 50%;
+    background: var(--scene-glow);
+    box-shadow: 0 0 8px var(--scene-glow);
+}
+
+.title {
+    margin-top: var(--space-4);
+    color: color-mix(in srgb, var(--scene-glow-soft) 30%, var(--scene-text));
+    font-size: clamp(2.25rem, 1.4rem + 4.4vw, 4rem);
+    font-weight: var(--weight-regular);
+    line-height: 1.06;
+    letter-spacing: -0.015em;
+    text-shadow: 0 0 2.5rem color-mix(in srgb, var(--scene-glow) 28%, transparent);
+    overflow-wrap: anywhere;
+}
+
+.description {
+    max-width: 30rem;
+    margin-top: var(--space-4);
+    color: color-mix(in srgb, var(--scene-text) 86%, transparent);
+    font-size: var(--text-lg);
+    font-weight: 300;
+    line-height: var(--leading-relaxed);
+}
+
+@media (min-width: 48em) {
+    .hero {
+        padding-block: var(--space-7) 7rem;
+    }
+}
+
+@media (min-width: 64em) {
+    .page {
+        --banner-height: 32rem;
+    }
+
+    .hero {
+        padding-block: var(--space-7) 7.5rem;
+    }
+
+    /* Nudged right so the bright windows stay clear of the title column; the left edge
+       fades into the abyss rather than ending on a line. */
+    .image {
+        transform: translateX(12%);
+        -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 30%);
+        mask-image: linear-gradient(to right, transparent 0%, #000 30%);
+        object-position: 100% 100%;
+    }
+}
+
+/* Decorative motion off: the mist holds still. */
+@media (prefers-reduced-motion: reduce) {
+    .fog {
+        animation: none;
+    }
+}

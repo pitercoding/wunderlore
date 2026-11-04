@@ -1,0 +1,551 @@
+/* The scene (palette tokens, banner, title) lives in LoreChallengeFrame. */
+
+/* A quiet surface: the questions and menus never sit directly on the photograph. */
+.stage {
+    padding: var(--space-5) var(--space-4) var(--space-5);
+    border: 1px solid var(--scene-border);
+    border-radius: var(--radius-xl);
+    background: color-mix(in srgb, var(--scene-night) 84%, transparent);
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+    box-shadow: 0 1.5rem 3rem -1.5rem color-mix(in srgb, var(--scene-abyss) 90%, transparent);
+}
+
+.srOnly {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* ---- Menu ---------------------------------------------------------- */
+
+.introText {
+    max-width: 40rem;
+    margin: 0 0 var(--space-5);
+    color: var(--scene-text);
+    font-family: var(--font-serif);
+    font-size: var(--text-xl);
+    line-height: var(--leading-snug);
+    text-wrap: pretty;
+}
+
+.fieldset {
+    min-width: 0;
+    margin: 0 0 var(--space-5);
+    padding: 0;
+    border: 0;
+}
+
+.legend {
+    padding: 0;
+    margin-bottom: var(--space-3);
+    color: var(--scene-text-muted);
+    font-size: var(--text-xs);
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+}
+
+.choices {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-2);
+}
+
+/* The native radio stays in the page for the keyboard and for screen readers; the label
+   is the visible control. */
+.choice {
+    position: relative;
+    display: block;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.radio {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.choiceBody {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.15rem;
+    min-height: 3.5rem;
+    padding: var(--space-3) var(--space-4);
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-lg);
+    background: color-mix(in srgb, var(--scene-surface) 70%, transparent);
+    transition: var(--transition-colors);
+}
+
+.choiceLabel {
+    color: var(--scene-text);
+    font-size: var(--text-lg);
+    line-height: var(--leading-snug);
+}
+
+.choiceHint {
+    color: var(--scene-text-muted);
+    font-size: var(--text-sm);
+    line-height: var(--leading-snug);
+}
+
+.choice:hover .choiceBody {
+    border-color: color-mix(in srgb, var(--scene-glow) 55%, transparent);
+    background: color-mix(in srgb, var(--scene-glow) 8%, var(--scene-surface));
+}
+
+/* Selected is shown by a glowing border, a tinted ground and a mark, not by color alone. */
+.radio:checked + .choiceBody {
+    border-color: var(--scene-glow);
+    background: color-mix(in srgb, var(--scene-glow) 12%, var(--scene-surface));
+    box-shadow: 0 0 1.25rem -0.5rem color-mix(in srgb, var(--scene-glow) 70%, transparent);
+}
+
+/* The second declaration gives screen readers an empty alternative. */
+.radio:checked + .choiceBody .choiceLabel::after {
+    content: " ✓";
+    content: " ✓" / "";
+    color: var(--scene-glow);
+}
+
+.radio:focus-visible + .choiceBody {
+    outline: var(--focus-ring-width) solid var(--color-focus-ring);
+    outline-offset: var(--focus-ring-offset);
+}
+
+.fieldset:disabled .choice,
+.fieldset:disabled .radio {
+    cursor: not-allowed;
+}
+
+.fieldset:disabled .choiceBody {
+    opacity: var(--disabled-opacity);
+}
+
+/* ---- Progress and the question ------------------------------------ */
+
+.progressRow {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-3);
+    margin-bottom: var(--space-2);
+}
+
+.progressLabel,
+.scoreLabel {
+    margin: 0;
+    color: var(--scene-text-muted);
+    font-size: var(--text-sm);
+    letter-spacing: 0.02em;
+}
+
+.scoreValue {
+    color: var(--scene-glow);
+    font-family: var(--font-serif);
+    font-size: var(--text-xl);
+}
+
+.progress {
+    display: block;
+    width: 100%;
+    height: 0.35rem;
+    appearance: none;
+    border: 0;
+    border-radius: var(--radius-full);
+    background: color-mix(in srgb, var(--scene-text) 12%, transparent);
+    overflow: hidden;
+}
+
+.progress::-webkit-progress-bar {
+    background: color-mix(in srgb, var(--scene-text) 12%, transparent);
+}
+
+.progress::-webkit-progress-value {
+    background: var(--scene-glow);
+    border-radius: var(--radius-full);
+    transition: width var(--duration-base) var(--ease-standard);
+}
+
+.progress::-moz-progress-bar {
+    background: var(--scene-glow);
+    border-radius: var(--radius-full);
+}
+
+.tags {
+    margin: var(--space-4) 0 0;
+    color: var(--scene-text-muted);
+    font-size: var(--text-xs);
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+}
+
+.prompt {
+    margin: 0;
+    padding-block: var(--space-3) var(--space-5);
+    color: var(--scene-text);
+    font-size: clamp(1.4rem, 1rem + 1.8vw, 2.1rem);
+    font-weight: var(--weight-regular);
+    letter-spacing: -0.005em;
+    line-height: 1.35;
+    text-wrap: pretty;
+    overflow-wrap: anywhere;
+}
+
+/* A short glowing rule, like a lantern's reflection, before the words. */
+.prompt::before {
+    content: "";
+    display: block;
+    width: 3rem;
+    height: 2px;
+    margin-bottom: var(--space-4);
+    background: linear-gradient(to right, var(--scene-glow), transparent);
+    box-shadow: 0 0 12px color-mix(in srgb, var(--scene-glow) 55%, transparent);
+}
+
+.prompt:focus-visible {
+    outline: var(--focus-ring-width) solid var(--color-focus-ring);
+    outline-offset: var(--focus-ring-offset);
+}
+
+/* ---- Answers ------------------------------------------------------- */
+
+.options {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-3);
+    counter-reset: option;
+}
+
+.option {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    min-height: 3.5rem;
+    padding: var(--space-3) var(--space-4);
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-xl);
+    background: color-mix(in srgb, var(--scene-surface) 70%, transparent);
+    color: var(--scene-text);
+    font: inherit;
+    font-size: var(--text-lg);
+    line-height: var(--leading-snug);
+    text-align: left;
+    overflow-wrap: anywhere;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition:
+        var(--transition-colors),
+        transform var(--duration-fast) var(--ease-standard);
+    counter-increment: option;
+}
+
+/* A quiet letter, so the choices read as a lettered list. Decorative: the second
+   declaration gives screen readers an empty alternative. */
+.option::before {
+    content: counter(option, upper-alpha);
+    content: counter(option, upper-alpha) / "";
+    flex: none;
+    min-width: 1.5rem;
+    color: var(--scene-text-muted);
+    font-family: var(--font-serif);
+    font-size: var(--text-base);
+    letter-spacing: 0.04em;
+}
+
+.option:hover:not(:disabled) {
+    border-color: color-mix(in srgb, var(--scene-glow) 55%, transparent);
+    background: color-mix(in srgb, var(--scene-glow) 8%, var(--scene-surface));
+}
+
+.option:active:not(:disabled) {
+    transform: scale(0.99);
+}
+
+/* Answered options stay fully readable; only the untouched ones recede. */
+.option:disabled {
+    cursor: not-allowed;
+}
+
+.option:disabled:not(.correct):not(.incorrect) {
+    opacity: var(--disabled-opacity);
+}
+
+.option.correct,
+.option.incorrect {
+    cursor: default;
+    font-weight: var(--weight-semibold);
+}
+
+.option.correct {
+    border-color: var(--color-success);
+    background: var(--color-success-surface);
+    color: var(--color-success);
+}
+
+.option.incorrect {
+    border-color: var(--color-error);
+    background: var(--color-error-surface);
+    color: var(--color-error);
+}
+
+.option.correct::before,
+.option.incorrect::before {
+    color: inherit;
+}
+
+/* Color is not the only signal: a mark too, pushed to the end of the row. The second
+   declaration gives screen readers an empty alternative. */
+.option.correct::after,
+.option.incorrect::after {
+    margin-left: auto;
+}
+
+.option.correct::after {
+    content: "✓";
+    content: "✓" / "";
+}
+
+.option.incorrect::after {
+    content: "✕";
+    content: "✕" / "";
+}
+
+/* ---- Feedback ------------------------------------------------------ */
+
+.status,
+.error,
+.feedback {
+    margin-top: var(--space-5);
+}
+
+.status {
+    color: var(--scene-text-muted);
+}
+
+.error {
+    padding: var(--space-3) var(--space-4);
+    border: 1px solid var(--color-error);
+    border-radius: var(--radius-lg);
+    background: var(--color-error-surface);
+    color: var(--color-error);
+}
+
+.error p {
+    margin: 0;
+}
+
+.feedback {
+    padding-top: var(--space-5);
+    border-top: 1px solid var(--scene-border);
+    animation: rise var(--duration-base) var(--ease-standard);
+}
+
+.feedback p {
+    color: var(--scene-text);
+    text-wrap: balance;
+}
+
+.feedback .error {
+    color: var(--color-error);
+}
+
+.feedback h3 {
+    margin-bottom: var(--space-2);
+    font-size: var(--text-2xl);
+    font-weight: var(--weight-regular);
+}
+
+.feedbackCorrect {
+    color: var(--color-success);
+}
+
+.feedbackIncorrect {
+    color: var(--color-error);
+}
+
+@keyframes rise {
+    from {
+        opacity: 0;
+        transform: translateY(0.4rem);
+    }
+
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+.inlineAction {
+    margin-top: var(--space-3);
+}
+
+/* The Home's call to action, set in the shared Button. */
+.next,
+.play {
+    margin-top: var(--space-4);
+    border-color: color-mix(in srgb, var(--scene-glow) 34%, transparent);
+    box-shadow:
+        inset 0 1px 0 color-mix(in srgb, var(--scene-text) 14%, transparent),
+        0 0 1.5rem -0.35rem color-mix(in srgb, var(--scene-glow) 40%, transparent);
+}
+
+.next:hover:not(:disabled),
+.play:hover:not(:disabled) {
+    border-color: color-mix(in srgb, var(--scene-glow) 55%, transparent);
+}
+
+.play {
+    margin-top: var(--space-2);
+}
+
+/* ---- Results ------------------------------------------------------- */
+
+.rank {
+    margin: var(--space-3) 0 0;
+    color: color-mix(in srgb, var(--scene-glow-soft) 30%, var(--scene-text));
+    font-size: clamp(1.75rem, 1.2rem + 2.6vw, 2.75rem);
+    font-weight: var(--weight-regular);
+    line-height: 1.15;
+    text-shadow: 0 0 2rem color-mix(in srgb, var(--scene-glow) 25%, transparent);
+    overflow-wrap: anywhere;
+}
+
+.rank:focus-visible {
+    outline: var(--focus-ring-width) solid var(--color-focus-ring);
+    outline-offset: var(--focus-ring-offset);
+}
+
+.totalScore {
+    margin: var(--space-3) 0 var(--space-5);
+}
+
+.totalScoreValue {
+    color: var(--scene-glow);
+    font-family: var(--font-serif);
+    font-size: clamp(2.75rem, 2rem + 4vw, 4.25rem);
+    line-height: 1;
+}
+
+.totalScoreMax {
+    color: var(--scene-text-muted);
+    font-size: var(--text-lg);
+}
+
+.stats {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-2);
+    margin: 0;
+}
+
+.stat {
+    padding: var(--space-3) var(--space-4);
+    border: 1px solid var(--scene-border);
+    border-radius: var(--radius-lg);
+    background: color-mix(in srgb, var(--scene-surface) 70%, transparent);
+}
+
+.stat dt {
+    color: var(--scene-text-muted);
+    font-size: var(--text-xs);
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+}
+
+.stat dd {
+    margin: var(--space-1) 0 0;
+    color: var(--scene-text);
+    font-family: var(--font-serif);
+    font-size: var(--text-2xl);
+}
+
+.actions {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-3);
+    margin-top: var(--space-5);
+}
+
+.actions .next {
+    margin-top: 0;
+}
+
+.backToGames {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: var(--touch-target);
+    padding-inline: var(--space-3);
+    border-radius: var(--radius-full);
+    color: var(--scene-text-muted);
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+    transition: var(--transition-colors);
+}
+
+.backToGames:hover {
+    color: var(--scene-text);
+}
+
+.backToGames:focus-visible {
+    outline: var(--focus-ring-width) solid var(--color-focus-ring);
+    outline-offset: var(--focus-ring-offset);
+}
+
+@media (min-width: 36em) {
+    .options,
+    .choices {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .difficulties {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .stats {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .actions {
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+}
+
+@media (min-width: 48em) {
+    .stage {
+        padding: var(--space-6);
+    }
+}
+
+/* Decorative motion off: things appear in place. */
+@media (prefers-reduced-motion: reduce) {
+    .feedback {
+        animation: none;
+    }
+
+    .progress::-webkit-progress-value,
+    .option,
+    .choiceBody {
+        transition: none;
+    }
+
+    .option:active:not(:disabled) {
+        transform: none;
+    }
+}
