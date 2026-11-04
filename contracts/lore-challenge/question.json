@@ -1,0 +1,16 @@
+{
+  "matchId": "3f2b8c1e-5a47-4d0e-9c36-7b1e2a9d4f60",
+  "category": "ALL",
+  "difficulty": "EASY",
+  "number": 1,
+  "total": 10,
+  "questionId": "characters-easy-01",
+  "questionCategory": "CHARACTERS",
+  "prompt": "Who carries the One Ring to Mount Doom?",
+  "options": [
+    { "id": "a", "text": "Bilbo Baggins" },
+    { "id": "b", "text": "Frodo Baggins" },
+    { "id": "c", "text": "Samwise Gamgee" },
+    { "id": "d", "text": "Gandalf" }
+  ]
+}
