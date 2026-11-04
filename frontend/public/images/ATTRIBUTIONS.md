@@ -34,3 +34,13 @@ a sword (Aragorn), a staff (Gandalf), a burning eye (Sauron), a fish (Gollum), a
 
 `enchanted-forest.avif`, `quotes-forest-stream.avif`, `who-said-it-hooded-path.avif`: pre-existing.
 Their provenance is recorded by the pages that use them; the Who Said It? frame notes its license as unverified.
+
+## `lore-challenge-archive-library.avif` — Lore Challenge banner
+
+- **Subject:** an old library reading hall with tall windows and shelves receding into shadow.
+- **Original file:** `redcharlie-ETPsW8_3d-o-unsplash.jpg` (from the project owner's Downloads folder; the
+  original was not modified). The file name follows Unsplash's pattern: photographer handle
+  `redcharlie`, photo id `ETPsW8_3d-o`.
+- **Modifications:** resized to 2400x1638 and converted from JPEG to AVIF. The page lays a dark green
+  gradient over it.
+- **License:** the project owner downloaded it with permission to share it freely.
