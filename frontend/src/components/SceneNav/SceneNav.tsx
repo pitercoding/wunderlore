@@ -10,6 +10,7 @@ interface SceneNavProps {
 const LINKS = [
     { href: "/games/who-said-it", label: "Who Said It?" },
     { href: "/games/which-character", label: "Which Character?" },
+    { href: "/games/lore-challenge", label: "Lore Challenge" },
     { href: "/quotes", label: "Quotes" },
 ];
 

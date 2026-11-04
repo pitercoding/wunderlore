@@ -116,6 +116,9 @@ export default function HomePage() {
               <Link href="/games/which-character" className={styles.navLink}>
                 Which Character?
               </Link>
+              <Link href="/games/lore-challenge" className={styles.navLink}>
+                Lore Challenge
+              </Link>
               <Link href="/quotes" className={styles.navLink}>
                 Quotes
               </Link>
@@ -133,6 +136,9 @@ export default function HomePage() {
                 </Link>
                 <Link href="/games/which-character" className={styles.menuLink}>
                   Which Character?
+                </Link>
+                <Link href="/games/lore-challenge" className={styles.menuLink}>
+                  Lore Challenge
                 </Link>
                 <Link href="/quotes" className={styles.menuLink}>
                   Quotes
@@ -203,6 +209,20 @@ export default function HomePage() {
                 <p className={styles.itemText}>
                   Answer personality questions to discover which Tolkien
                   character matches you.
+                </p>
+              </li>
+
+              <li className={styles.item}>
+                <p className={styles.kicker}>
+                  <span className={styles.glyph} aria-hidden="true">&#9884;</span>
+                  Lore trivia
+                </p>
+                <Link href="/games/lore-challenge" className={styles.itemLink}>
+                  Take the Lore Challenge →
+                </Link>
+                <p className={styles.itemText}>
+                  Ten questions on characters, places, peoples, history and
+                  events, in three levels of difficulty.
                 </p>
               </li>
 
