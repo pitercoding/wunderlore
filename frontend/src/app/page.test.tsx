@@ -3,6 +3,20 @@ import { describe, expect, it } from "vitest";
 import HomePage from "./page";
 
 describe("HomePage", () => {
+    it("embeds WebSite structured data with only verifiable facts", () => {
+        const { container } = render(<HomePage />);
+        const script = container.querySelector('script[type="application/ld+json"]');
+
+        expect(JSON.parse(script?.textContent ?? "")).toEqual({
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            name: "Wunderlore",
+            url: "https://wunderlore.vercel.app",
+            description: expect.stringContaining("Wunderlore"),
+            inLanguage: "en",
+        });
+    });
+
     it("links to the quote catalog and the game", () => {
         render(<HomePage />);
 

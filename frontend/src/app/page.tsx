@@ -4,7 +4,30 @@ import type { CSSProperties } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import PageShell from "@/components/PageShell/PageShell";
+import JsonLd from "@/lib/seo/JsonLd";
+import {
+  SITE_DESCRIPTION,
+  SITE_NAME,
+  SITE_URL,
+  pageMetadata,
+} from "@/lib/seo/site";
 import styles from "./page.module.css";
+
+export const metadata = pageMetadata({
+  description:
+    "Wander through fantasy and literary lore: browse quotes, guess who said them and play games about the characters, places and history of Tolkien's world. An unofficial fan project.",
+  path: "/",
+});
+
+// Only facts already on the site: name, address, description and language.
+const WEBSITE_JSON_LD = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: SITE_NAME,
+  url: SITE_URL,
+  description: SITE_DESCRIPTION,
+  inLanguage: "en",
+};
 
 // The forest photograph is an asset the project has to supply:
 // frontend/public/images/enchanted-forest.{avif,webp,jpg}, 2400x1350 (16:9).
@@ -64,6 +87,7 @@ export default function HomePage() {
 
   return (
     <div className={styles.page}>
+      <JsonLd data={WEBSITE_JSON_LD} />
       <div className={styles.stage}>
         <div className={styles.scene} aria-hidden="true">
           {sceneImage && (

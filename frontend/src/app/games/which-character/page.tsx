@@ -3,10 +3,19 @@ import { Suspense } from "react";
 import { getQuestions } from "@/lib/api/whichCharacter";
 import { unavailableMessage } from "@/lib/api/unavailable";
 import ColdStartHint from "@/components/ColdStartHint/ColdStartHint";
+import { WHICH_CHARACTER_IMAGE, pageMetadata } from "@/lib/seo/site";
 import RetryButton from "../../RetryButton";
 import WhichCharacterContent from "./WhichCharacterContent";
 import WhichCharacterFrame from "./WhichCharacterFrame";
 import styles from "./page.module.css";
+
+export const metadata = pageMetadata({
+    title: "Which Character Are You?",
+    description:
+        "Answer a few questions about how you think and choose, and follow the clues to the Tolkien character you most resemble.",
+    path: "/games/which-character",
+    image: WHICH_CHARACTER_IMAGE,
+});
 
 function WhichCharacterFallback() {
     return (
