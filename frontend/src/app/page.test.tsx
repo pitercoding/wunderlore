@@ -27,4 +27,15 @@ describe("HomePage", () => {
             screen.getByText(/personality questions.*Tolkien character/),
         ).toBeInTheDocument();
     });
+
+    it("links to the Lore Challenge game", () => {
+        render(<HomePage />);
+
+        expect(
+            screen.getByRole("link", { name: "Take the Lore Challenge →" }),
+        ).toHaveAttribute("href", "/games/lore-challenge");
+        expect(
+            screen.getAllByRole("link", { name: "Lore Challenge" })[0],
+        ).toHaveAttribute("href", "/games/lore-challenge");
+    });
 });

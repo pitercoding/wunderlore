@@ -60,6 +60,8 @@ describe("SceneNav compact menu", () => {
         await user.tab();
         expect(screen.getAllByRole("link", { name: "Which Character?" })[1]).toHaveFocus();
         await user.tab();
+        expect(screen.getAllByRole("link", { name: "Lore Challenge" })[1]).toHaveFocus();
+        await user.tab();
         expect(screen.getAllByRole("link", { name: "Quotes" })[1]).toHaveFocus();
     });
 
@@ -74,9 +76,11 @@ describe("SceneNav compact menu", () => {
             "/",
             "/games/who-said-it",
             "/games/which-character",
+            "/games/lore-challenge",
             "/quotes",
             "/games/who-said-it",
             "/games/which-character",
+            "/games/lore-challenge",
             "/quotes",
         ]);
     });
