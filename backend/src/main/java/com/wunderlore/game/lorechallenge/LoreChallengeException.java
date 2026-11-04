@@ -21,7 +21,7 @@ public class LoreChallengeException extends RuntimeException {
         // 400: the option id is not one of the four offered.
         INVALID_OPTION(HttpStatus.BAD_REQUEST, "Invalid answer option"),
         // 422: the chosen category and difficulty cannot form a full match.
-        NOT_ENOUGH_QUESTIONS(HttpStatus.UNPROCESSABLE_ENTITY,
+        NOT_ENOUGH_QUESTIONS(HttpStatus.UNPROCESSABLE_CONTENT,
                 "Not enough questions are available for that selection"),
         // 503: too many matches are open at once.
         CAPACITY_EXCEEDED(HttpStatus.SERVICE_UNAVAILABLE, "Too many active matches, try again later");
