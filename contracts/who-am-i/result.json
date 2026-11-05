@@ -1,0 +1,15 @@
+{
+  "gameId": "3f2b8c1e-5a47-4d0e-9c36-7b1e2a9d4f60",
+  "difficulty": "EASY",
+  "totalRounds": 10,
+  "score": 720,
+  "maxScore": 1000,
+  "percentage": 72,
+  "identified": 9,
+  "incorrectAnswers": 9,
+  "unidentified": 1,
+  "rounds": [
+    { "roundNumber": 1, "characterName": "Frodo Baggins", "cluesUsed": 2, "identified": true, "points": 80, "wrongAttempts": 1 },
+    { "roundNumber": 10, "characterName": "Saruman", "cluesUsed": 5, "identified": false, "points": 0, "wrongAttempts": 5 }
+  ]
+}

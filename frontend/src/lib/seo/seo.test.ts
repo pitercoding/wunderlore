@@ -14,6 +14,7 @@ import { metadata as quotesMetadata } from "@/app/quotes/page";
 import { metadata as whoSaidItMetadata } from "@/app/games/who-said-it/page";
 import { metadata as whichCharacterMetadata } from "@/app/games/which-character/page";
 import { metadata as loreChallengeMetadata } from "@/app/games/lore-challenge/page";
+import { metadata as whoAmIMetadata } from "@/app/games/who-am-i/page";
 import robots from "@/app/robots";
 import sitemap from "@/app/sitemap";
 import {
@@ -22,6 +23,7 @@ import {
     PUBLIC_PATHS,
     SITE_URL,
     WHICH_CHARACTER_IMAGE,
+    WHO_AM_I_IMAGE,
 } from "./site";
 
 const pages = [
@@ -30,6 +32,7 @@ const pages = [
     { name: "who-said-it", metadata: whoSaidItMetadata, path: "/games/who-said-it" },
     { name: "which-character", metadata: whichCharacterMetadata, path: "/games/which-character" },
     { name: "lore-challenge", metadata: loreChallengeMetadata, path: "/games/lore-challenge" },
+    { name: "who-am-i", metadata: whoAmIMetadata, path: "/games/who-am-i" },
 ];
 
 describe("root metadata", () => {
@@ -66,6 +69,7 @@ describe("page metadata", () => {
 
         expect(firstImage(loreChallengeMetadata)).toBe(LORE_CHALLENGE_IMAGE.path);
         expect(firstImage(whichCharacterMetadata)).toBe(WHICH_CHARACTER_IMAGE.path);
+        expect(firstImage(whoAmIMetadata)).toBe(WHO_AM_I_IMAGE.path);
         expect(firstImage(homeMetadata)).toBe(HOME_IMAGE.path);
     });
 
@@ -77,7 +81,7 @@ describe("page metadata", () => {
 });
 
 describe("share images", () => {
-    it.each([HOME_IMAGE, WHICH_CHARACTER_IMAGE, LORE_CHALLENGE_IMAGE])(
+    it.each([HOME_IMAGE, WHICH_CHARACTER_IMAGE, LORE_CHALLENGE_IMAGE, WHO_AM_I_IMAGE])(
         "$path exists in public/",
         ({ path: imagePath }) => {
             expect(() =>
@@ -86,7 +90,7 @@ describe("share images", () => {
         },
     );
 
-    it.each([HOME_IMAGE, WHICH_CHARACTER_IMAGE, LORE_CHALLENGE_IMAGE])(
+    it.each([HOME_IMAGE, WHICH_CHARACTER_IMAGE, LORE_CHALLENGE_IMAGE, WHO_AM_I_IMAGE])(
         "$path is a 1200x630 JPEG, not AVIF",
         ({ path: imagePath, width, height, type }) => {
             expect(imagePath).toMatch(/\.jpe?g$/);
@@ -110,6 +114,7 @@ describe("sitemap", () => {
             `${SITE_URL}/games/who-said-it`,
             `${SITE_URL}/games/which-character`,
             `${SITE_URL}/games/lore-challenge`,
+            `${SITE_URL}/games/who-am-i`,
         ]);
         expect(entries).toHaveLength(PUBLIC_PATHS.length);
         expect(entries.every((e) => e.lastModified === undefined)).toBe(true);

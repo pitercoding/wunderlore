@@ -1,0 +1,23 @@
+{
+  "gameId": "3f2b8c1e-5a47-4d0e-9c36-7b1e2a9d4f60",
+  "roundNumber": 1,
+  "clueNumber": 2,
+  "submittedOptionId": "a",
+  "correct": true,
+  "roundFinished": true,
+  "pointsAwarded": 80,
+  "score": 80,
+  "gameFinished": false,
+  "next": null,
+  "reveal": {
+    "characterName": "Frodo Baggins",
+    "clues": [
+      "Both of this character's parents died in a boating accident long before any adventure began.",
+      "A beloved older relative adopted this character, then left behind his home and a small golden trinket.",
+      "A wound from a cursed blade, taken beneath a ruined watchtower on a hill, never fully healed.",
+      "At a council in Rivendell, this character volunteered to carry a dangerous object to the land where it was made.",
+      "At the Cracks of Doom this character could not give up the Ring willingly, and lost a finger to the creature who seized it."
+    ]
+  },
+  "result": null
+}

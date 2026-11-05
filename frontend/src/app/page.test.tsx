@@ -52,4 +52,17 @@ describe("HomePage", () => {
             screen.getAllByRole("link", { name: "Lore Challenge" })[0],
         ).toHaveAttribute("href", "/games/lore-challenge");
     });
+
+    it("links to the Who Am I? game as the fourth game", () => {
+        render(<HomePage />);
+
+        expect(screen.getByRole("link", { name: "Play Who Am I? →" })).toHaveAttribute(
+            "href",
+            "/games/who-am-i",
+        );
+        expect(screen.getAllByRole("link", { name: "Who Am I?" })[0]).toHaveAttribute(
+            "href",
+            "/games/who-am-i",
+        );
+    });
 });

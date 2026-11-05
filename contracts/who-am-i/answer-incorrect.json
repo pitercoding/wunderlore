@@ -1,0 +1,26 @@
+{
+  "gameId": "3f2b8c1e-5a47-4d0e-9c36-7b1e2a9d4f60",
+  "roundNumber": 1,
+  "clueNumber": 1,
+  "submittedOptionId": "a",
+  "correct": false,
+  "roundFinished": false,
+  "pointsAwarded": 0,
+  "score": 0,
+  "gameFinished": false,
+  "next": {
+    "clueNumber": 2,
+    "clues": [
+      "Both of this character's parents died in a boating accident long before any adventure began.",
+      "A beloved older relative adopted this character, then left behind his home and a small golden trinket."
+    ],
+    "options": [
+      { "id": "a", "text": "Frodo Baggins" },
+      { "id": "b", "text": "Boromir" },
+      { "id": "c", "text": "Gimli" },
+      { "id": "d", "text": "Legolas" }
+    ]
+  },
+  "reveal": null,
+  "result": null
+}

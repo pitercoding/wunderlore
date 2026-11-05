@@ -50,6 +50,14 @@ export const LORE_CHALLENGE_IMAGE: ShareImage = {
   alt: "An old library reading hall with tall windows and shelves fading into shadow.",
 };
 
+export const WHO_AM_I_IMAGE: ShareImage = {
+  path: "/images/share/who-am-i.jpg",
+  width: 1200,
+  height: 630,
+  type: "image/jpeg",
+  alt: "Old iron keys laid out on dark crumpled paper.",
+};
+
 // Public, indexable routes. The sitemap is built from this list.
 export const PUBLIC_PATHS = [
   "/",
@@ -57,6 +65,7 @@ export const PUBLIC_PATHS = [
   "/games/who-said-it",
   "/games/which-character",
   "/games/lore-challenge",
+  "/games/who-am-i",
 ] as const;
 
 interface PageSeo {

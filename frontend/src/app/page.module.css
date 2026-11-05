@@ -616,10 +616,14 @@
     }
 }
 
-/* Three columns need room for the longest title on one line; below this the paths stack. */
+/* Five columns: titles wrap onto two lines; below this the paths stack. */
 @media (min-width: 64em) {
     .items {
-        grid-template-columns: repeat(4, minmax(0, 1fr));
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+    }
+
+    .item {
+        padding: var(--space-4);
     }
 
     .item + .item {

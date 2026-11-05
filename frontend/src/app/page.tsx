@@ -143,6 +143,9 @@ export default function HomePage() {
               <Link href="/games/lore-challenge" className={styles.navLink}>
                 Lore Challenge
               </Link>
+              <Link href="/games/who-am-i" className={styles.navLink}>
+                Who Am I?
+              </Link>
               <Link href="/quotes" className={styles.navLink}>
                 Quotes
               </Link>
@@ -163,6 +166,9 @@ export default function HomePage() {
                 </Link>
                 <Link href="/games/lore-challenge" className={styles.menuLink}>
                   Lore Challenge
+                </Link>
+                <Link href="/games/who-am-i" className={styles.menuLink}>
+                  Who Am I?
                 </Link>
                 <Link href="/quotes" className={styles.menuLink}>
                   Quotes
@@ -247,6 +253,20 @@ export default function HomePage() {
                 <p className={styles.itemText}>
                   Ten questions on characters, places, peoples, history and
                   events, in three levels of difficulty.
+                </p>
+              </li>
+
+              <li className={styles.item}>
+                <p className={styles.kicker}>
+                  <span className={styles.glyph} aria-hidden="true">&#9906;</span>
+                  Guess the character
+                </p>
+                <Link href="/games/who-am-i" className={styles.itemLink}>
+                  Play Who Am I? →
+                </Link>
+                <p className={styles.itemText}>
+                  Five clues, one character. The fewer clues you need, the
+                  more you score.
                 </p>
               </li>
 

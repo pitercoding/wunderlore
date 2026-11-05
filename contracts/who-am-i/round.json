@@ -1,0 +1,19 @@
+{
+  "gameId": "3f2b8c1e-5a47-4d0e-9c36-7b1e2a9d4f60",
+  "difficulty": "EASY",
+  "roundNumber": 1,
+  "totalRounds": 10,
+  "clueNumber": 1,
+  "totalClues": 5,
+  "clues": [
+    "Both of this character's parents died in a boating accident long before any adventure began."
+  ],
+  "options": [
+    { "id": "a", "text": "Samwise Gamgee" },
+    { "id": "b", "text": "Frodo Baggins" },
+    { "id": "c", "text": "Bilbo Baggins" },
+    { "id": "d", "text": "Gollum" }
+  ],
+  "score": 0,
+  "maxScore": 1000
+}

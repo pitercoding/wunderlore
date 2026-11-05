@@ -1,0 +1,740 @@
+/* The scene (palette tokens, banner, title) lives in WhoAmIFrame. */
+
+/* A quiet surface: the clues and menus never sit directly on the photograph. */
+.stage {
+    padding: var(--space-5) var(--space-4) var(--space-5);
+    border: 1px solid var(--scene-border);
+    border-top-color: color-mix(in srgb, var(--scene-glow) 35%, transparent);
+    border-radius: var(--radius-xl);
+    background: color-mix(in srgb, var(--scene-night) 86%, transparent);
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+    box-shadow: 0 1.5rem 3rem -1.5rem color-mix(in srgb, var(--scene-abyss) 90%, transparent);
+}
+
+.srOnly {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* ---- Menu ---------------------------------------------------------- */
+
+.sectionTitle {
+    margin: 0 0 var(--space-3);
+    color: var(--scene-text-muted);
+    font-family: var(--font-sans);
+    font-size: var(--text-xs);
+    font-weight: var(--weight-regular);
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+}
+
+.introText {
+    max-width: 40rem;
+    margin: 0 0 var(--space-5);
+    color: var(--scene-text);
+    font-family: var(--font-serif);
+    font-size: var(--text-xl);
+    line-height: var(--leading-snug);
+    text-wrap: pretty;
+}
+
+/* What each clue is worth: five rungs, from the vaguest clue (most points) to the clearest. */
+.ladder {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: var(--space-2);
+    margin: 0 0 var(--space-3);
+    padding: 0;
+    list-style: none;
+}
+
+.rung {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.1rem;
+    padding: var(--space-2) var(--space-1);
+    border: 1px solid var(--scene-border);
+    border-radius: var(--radius-md);
+    background: color-mix(in srgb, var(--scene-surface) 70%, transparent);
+    text-align: center;
+}
+
+.rungClue {
+    color: var(--scene-text-muted);
+    font-size: var(--text-xs);
+    letter-spacing: 0.03em;
+}
+
+.rungPoints {
+    color: var(--scene-glow);
+    font-family: var(--font-serif);
+    font-size: var(--text-lg);
+    line-height: 1.2;
+}
+
+.fineprint {
+    margin: var(--space-3) 0 var(--space-5);
+    color: var(--scene-text-muted);
+    font-size: var(--text-sm);
+    line-height: var(--leading-normal);
+}
+
+.fieldset {
+    min-width: 0;
+    margin: 0 0 var(--space-5);
+    padding: 0;
+    border: 0;
+}
+
+.fieldset .fineprint {
+    margin-bottom: 0;
+}
+
+.legend {
+    padding: 0;
+    margin-bottom: var(--space-3);
+    color: var(--scene-text-muted);
+    font-size: var(--text-xs);
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+}
+
+.choices {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-2);
+}
+
+/* The native radio stays in the page for the keyboard and for screen readers; the label
+   is the visible control. */
+.choice {
+    position: relative;
+    display: block;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.radio {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.choiceBody {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.15rem;
+    min-height: 3.5rem;
+    padding: var(--space-3) var(--space-4);
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-lg);
+    background: color-mix(in srgb, var(--scene-surface) 70%, transparent);
+    transition: var(--transition-colors);
+}
+
+.choiceLabel {
+    color: var(--scene-text);
+    font-size: var(--text-lg);
+    line-height: var(--leading-snug);
+}
+
+.choiceHint {
+    color: var(--scene-text-muted);
+    font-size: var(--text-sm);
+    line-height: var(--leading-snug);
+}
+
+.choice:hover .choiceBody {
+    border-color: color-mix(in srgb, var(--scene-glow) 55%, transparent);
+    background: color-mix(in srgb, var(--scene-glow) 8%, var(--scene-surface));
+}
+
+/* Selected is shown by a glowing border, a tinted ground and a mark, not by color alone. */
+.radio:checked + .choiceBody {
+    border-color: var(--scene-glow);
+    background: color-mix(in srgb, var(--scene-glow) 12%, var(--scene-surface));
+    box-shadow: 0 0 1.25rem -0.5rem color-mix(in srgb, var(--scene-glow) 70%, transparent);
+}
+
+/* The second declaration gives screen readers an empty alternative. */
+.radio:checked + .choiceBody .choiceLabel::after {
+    content: " ✓";
+    content: " ✓" / "";
+    color: var(--scene-glow);
+}
+
+.radio:focus-visible + .choiceBody {
+    outline: var(--focus-ring-width) solid var(--color-focus-ring);
+    outline-offset: var(--focus-ring-offset);
+}
+
+.fieldset:disabled .choice,
+.fieldset:disabled .radio {
+    cursor: not-allowed;
+}
+
+.fieldset:disabled .choiceBody {
+    opacity: var(--disabled-opacity);
+}
+
+/* ---- Progress ------------------------------------------------------ */
+
+.progressRow {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-3);
+    margin-bottom: var(--space-2);
+}
+
+.roundHeading,
+.scoreLabel {
+    margin: 0;
+    color: var(--scene-text-muted);
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+    font-weight: var(--weight-regular);
+    letter-spacing: 0.02em;
+}
+
+.roundHeading:focus-visible {
+    outline: var(--focus-ring-width) solid var(--color-focus-ring);
+    outline-offset: var(--focus-ring-offset);
+}
+
+.scoreValue {
+    color: var(--scene-glow);
+    font-family: var(--font-serif);
+    font-size: var(--text-xl);
+}
+
+.progress {
+    display: block;
+    width: 100%;
+    height: 0.35rem;
+    appearance: none;
+    border: 0;
+    border-radius: var(--radius-full);
+    background: color-mix(in srgb, var(--scene-text) 12%, transparent);
+    overflow: hidden;
+}
+
+.progress::-webkit-progress-bar {
+    background: color-mix(in srgb, var(--scene-text) 12%, transparent);
+}
+
+.progress::-webkit-progress-value {
+    background: var(--scene-glow);
+    border-radius: var(--radius-full);
+    transition: width var(--duration-base) var(--ease-standard);
+}
+
+.progress::-moz-progress-bar {
+    background: var(--scene-glow);
+    border-radius: var(--radius-full);
+}
+
+.tags {
+    margin: var(--space-4) 0 0;
+    color: var(--scene-text-muted);
+    font-size: var(--text-xs);
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+}
+
+/* ---- Clue tracker: five keys, used, current and still locked ------- */
+
+.tracker {
+    display: flex;
+    gap: var(--space-2);
+    margin: var(--space-4) 0 var(--space-4);
+    padding: 0;
+    list-style: none;
+}
+
+.pip {
+    position: relative;
+    display: flex;
+    flex: 1;
+    align-items: center;
+    justify-content: center;
+    height: 2.25rem;
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-md);
+    font-family: var(--font-serif);
+    font-size: var(--text-lg);
+    transition: var(--transition-colors);
+}
+
+/* Used: filled. Current: glowing and outlined. Locked: dashed and dim. The shape of the
+   border changes too, so the three states do not depend on color alone. */
+.pip_revealed {
+    border-color: color-mix(in srgb, var(--scene-glow) 45%, transparent);
+    background: color-mix(in srgb, var(--scene-glow) 16%, var(--scene-surface));
+    color: var(--scene-text);
+}
+
+.pip_current {
+    border-width: 2px;
+    border-color: var(--scene-glow);
+    background: color-mix(in srgb, var(--scene-glow) 10%, var(--scene-surface));
+    color: var(--scene-glow);
+    box-shadow: 0 0 1rem -0.25rem color-mix(in srgb, var(--scene-glow) 70%, transparent);
+}
+
+.pip_locked {
+    border-style: dashed;
+    border-color: color-mix(in srgb, var(--scene-text) 28%, transparent);
+    color: var(--scene-text-muted);
+}
+
+/* ---- Clues --------------------------------------------------------- */
+
+.clues {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    margin: 0 0 var(--space-5);
+    padding: 0;
+    list-style: none;
+}
+
+.clue {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    padding: var(--space-3) var(--space-4);
+    border: 1px solid var(--scene-border);
+    border-left: 3px solid color-mix(in srgb, var(--scene-glow) 30%, transparent);
+    border-radius: var(--radius-md);
+    background: color-mix(in srgb, var(--scene-surface) 70%, transparent);
+    color: var(--scene-text-muted);
+}
+
+.clueNumber {
+    font-size: var(--text-xs);
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+}
+
+.clueText {
+    font-size: var(--text-base);
+    line-height: var(--leading-normal);
+    overflow-wrap: anywhere;
+}
+
+/* The newest clue is the one to read: larger, bright, in the serif, with a glowing edge. */
+.clueCurrent {
+    padding-block: var(--space-4);
+    border-color: color-mix(in srgb, var(--scene-glow) 45%, transparent);
+    border-left: 3px solid var(--scene-glow);
+    background: color-mix(in srgb, var(--scene-glow) 8%, var(--scene-surface));
+    color: var(--scene-glow);
+    box-shadow: 0 0 1.5rem -0.75rem color-mix(in srgb, var(--scene-glow) 60%, transparent);
+    animation: rise var(--duration-base) var(--ease-standard);
+}
+
+.clueCurrent .clueText {
+    color: var(--scene-text);
+    font-family: var(--font-serif);
+    font-size: clamp(1.2rem, 1rem + 1vw, 1.6rem);
+    line-height: 1.4;
+    text-wrap: pretty;
+}
+
+.clueCurrent:focus-visible {
+    outline: var(--focus-ring-width) solid var(--color-focus-ring);
+    outline-offset: var(--focus-ring-offset);
+}
+
+/* Clues the player did not need, shown once the round is over. */
+.clueUnused {
+    border-style: dashed;
+    border-left-style: dashed;
+    border-left-width: 1px;
+    opacity: 0.85;
+}
+
+/* ---- Answers ------------------------------------------------------- */
+
+.question {
+    margin: 0 0 var(--space-3);
+    color: var(--scene-text);
+    font-family: var(--font-serif);
+    font-size: var(--text-2xl);
+}
+
+.ruledOut {
+    margin: 0 0 var(--space-3);
+    color: var(--scene-text-muted);
+    font-size: var(--text-sm);
+}
+
+.options {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-3);
+}
+
+.option {
+    display: flex;
+    align-items: center;
+    min-height: 3.5rem;
+    padding: var(--space-3) var(--space-4);
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-xl);
+    background: color-mix(in srgb, var(--scene-surface) 70%, transparent);
+    color: var(--scene-text);
+    font: inherit;
+    font-size: var(--text-lg);
+    line-height: var(--leading-snug);
+    text-align: left;
+    overflow-wrap: anywhere;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition:
+        var(--transition-colors),
+        transform var(--duration-fast) var(--ease-standard);
+}
+
+.option:hover:not(:disabled) {
+    border-color: color-mix(in srgb, var(--scene-glow) 55%, transparent);
+    background: color-mix(in srgb, var(--scene-glow) 8%, var(--scene-surface));
+}
+
+.option:focus-visible {
+    outline: var(--focus-ring-width) solid var(--color-focus-ring);
+    outline-offset: var(--focus-ring-offset);
+}
+
+.option:active:not(:disabled) {
+    transform: scale(0.99);
+}
+
+.option:disabled {
+    cursor: not-allowed;
+    opacity: var(--disabled-opacity);
+}
+
+/* ---- Feedback ------------------------------------------------------ */
+
+.status,
+.error {
+    color: var(--scene-text);
+    font-family: var(--font-serif);
+    font-size: var(--text-xl);
+}
+
+.status {
+    color: var(--scene-text-muted);
+}
+
+/* Present while empty, so a screen reader announces the text when it appears. */
+.notice {
+    margin: var(--space-3) 0 0;
+    color: var(--scene-text);
+    font-size: var(--text-base);
+}
+
+.notice:empty {
+    display: none;
+}
+
+.error {
+    margin: var(--space-3) 0 0;
+    padding: var(--space-3) var(--space-4);
+    border: 1px solid var(--color-error);
+    border-radius: var(--radius-lg);
+    background: var(--color-error-surface);
+    color: var(--color-error);
+    font-family: var(--font-sans);
+    font-size: var(--text-base);
+}
+
+.error p {
+    margin: 0;
+}
+
+.inlineAction {
+    margin-top: var(--space-3);
+}
+
+.reveal {
+    padding-top: var(--space-5);
+    border-top: 1px solid var(--scene-border);
+    animation: rise var(--duration-base) var(--ease-standard);
+}
+
+.reveal h3 {
+    margin: 0 0 var(--space-2);
+    font-size: var(--text-2xl);
+    font-weight: var(--weight-regular);
+}
+
+.reveal h3:focus-visible {
+    outline: var(--focus-ring-width) solid var(--color-focus-ring);
+    outline-offset: var(--focus-ring-offset);
+}
+
+.revealCorrect {
+    color: var(--color-success);
+}
+
+.revealMissed {
+    color: var(--color-error);
+}
+
+.revealName {
+    margin: 0;
+    color: var(--scene-text);
+    font-family: var(--font-serif);
+    font-size: var(--text-xl);
+}
+
+.revealName strong {
+    color: var(--scene-glow);
+    font-weight: var(--weight-regular);
+}
+
+@keyframes rise {
+    from {
+        opacity: 0;
+        transform: translateY(0.4rem);
+    }
+
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+/* The Home's call to action, set in the shared Button. */
+.next,
+.play {
+    margin-top: var(--space-4);
+    border-color: color-mix(in srgb, var(--scene-glow) 34%, transparent);
+    box-shadow:
+        inset 0 1px 0 color-mix(in srgb, var(--scene-text) 14%, transparent),
+        0 0 1.5rem -0.35rem color-mix(in srgb, var(--scene-glow) 40%, transparent);
+}
+
+.next:hover:not(:disabled),
+.play:hover:not(:disabled) {
+    border-color: color-mix(in srgb, var(--scene-glow) 55%, transparent);
+}
+
+.play {
+    margin-top: 0;
+}
+
+/* ---- Results ------------------------------------------------------- */
+
+.verdict {
+    margin: var(--space-3) 0 0;
+    color: color-mix(in srgb, var(--scene-glow-soft) 30%, var(--scene-text));
+    font-size: clamp(1.75rem, 1.2rem + 2.6vw, 2.75rem);
+    font-weight: var(--weight-regular);
+    line-height: 1.15;
+    text-shadow: 0 0 2rem color-mix(in srgb, var(--scene-glow) 25%, transparent);
+    overflow-wrap: anywhere;
+}
+
+.verdict:focus-visible {
+    outline: var(--focus-ring-width) solid var(--color-focus-ring);
+    outline-offset: var(--focus-ring-offset);
+}
+
+.totalScore {
+    margin: var(--space-3) 0 var(--space-5);
+}
+
+.totalScoreValue {
+    color: var(--scene-glow);
+    font-family: var(--font-serif);
+    font-size: clamp(2.75rem, 2rem + 4vw, 4.25rem);
+    line-height: 1;
+}
+
+.totalScoreMax {
+    color: var(--scene-text-muted);
+    font-size: var(--text-lg);
+}
+
+.stats {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-2);
+    margin: 0 0 var(--space-5);
+}
+
+.stat {
+    padding: var(--space-3) var(--space-4);
+    border: 1px solid var(--scene-border);
+    border-radius: var(--radius-lg);
+    background: color-mix(in srgb, var(--scene-surface) 70%, transparent);
+}
+
+.stat dt {
+    color: var(--scene-text-muted);
+    font-size: var(--text-xs);
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+}
+
+.stat dd {
+    margin: var(--space-1) 0 0;
+    color: var(--scene-text);
+    font-family: var(--font-serif);
+    font-size: var(--text-2xl);
+}
+
+.summary {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    margin: 0 0 var(--space-5);
+    padding: 0;
+    list-style: none;
+}
+
+.summaryRow {
+    display: grid;
+    grid-template-columns: 1.75rem minmax(0, 1fr) auto;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-3) var(--space-4);
+    border: 1px solid var(--scene-border);
+    border-radius: var(--radius-md);
+    background: color-mix(in srgb, var(--scene-surface) 70%, transparent);
+}
+
+.summaryNumber {
+    color: var(--scene-text-muted);
+    font-family: var(--font-serif);
+    font-size: var(--text-lg);
+}
+
+.summaryBody {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.summaryName {
+    color: var(--scene-text);
+    font-size: var(--text-base);
+    overflow-wrap: anywhere;
+}
+
+.summaryDetail {
+    color: var(--scene-text-muted);
+    font-size: var(--text-sm);
+}
+
+.summaryPoints,
+.summaryMissed {
+    font-family: var(--font-serif);
+    font-size: var(--text-lg);
+    white-space: nowrap;
+}
+
+.summaryPoints {
+    color: var(--scene-glow);
+}
+
+.summaryMissed {
+    color: var(--scene-text-muted);
+}
+
+.actions {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-3);
+    margin-top: var(--space-5);
+}
+
+.actions .next {
+    margin-top: 0;
+}
+
+.backToGames {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: var(--touch-target);
+    padding-inline: var(--space-3);
+    border-radius: var(--radius-full);
+    color: var(--scene-text-muted);
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+    transition: var(--transition-colors);
+}
+
+.backToGames:hover {
+    color: var(--scene-text);
+}
+
+.backToGames:focus-visible {
+    outline: var(--focus-ring-width) solid var(--color-focus-ring);
+    outline-offset: var(--focus-ring-offset);
+}
+
+@media (min-width: 36em) {
+    .options {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .difficulties {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .stats {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .actions {
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+}
+
+@media (min-width: 48em) {
+    .stage {
+        padding: var(--space-6);
+    }
+}
+
+/* Decorative motion off: things appear in place. */
+@media (prefers-reduced-motion: reduce) {
+    .reveal,
+    .clueCurrent {
+        animation: none;
+    }
+
+    .progress::-webkit-progress-value,
+    .option,
+    .choiceBody,
+    .pip {
+        transition: none;
+    }
+
+    .option:active:not(:disabled) {
+        transform: none;
+    }
+}

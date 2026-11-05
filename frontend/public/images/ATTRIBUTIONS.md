@@ -32,6 +32,7 @@ with a green overlay on the page.
 | `who-said-it-hooded-path.avif` (2400×1350) | Who Said It? background (shown mirrored) | One of the platforms above; which one was not recorded | Not recorded | Not recorded | Not recorded | Unknown |
 | `which-character-hobbit-hole.avif` (2400×1600) | Which Character Are You? background | One of the platforms above; which one was not recorded | Not recorded | Not recorded | Not recorded | Unknown |
 | `lore-challenge-archive-library.avif` (2400×1638) | Lore Challenge background | One of the platforms above; which one was not recorded | Not recorded | Not recorded | Not recorded | Unknown |
+| `who-am-i-old-keys.avif` (2400×1600) | Who Am I? background | Unsplash (see the note below) | Not confirmed (see the note below) | Not recorded | Not recorded: the free-use terms of Unsplash applied when it was downloaded; no individual licence text was kept | Not confirmed |
 
 Notes:
 
@@ -40,12 +41,20 @@ Notes:
 - Earlier project notes mention an author and a platform page for two of these images
   (`which-character-hobbit-hole.avif` and `lore-challenge-archive-library.avif`). They were taken from
   file names of downloads and were **not** confirmed, so they are not repeated here as facts.
+- `who-am-i-old-keys.avif` (photograph of old keys on dark crumpled paper) was converted from a file the
+  project owner downloaded from Unsplash on 2026-11-05, named `anna-zakharova-CdJN7JFVLd8-unsplash.jpg`.
+  That name follows Unsplash's pattern and is the only source of the author name and the image ID, so
+  they are recorded here **as the file name reads, not as confirmed facts**: no credit file came with the
+  download (the `atribuicoes.txt` the owner mentioned was not found in the Downloads folder), and the page
+  of the image was not consulted. Unsplash does not require a credit, but crediting the photographer is
+  welcome; if the author is confirmed, add the credit here and to the site footer's credits page. This
+  entry does not claim that any particular use is licensed.
 - `which-character-hobbit-hole.avif` depicts a hobbit-hole. A photo licence, where one exists, covers
   the picture itself and not necessarily any design shown in it; this was not investigated.
 
 ## Link-preview images (Open Graph / Twitter)
 
-`share/home.jpg`, `share/which-character.jpg` and `share/lore-challenge.jpg` are 1200×630 JPEG
+`share/home.jpg`, `share/which-character.jpg`, `share/lore-challenge.jpg` and `share/who-am-i.jpg` are 1200×630 JPEG
 derivatives made from the scene images above. They exist only because AVIF is not reliably supported
 by link-preview crawlers; the site itself keeps using the AVIF files. They have no origin of their own:
 whatever applies to the source image applies to its derivative.
@@ -55,6 +64,7 @@ whatever applies to the source image applies to its derivative.
 | `share/home.jpg` | `enchanted-forest.avif` |
 | `share/which-character.jpg` | `which-character-hobbit-hole.avif` |
 | `share/lore-challenge.jpg` | `lore-challenge-archive-library.avif` |
+| `share/who-am-i.jpg` | `who-am-i-old-keys.avif` (cropped from the same original) |
 
 There is no link-preview image for Quotes or Who Said It?.
 

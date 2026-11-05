@@ -1,0 +1,971 @@
+{
+  "characters": [
+    {
+      "id": "frodo-baggins",
+      "name": "Frodo Baggins",
+      "difficulty": "EASY",
+      "group": "hobbit",
+      "aliases": [
+        "Frodo",
+        "Mr. Underhill",
+        "Ring-bearer"
+      ],
+      "clues": [
+        "Both of this character's parents died in a boating accident long before any adventure began.",
+        "A beloved older relative adopted this character, then left behind his home and a small golden trinket.",
+        "A wound from a cursed blade, taken beneath a ruined watchtower on a hill, never fully healed.",
+        "At a council in Rivendell, this character volunteered to carry a dangerous object to the land where it was made.",
+        "At the Cracks of Doom this character could not give up the Ring willingly, and lost a finger to the creature who seized it."
+      ],
+      "references": [
+        {
+          "source": "Tolkien Gateway",
+          "url": "https://tolkiengateway.net/wiki/Frodo_Baggins",
+          "supports": "Parents died in a boating accident; adopted by Bilbo; Morgul-knife wound on Weathertop; volunteered at the Council of Elrond; finger bitten off by Gollum at Mount Doom."
+        }
+      ]
+    },
+    {
+      "id": "samwise-gamgee",
+      "name": "Samwise Gamgee",
+      "difficulty": "EASY",
+      "group": "hobbit",
+      "aliases": [
+        "Sam",
+        "Samwise",
+        "Gamgee",
+        "Sam Gamgee"
+      ],
+      "clues": [
+        "Raised by a gardener, this character loved plants, tales of the Elves and a quiet life.",
+        "Caught eavesdropping beneath a window, this character was sent on a journey instead of being punished.",
+        "A small box of soil from an elven queen's forest later brought trees back to a ravaged homeland.",
+        "When a giant spider seemed to have killed his master, this character took up the burden himself for a time.",
+        "This character carried his master up the slopes of Mount Doom when strength failed, and later served many terms as Mayor of the Shire."
+      ],
+      "references": [
+        {
+          "source": "Tolkien Gateway",
+          "url": "https://tolkiengateway.net/wiki/Samwise_Gamgee",
+          "supports": "Gardener's son; overheard by Gandalf under the window; Galadriel's gift of earth; took the Ring in Cirith Ungol; carried Frodo up Mount Doom; Mayor of the Shire."
+        }
+      ]
+    },
+    {
+      "id": "gandalf",
+      "name": "Gandalf",
+      "difficulty": "EASY",
+      "group": "wizard",
+      "aliases": [
+        "Mithrandir",
+        "Olórin",
+        "Tharkûn",
+        "Grey Pilgrim",
+        "Gandalf the Grey",
+        "Gandalf the White",
+        "Stormcrow"
+      ],
+      "clues": [
+        "One of a handful of beings who came from across the Sea in the guise of an old man, sent to guide rather than to rule.",
+        "A wanderer with a fondness for fireworks, rarely seen without his pipe.",
+        "This character fell in battle with a fire-demon on a bridge in the deep dark, and returned in a brighter form.",
+        "This character bore a ring of fire, given long before by the shipwright of the Grey Havens.",
+        "Clad in grey, then in white after returning from death, this wizard rode Shadowfax, lord of horses."
+      ],
+      "references": [
+        {
+          "source": "Tolkien Gateway",
+          "url": "https://tolkiengateway.net/wiki/Gandalf",
+          "supports": "One of the Istari; fireworks; usually seen with a pipe; fall on the Bridge of Khazad-dûm and return as Gandalf the White; Narya passed to him by Círdan; rode Shadowfax."
+        }
+      ]
+    },
+    {
+      "id": "aragorn",
+      "name": "Aragorn",
+      "difficulty": "EASY",
+      "group": "man",
+      "aliases": [
+        "Strider",
+        "Estel",
+        "Elessar",
+        "Aragorn II",
+        "Elfstone",
+        "Wingfoot",
+        "Longshanks"
+      ],
+      "clues": [
+        "Raised in secret by an elf-lord, this character was long hidden under a different name.",
+        "Heir to a line of kings that traced its descent from Elendil, though no king had ruled that line's realm for ages.",
+        "A Ranger of the North, this character guided four small travelers through the wild lands of Eriador.",
+        "This character looked into a seeing-stone and openly challenged the Dark Lord.",
+        "Crowned king of both Gondor and Arnor, this character wed Arwen, daughter of Elrond."
+      ],
+      "references": [
+        {
+          "source": "Tolkien Gateway",
+          "url": "https://tolkiengateway.net/wiki/Aragorn_II_Elessar",
+          "supports": "Fostered in Rivendell under another name; descent from Elendil; Ranger who guided the hobbits from Bree; used the Orthanc-stone to show himself to Sauron; crowned King of the Reunited Kingdom; married Arwen."
+        }
+      ]
+    },
+    {
+      "id": "legolas",
+      "name": "Legolas",
+      "difficulty": "EASY",
+      "group": "elf",
+      "aliases": [
+        "Legolas Greenleaf",
+        "Greenleaf"
+      ],
+      "clues": [
+        "The son of a king, this character was sent from a northern forest realm to carry news to Rivendell.",
+        "Light of foot, this character could walk on top of snow without sinking, on a mountain pass in winter.",
+        "This character and a Dwarf became fast friends, though their peoples had long been at odds.",
+        "At the cries of seabirds, this character first felt the call of the Sea that no Elf can long resist.",
+        "The only Elf among the nine travelers, this archer shot down the winged steed of a Ringwraith over the Great River."
+      ],
+      "references": [
+        {
+          "source": "Tolkien Gateway",
+          "url": "https://tolkiengateway.net/wiki/Legolas",
+          "supports": "Son of Thranduil; messenger to Rivendell; walked on snow on Caradhras; friendship with Gimli; heard gulls at Pelargir; shot the Nazgûl's steed over the Anduin."
+        }
+      ]
+    },
+    {
+      "id": "gimli",
+      "name": "Gimli",
+      "difficulty": "EASY",
+      "group": "dwarf",
+      "aliases": [
+        "Gimli son of Glóin",
+        "Elf-friend",
+        "Lockbearer"
+      ],
+      "clues": [
+        "This character's father had been one of the company that once set out to reclaim a mountain from a dragon.",
+        "This character asked an elven lady for a single strand of her hair and was given three.",
+        "Alongside a Ranger and an Elf, this character ran for days across wide plains in pursuit of a band of Orcs.",
+        "At a great fortress in a mountain valley, this character fought on the wall, and afterwards marveled at the glittering caves behind it.",
+        "Many years after the War of the Ring, this character sailed West in the company of an Elf who had become his closest friend."
+      ],
+      "references": [
+        {
+          "source": "Tolkien Gateway",
+          "url": "https://tolkiengateway.net/wiki/Gimli",
+          "supports": "Son of Glóin of Thorin's company; three strands of Galadriel's hair; pursuit across Rohan; Helm's Deep and the Glittering Caves; fought beside Legolas; sailed West (Fo.A. 120)."
+        }
+      ]
+    },
+    {
+      "id": "gollum",
+      "name": "Gollum",
+      "difficulty": "EASY",
+      "group": "hobbit-kin",
+      "aliases": [
+        "Sméagol",
+        "Smeagol",
+        "Slinker",
+        "Stinker"
+      ],
+      "clues": [
+        "This character's life was ruined by the murder of a friend over a gleaming find in a riverbed.",
+        "Exiled from his own kin, this character lived for centuries in the dark beneath a mountain range, eating raw fish.",
+        "A riddle contest with a stranger in the dark ended with the loss of the only thing this character cared for.",
+        "This character guided two travelers toward a mountain of fire, torn between a sworn oath and a terrible craving.",
+        "At the Cracks of Doom this character bit off a finger to take the Ring, then toppled into the fire with it."
+      ],
+      "references": [
+        {
+          "source": "Tolkien Gateway",
+          "url": "https://tolkiengateway.net/wiki/Gollum",
+          "supports": "Murdered Déagol over the Ring; exiled and lived under the Misty Mountains; riddle game with Bilbo; guided Frodo and Sam to Mordor; bit off Frodo's finger and fell into the fire."
+        }
+      ]
+    },
+    {
+      "id": "sauron",
+      "name": "Sauron",
+      "difficulty": "EASY",
+      "group": "dark-lord",
+      "aliases": [
+        "Annatar",
+        "Necromancer",
+        "Dark Lord",
+        "Lord of the Rings",
+        "Gorthaur"
+      ],
+      "clues": [
+        "Before turning to evil, this being served a smith among the Powers and loved order and craft.",
+        "Posing as a fair emissary, this being taught the Elven-smiths of a western land to make rings.",
+        "This being allowed himself to be carried captive to a great island, then corrupted its king until the island was swallowed by the sea.",
+        "At the end of the Second Age, a prince cut a ring from this being's hand with the broken blade of his father's sword.",
+        "Ruler of Mordor from the Dark Tower, served by nine Ringwraiths and symbolized by a lidless eye."
+      ],
+      "references": [
+        {
+          "source": "Tolkien Gateway",
+          "url": "https://tolkiengateway.net/wiki/Sauron",
+          "supports": "Maia of Aulë; fair guise and the Rings of Power; captivity in Númenor and its Downfall; Isildur cut the Ring from his hand; Barad-dûr, Nazgûl, the Eye."
+        }
+      ]
+    },
+    {
+      "id": "galadriel",
+      "name": "Galadriel",
+      "difficulty": "EASY",
+      "group": "elf",
+      "aliases": [
+        "Artanis",
+        "Nerwen",
+        "Altariel",
+        "Lady of the Golden Wood",
+        "Lady of Lórien",
+        "Lady of Light"
+      ],
+      "clues": [
+        "Born in the Blessed Realm, this character had seen a light that no longer shines.",
+        "This character ruled a realm of golden-leaved trees alongside her husband.",
+        "This character kept a basin of water that showed things that were, things that are, and things that yet may be.",
+        "A small traveler offered this character the Ring of Power, and she pictured herself as a terrible queen before refusing it.",
+        "Bearer of Nenya, the ring of adamant, this character gave the Fellowship cloaks, gifts, and a phial holding the light of a star."
+      ],
+      "references": [
+        {
+          "source": "Tolkien Gateway",
+          "url": "https://tolkiengateway.net/wiki/Galadriel",
+          "supports": "Born in Aman and saw the Two Trees; ruled Lothlórien with Celeborn; Mirror of Galadriel; refused the Ring; bearer of Nenya; gifts to the Fellowship including the Phial."
+        },
+        {
+          "source": "Tolkien Gateway",
+          "url": "https://tolkiengateway.net/wiki/Lothl%C3%B3rien",
+          "supports": "Lothlórien described as a golden wood with mallorn trees."
+        }
+      ]
+    },
+    {
+      "id": "boromir",
+      "name": "Boromir",
+      "difficulty": "EASY",
+      "group": "man",
+      "aliases": [
+        "Boromir son of Denethor"
+      ],
+      "clues": [
+        "The elder of two sons of a Steward, this character was admired by many and the pride of his father.",
+        "This character carried a great horn, tipped with silver, and sounded it in a time of need.",
+        "A recurring dream that troubled his family sent this character north through hard country to a council in Rivendell.",
+        "At a council this character argued that the Ring should be used as a weapon in the defense of his city.",
+        "This character died at Amon Hen defending two hobbits from Orcs, after he had tried to take the Ring by force."
+      ],
+      "references": [
+        {
+          "source": "Tolkien Gateway",
+          "url": "https://tolkiengateway.net/wiki/Boromir",
+          "supports": "Elder son of Denethor; great horn tipped with silver, sounded in Moria; dream and journey to Rivendell; argued at the Council of Elrond; died defending Merry and Pippin at Amon Hen after trying to seize the Ring."
+        }
+      ]
+    },
+    {
+      "id": "bilbo-baggins",
+      "name": "Bilbo Baggins",
+      "difficulty": "EASY",
+      "group": "hobbit",
+      "aliases": [
+        "Bilbo",
+        "Barrel-rider",
+        "Ringwinner"
+      ],
+      "clues": [
+        "This character was a respectable, comfort-loving soul until an unexpected party of guests changed everything.",
+        "This character was hired as a burglar by a company seeking to reclaim a mountain and its treasure.",
+        "In a dark cave, this character won a game of riddles and walked away with a magic ring.",
+        "This character wrote the story of his journey, which later became part of the Red Book of Westmarch.",
+        "After vanishing from his own eleventy-first birthday party, this character eventually left Middle-earth over the Sea."
+      ],
+      "references": [
+        {
+          "source": "Tolkien Gateway",
+          "url": "https://tolkiengateway.net/wiki/Bilbo_Baggins",
+          "supports": "Hired as burglar by Thorin's company; riddle game; found the Ring; authored the Red Book material; vanished at his 111th birthday; sailed West."
+        }
+      ]
+    },
+    {
+      "id": "saruman",
+      "name": "Saruman",
+      "difficulty": "EASY",
+      "group": "wizard",
+      "aliases": [
+        "Curunír",
+        "Sharkey",
+        "Saruman the White",
+        "Saruman of Many Colours",
+        "Ring-maker"
+      ],
+      "clues": [
+        "Head of an order sent from across the Sea, this character was a deep student of the lore of the Rings.",
+        "This character made his home in a black tower inside a ringed fortress, where he kept a seeing-stone.",
+        "Gazing into a stone of far-seeing, this character was ensnared by his greater enemy and betrayed his task.",
+        "This character's fires felled forests, and in pits beneath his tower he bred a stronger kind of Orc.",
+        "After his fall, this character took over the Shire in disguise, and was finally killed by his own former servant."
+      ],
+      "references": [
+        {
+          "source": "Tolkien Gateway",
+          "url": "https://tolkiengateway.net/wiki/Saruman",
+          "supports": "Head of the Istari; Orthanc and its palantír; corruption through the palantír; felling of trees and Uruk-hai; occupation of the Shire and death at Gríma's hand."
+        }
+      ]
+    },
+    {
+      "id": "faramir",
+      "name": "Faramir",
+      "difficulty": "MEDIUM",
+      "group": "man",
+      "aliases": [
+        "Faramir son of Denethor",
+        "Prince of Ithilien"
+      ],
+      "clues": [
+        "The younger of two brothers, this character was a lover of lore and music who was overlooked by his father.",
+        "This character captained a company of Rangers who ambushed enemy soldiers in a green land west of Mordor.",
+        "In a hidden refuge behind a waterfall, this character questioned two hobbits and, though tempted by their burden, let them go.",
+        "After a doomed sortie ordered by his father, this character lay near death, struck down by the Black Breath.",
+        "Healed in the Houses of Healing, this character fell in love with a shieldmaiden of Rohan, and was later raised to a princely title in the land he had defended."
+      ],
+      "references": [
+        {
+          "source": "Tolkien Gateway",
+          "url": "https://tolkiengateway.net/wiki/Faramir",
+          "supports": "Younger son of Denethor, lover of lore; Captain of the Rangers of Ithilien; Henneth Annûn and Frodo; Black Breath after Osgiliath; married Éowyn and became Prince of Ithilien."
+        }
+      ]
+    },
+    {
+      "id": "eowyn",
+      "name": "Éowyn",
+      "difficulty": "MEDIUM",
+      "group": "man",
+      "aliases": [
+        "Eowyn",
+        "Dernhelm",
+        "Lady of Rohan",
+        "Lady of Ithilien",
+        "Shieldmaiden of Rohan",
+        "White Lady of Rohan"
+      ],
+      "clues": [
+        "This character's greatest fear was not death but being left behind in a life of dull duty.",
+        "This character's brother was imprisoned for disobedience on the orders of a sly advisor.",
+        "In disguise, this character rode into war with a small hobbit on her saddle.",
+        "This character confronted the Lord of the Nazgûl and declared herself no man, fulfilling an old prophecy.",
+        "This character put down the sword, learned the arts of healing, and married a prince of Ithilien."
+      ],
+      "references": [
+        {
+          "source": "Tolkien Gateway",
+          "url": "https://tolkiengateway.net/wiki/%C3%89owyn",
+          "supports": "Fear of a cage; rode as Dernhelm with Merry; slew the Witch-king; healed and married Faramir."
+        },
+        {
+          "source": "Tolkien Gateway",
+          "url": "https://tolkiengateway.net/wiki/Th%C3%A9oden",
+          "supports": "On Gríma's orders Éomer was arrested and imprisoned for his disobedience."
+        }
+      ]
+    },
+    {
+      "id": "theoden",
+      "name": "Théoden",
+      "difficulty": "MEDIUM",
+      "group": "man",
+      "aliases": [
+        "Theoden",
+        "Théoden King",
+        "Thengel's son",
+        "King of Rohan",
+        "Horn-blower"
+      ],
+      "clues": [
+        "This ruler aged before his time under the whispered influence of a servant who served another master.",
+        "A wizard freed this ruler from a weakened state, and he stood tall again.",
+        "This ruler's only son and heir fell in battle against a wizard's forces at a river crossing.",
+        "This ruler retreated to a fortress in a mountain valley, where his people won a battle that earned him a new name meaning the Renewed.",
+        "This ruler died on the Pelennor Fields, crushed by his fallen horse, after leading a great charge at dawn."
+      ],
+      "references": [
+        {
+          "source": "Tolkien Gateway",
+          "url": "https://tolkiengateway.net/wiki/Th%C3%A9oden",
+          "supports": "Under Gríma's influence; healed by Gandalf; Théodred fell at the Fords of Isen; retreated to Helm's Deep, won the Battle of the Hornburg and became known as Ednew, the Renewed; death on the Pelennor Fields beneath Snowmane."
+        }
+      ]
+    },
+    {
+      "id": "elrond",
+      "name": "Elrond",
+      "difficulty": "MEDIUM",
+      "group": "elf",
+      "aliases": [
+        "Elrond Half-elven",
+        "Half-elven",
+        "Peredhel",
+        "Master of Rivendell",
+        "Lord of Rivendell"
+      ],
+      "clues": [
+        "This character's twin brother chose a mortal life, and he chose to remain among the Elves.",
+        "As a child, this character was taken captive in the sack of his parents' haven, yet came to love one of his captors, a son of an ancient smith.",
+        "This character served as herald to the High King in a great war at the end of the Second Age.",
+        "This character healed a hobbit of a wound from a cursed blade and presided over a council deciding the fate of the Ring.",
+        "Master of a hidden valley, bearer of the ring of sapphire, this character was the father of Arwen."
+      ],
+      "references": [
+        {
+          "source": "Tolkien Gateway",
+          "url": "https://tolkiengateway.net/wiki/Elrond",
+          "supports": "Twin Elros chose mortality; taken captive at the sack of the Havens and came to love Maglor; herald of Gil-galad; healed Frodo; Council of Elrond; bearer of Vilya; father of Arwen."
+        }
+      ]
+    },
+    {
+      "id": "treebeard",
+      "name": "Treebeard",
+      "difficulty": "MEDIUM",
+      "group": "ent",
+      "aliases": [
+        "Fangorn",
+        "Fangorn the Ent"
+      ],
+      "clues": [
+        "This character and his kin learned to speak from the Elves, in a time when the world was young.",
+        "A shepherd of trees who never says anything in haste, this character had long lost his wife.",
+        "This character took two hobbits as guests and gave them a draught that made them grow taller.",
+        "This character called a great assembly of his people that lasted three days.",
+        "This character led his people to break a dam and flood the stronghold of a wizard."
+      ],
+      "references": [
+        {
+          "source": "Tolkien Gateway",
+          "url": "https://tolkiengateway.net/wiki/Treebeard",
+          "supports": "Ents taught to speak by the Elves; the lost Entwives; Ent-draughts and Merry and Pippin's growth; the Entmoot; the flooding of Isengard."
+        },
+        {
+          "source": "Tolkien Gateway",
+          "url": "https://tolkiengateway.net/wiki/Ent-draught",
+          "supports": "The Ent-draughts taken by Merry and Pippin added three inches or more to their heights."
+        }
+      ]
+    },
+    {
+      "id": "tom-bombadil",
+      "name": "Tom Bombadil",
+      "difficulty": "MEDIUM",
+      "group": "other",
+      "aliases": [
+        "Bombadil",
+        "Iarwain Ben-adar",
+        "Forn",
+        "Orald",
+        "Eldest"
+      ],
+      "clues": [
+        "This cheerful character wears a blue coat and yellow boots, and answers most questions in song.",
+        "This character's wife is the daughter of a river.",
+        "This character freed travelers from a malevolent willow and from a wight in a burial mound.",
+        "This character claims to have known the first raindrop and the first acorn.",
+        "This character put on the Ring without turning invisible, and it seemed to have no hold on him."
+      ],
+      "references": [
+        {
+          "source": "Tolkien Gateway",
+          "url": "https://tolkiengateway.net/wiki/Tom_Bombadil",
+          "supports": "Blue coat and yellow boots; Goldberry as River-daughter; rescue from Old Man Willow and the barrow-wight; the oldest, remembering the first raindrop and acorn; unaffected by the Ring."
+        }
+      ]
+    },
+    {
+      "id": "grima-wormtongue",
+      "name": "Gríma Wormtongue",
+      "difficulty": "MEDIUM",
+      "group": "man",
+      "aliases": [
+        "Gríma",
+        "Grima",
+        "Wormtongue",
+        "Gríma son of Gálmód",
+        "Worm"
+      ],
+      "clues": [
+        "This character was a royal advisor whose silken words were more poison than counsel.",
+        "This character lusted after his king's niece and wanted to remove those who stood between them.",
+        "This character secretly served a wizard while holding a place of trust at a royal court.",
+        "From a high window, this character hurled a heavy dark globe at those standing below, nearly striking one of them.",
+        "In the end this character killed his former master on a doorstep in the Shire and was shot dead by hobbit archers."
+      ],
+      "references": [
+        {
+          "source": "Tolkien Gateway",
+          "url": "https://tolkiengateway.net/wiki/Gr%C3%ADma",
+          "supports": "Royal advisor to Théoden; desire for Éowyn; agent of Saruman; threw the palantír from Orthanc; killed Saruman at Bag End and was shot by hobbits."
+        }
+      ]
+    },
+    {
+      "id": "denethor",
+      "name": "Denethor",
+      "difficulty": "MEDIUM",
+      "group": "man",
+      "aliases": [
+        "Denethor II",
+        "Steward of Gondor",
+        "Lord Denethor"
+      ],
+      "clues": [
+        "This character was never a king, yet in all but name he ruled his realm for decades.",
+        "This character studied a seeing-stone in secret, until he saw only the hopeless things the Enemy chose to show.",
+        "This character loved his elder son and neglected the younger, who loved him dearly.",
+        "On receiving the shards of a broken horn, this character mourned his firstborn and began to sink into despair.",
+        "Driven mad by despair, this character tried to burn himself and his gravely wounded son on a pyre."
+      ],
+      "references": [
+        {
+          "source": "Tolkien Gateway",
+          "url": "https://tolkiengateway.net/wiki/Denethor_II",
+          "supports": "Ruling Steward of Gondor; use of the Anor palantír and despair; preference for Boromir over Faramir; the broken Horn of Gondor; the pyre."
+        }
+      ]
+    },
+    {
+      "id": "thorin-oakenshield",
+      "name": "Thorin Oakenshield",
+      "difficulty": "MEDIUM",
+      "group": "dwarf",
+      "aliases": [
+        "Thorin",
+        "Oakenshield",
+        "Thorin II",
+        "King under the Mountain"
+      ],
+      "clues": [
+        "Heir to a kingdom lost to a dragon, this character worked a humble trade in exile.",
+        "This character led a company of thirteen Dwarves, a wizard and a burglar on a long journey east.",
+        "A wizard gave this character a map and a key at the start of the quest.",
+        "Dragon-sickness took hold of this character inside the mountain, and he would not share the treasure.",
+        "Mortally wounded at the Battle of Five Armies, this character apologized to the burglar for his harsh words before he died."
+      ],
+      "references": [
+        {
+          "source": "Tolkien Gateway",
+          "url": "https://tolkiengateway.net/wiki/Thorin_II_Oakenshield",
+          "supports": "Exile in the Blue Mountains; led the company of thirteen; map and key from Gandalf; dragon-sickness; wounded at the Battle of Five Armies and apologized to Bilbo on his deathbed."
+        }
+      ]
+    },
+    {
+      "id": "smaug",
+      "name": "Smaug",
+      "difficulty": "MEDIUM",
+      "group": "dragon",
+      "aliases": [
+        "Smaug the Golden",
+        "Chiefest and Greatest of Calamities",
+        "Dragon of Erebor"
+      ],
+      "clues": [
+        "Drawn by the wealth of a Dwarf kingdom, this creature drove its people into exile.",
+        "Asleep upon a hoard of treasure, this creature noticed that a single cup was missing and flew into a rage.",
+        "This creature's underside was crusted with gems, except for one bare patch that a thrush reported to an archer.",
+        "This creature burned a town built on a lake before it was slain.",
+        "A single black arrow, shot by an archer of Lake-town, killed this creature in the end."
+      ],
+      "references": [
+        {
+          "source": "Tolkien Gateway",
+          "url": "https://tolkiengateway.net/wiki/Smaug",
+          "supports": "Attack on Erebor; theft of a cup; the bare patch on the underbelly and the thrush; destruction of Lake-town; slain by Bard with the Black Arrow."
+        }
+      ]
+    },
+    {
+      "id": "beorn",
+      "name": "Beorn",
+      "difficulty": "MEDIUM",
+      "group": "skin-changer",
+      "aliases": [
+        "Beorn the Skin-changer",
+        "Skin-changer"
+      ],
+      "clues": [
+        "This character keeps bees and fine cattle in a wooden hall, and speaks to animals.",
+        "This character is a man by day, but a great black bear by night.",
+        "After suspicious questioning, this character sheltered a company of Dwarves for several days and lent them ponies.",
+        "This character arrived at a great battle just in time, in the shape of an enormous bear.",
+        "After the battle this character became a great chief and founded a line whose members were said to take bear-shape in times of need."
+      ],
+      "references": [
+        {
+          "source": "Tolkien Gateway",
+          "url": "https://tolkiengateway.net/wiki/Beorn",
+          "supports": "Keeper of bees and cattle; changes between man and bear; hosted the Dwarves and lent ponies; fought at the Battle of Five Armies; became a great chief with bear-shifting descendants."
+        }
+      ]
+    },
+    {
+      "id": "peregrin-took",
+      "name": "Peregrin Took",
+      "difficulty": "MEDIUM",
+      "group": "hobbit",
+      "aliases": [
+        "Pippin",
+        "Peregrin",
+        "Took",
+        "Ernil i Pheriannath",
+        "Pippin Took"
+      ],
+      "clues": [
+        "The youngest of a band of cousins, this character often spoke before thinking.",
+        "This character looked into a seeing-stone and was forced to face the Dark Lord's gaze.",
+        "This character pledged allegiance to the grieving Steward of Gondor and became a guard of his citadel.",
+        "At the Black Gate this character slew a troll, and was found crushed beneath its body.",
+        "Late in life this character became Thain of the Shire, and was later laid to rest in Gondor beside an old friend."
+      ],
+      "references": [
+        {
+          "source": "Tolkien Gateway",
+          "url": "https://tolkiengateway.net/wiki/Peregrin_Took",
+          "supports": "Youngest of the four hobbits; looked in the Orthanc-stone; pledged allegiance to Denethor and became a Guard of the Citadel; killed a troll at the Black Gate; became Thain; buried in Rath Dínen."
+        }
+      ]
+    },
+    {
+      "id": "feanor",
+      "name": "Fëanor",
+      "difficulty": "HARD",
+      "group": "elf",
+      "aliases": [
+        "Feanor",
+        "Curufinwë",
+        "Spirit of Fire",
+        "Fëanáro"
+      ],
+      "clues": [
+        "This character's mother grew weary of life after his birth, and chose not to return to it.",
+        "This character crafted three jewels that held the light of the Two Trees.",
+        "With his seven sons, this character swore an oath that bound his house for ages.",
+        "This character burned the ships at Losgar, leaving part of his people behind on the far shore.",
+        "This character was mortally wounded by balrogs during the Battle-under-Stars, and his body burned to ash."
+      ],
+      "references": [
+        {
+          "source": "Tolkien Gateway",
+          "url": "https://tolkiengateway.net/wiki/F%C3%ABanor",
+          "supports": "Míriel's fading after his birth; the Silmarils; the Oath with his seven sons; burning of the ships at Losgar; death by Gothmog and balrogs in Dagor-nuin-Giliath."
+        }
+      ]
+    },
+    {
+      "id": "fingolfin",
+      "name": "Fingolfin",
+      "difficulty": "HARD",
+      "group": "elf",
+      "aliases": [
+        "Nolofinwë",
+        "High King of the Noldor"
+      ],
+      "clues": [
+        "Half-brother of a rebellious smith, this character led the larger part of a host across a sea of ice.",
+        "After being left behind, this character crossed the frozen straits at the top of the world.",
+        "This character rode alone to a dark fortress and challenged its master to single combat.",
+        "This character wounded his foe seven times, and some of those wounds never fully healed.",
+        "This character fell to the Dark Lord after the duel, and the king of the Eagles carried his body to a mountaintop."
+      ],
+      "references": [
+        {
+          "source": "Tolkien Gateway",
+          "url": "https://tolkiengateway.net/wiki/Fingolfin",
+          "supports": "Half-brother of Fëanor; crossing of the Helcaraxë; challenged Morgoth to single combat at Angband; wounded him seven times, his wounds never fully healing; body rescued by Thorondor and brought to a mountaintop."
+        }
+      ]
+    },
+    {
+      "id": "turin-turambar",
+      "name": "Túrin Turambar",
+      "difficulty": "HARD",
+      "group": "man",
+      "aliases": [
+        "Túrin",
+        "Turin",
+        "Turambar",
+        "Neithan",
+        "Agarwaen",
+        "Mormegil",
+        "Black Sword of Nargothrond",
+        "Adanedhel",
+        "Thorongil"
+      ],
+      "clues": [
+        "Sent away as a child by his mother, this character was fostered in an Elven kingdom.",
+        "A curse on this character's family was spoken by the Dark Lord himself, because of his father's defiance.",
+        "This character wielded a black sword that spoke at the last.",
+        "This character slew a dragon by crawling beneath it, but its dying words revealed a dreadful truth about his wife.",
+        "This character ended his own life by falling upon his sword after losing his family."
+      ],
+      "references": [
+        {
+          "source": "Tolkien Gateway",
+          "url": "https://tolkiengateway.net/wiki/T%C3%BArin_Turambar",
+          "supports": "Fostered in Doriath; Morgoth's curse on Húrin's kin; Gurthang; slaying of Glaurung and revelation about Níniel; death on his sword at Cabed-en-Aras."
+        }
+      ]
+    },
+    {
+      "id": "earendil",
+      "name": "Eärendil",
+      "difficulty": "HARD",
+      "group": "half-elven",
+      "aliases": [
+        "Earendil",
+        "Eärendil the Mariner",
+        "Evening Star",
+        "Gil-Estel",
+        "Morning Star",
+        "Star of High Hope"
+      ],
+      "clues": [
+        "Born in a hidden city, this character saw it fall as a child.",
+        "A ship built at the Havens by Elven shipwrights carried this character in search of the West.",
+        "This character's wife was the granddaughter of a famed mortal and an elven princess.",
+        "This character sailed into the uncharted West and pleaded there on behalf of Elves and Men.",
+        "Set in the heavens with a holy jewel on his brow, this character became a star seen at dusk and at dawn."
+      ],
+      "references": [
+        {
+          "source": "Tolkien Gateway",
+          "url": "https://tolkiengateway.net/wiki/E%C3%A4rendil",
+          "supports": "Born in Gondolin and left to escape its fall; Vingilot built with Círdan; married Elwing, granddaughter of Beren and Lúthien; embassy to Valinor; set in the sky bearing a Silmaril."
+        }
+      ]
+    },
+    {
+      "id": "beren",
+      "name": "Beren",
+      "difficulty": "HARD",
+      "group": "man",
+      "aliases": [
+        "Beren son of Barahir",
+        "Erchamion",
+        "One-handed",
+        "Camlost",
+        "Ermabwed"
+      ],
+      "clues": [
+        "A mortal outlaw, this character saw his father and his companions fall to a dark lord's hunters.",
+        "A ring given to this character's father by an elven king, in thanks for saving his life, became a family heirloom.",
+        "This character won the heart of an immortal maiden, and her father demanded a seemingly impossible price.",
+        "The price was a jewel from the Dark Lord's crown, and this character lost his hand to a great wolf.",
+        "After falling to the wolf, this character was allowed to return to life, and lived out his years with his wife."
+      ],
+      "references": [
+        {
+          "source": "Tolkien Gateway",
+          "url": "https://tolkiengateway.net/wiki/Beren",
+          "supports": "Barahir's band slain; Finrod's ring; Thingol's bride-price; the Silmaril and Carcharoth taking his hand; return from Mandos."
+        }
+      ]
+    },
+    {
+      "id": "luthien",
+      "name": "Lúthien",
+      "difficulty": "HARD",
+      "group": "elf",
+      "aliases": [
+        "Luthien",
+        "Tinúviel",
+        "Tinuviel",
+        "Lúthien Tinúviel",
+        "Nightingale",
+        "Daughter of Thingol"
+      ],
+      "clues": [
+        "A king's daughter, this character was also the child of a being of divine race.",
+        "Her beauty was said to be the fairest that ever was among the children of the world.",
+        "With her song, this character cast a Dark Lord into a deep sleep.",
+        "This character was imprisoned by her own father in a house built among the branches of a great beech, and escaped by her magic.",
+        "This character chose to die like Men in order to share the fate of her husband."
+      ],
+      "references": [
+        {
+          "source": "Tolkien Gateway",
+          "url": "https://tolkiengateway.net/wiki/L%C3%BAthien",
+          "supports": "Daughter of Thingol and Melian; her beauty; put Morgoth to sleep with her song; the cloak of hair and escape from Hírilorn; chose mortality with Beren."
+        },
+        {
+          "source": "Tolkien Gateway",
+          "url": "https://tolkiengateway.net/wiki/H%C3%ADrilorn",
+          "supports": "Thingol imprisoned Lúthien in a house among the branches of Hírilorn; she escaped using her magical arts."
+        }
+      ]
+    },
+    {
+      "id": "finrod-felagund",
+      "name": "Finrod Felagund",
+      "difficulty": "HARD",
+      "group": "elf",
+      "aliases": [
+        "Finrod",
+        "Felagund",
+        "Ingoldo",
+        "Nóm",
+        "Friend of Men",
+        "Finrod Friend of Men"
+      ],
+      "clues": [
+        "This character was the first of his people to meet Men, and he valued their friendship.",
+        "This character founded a vast underground fortress and ruled it for many years.",
+        "This character gave a ring as a pledge of friendship to a mortal who had saved his life.",
+        "This character matched songs against a dark lord's servant in a duel of power at a tower.",
+        "This character died in a dungeon at the hands of a werewolf, slain while saving a mortal companion."
+      ],
+      "references": [
+        {
+          "source": "Tolkien Gateway",
+          "url": "https://tolkiengateway.net/wiki/Finrod",
+          "supports": "First Elf to meet Men; founded Nargothrond; ring given to Barahir; singing contest against Sauron; death in Tol-in-Gaurhoth fighting a werewolf to save Beren."
+        }
+      ]
+    },
+    {
+      "id": "thingol",
+      "name": "Thingol",
+      "difficulty": "HARD",
+      "group": "elf",
+      "aliases": [
+        "Elwë",
+        "Elu Thingol",
+        "Greymantle",
+        "Greycloak",
+        "Elu"
+      ],
+      "clues": [
+        "This character stood spellbound in a woodland for years, and awoke as ruler of an Elven people.",
+        "This character's realm was protected by a girdle that nobody could cross without his leave.",
+        "This character set an impossible bride-price: a jewel from the crown of the Dark Lord.",
+        "Greed for a jewel set in a necklace led a party of Dwarves to murder this character.",
+        "After this character's death his wife left, the girdle fell, and his kingdom was ruined."
+      ],
+      "references": [
+        {
+          "source": "Tolkien Gateway",
+          "url": "https://tolkiengateway.net/wiki/Thingol",
+          "supports": "Enchanted by Melian in Nan Elmoth; the Girdle of Melian; demanded a Silmaril of Beren; slain by Dwarves over the Nauglamír; Melian's departure and the ruin of Doriath."
+        }
+      ]
+    },
+    {
+      "id": "cirdan",
+      "name": "Círdan",
+      "difficulty": "HARD",
+      "group": "elf",
+      "aliases": [
+        "Cirdan",
+        "Círdan the Shipwright",
+        "the Shipwright",
+        "Keeper of the Grey Havens"
+      ],
+      "clues": [
+        "This character was among the oldest Elves still dwelling in Middle-earth at the end of the Third Age.",
+        "A master of ships, this character ruled a haven on the western coast.",
+        "This character gave a ring of fire to a newly arrived wizard.",
+        "This character helped build the ship in which a famous mariner sailed in search of the West.",
+        "This character prepared the last ship that bore the Ring-bearers over the Sea."
+      ],
+      "references": [
+        {
+          "source": "Tolkien Gateway",
+          "url": "https://tolkiengateway.net/wiki/C%C3%ADrdan",
+          "supports": "Teleri Elf who stayed in Middle-earth; lord of the Grey Havens; gave Narya to Gandalf; helped with Eärendil's ship; the last ship carrying Frodo, Bilbo and Gandalf."
+        }
+      ]
+    },
+    {
+      "id": "celebrimbor",
+      "name": "Celebrimbor",
+      "difficulty": "HARD",
+      "group": "elf",
+      "aliases": [
+        "Telperinquar",
+        "Lord of Eregion",
+        "Hand of Silver",
+        "Celebrimbor son of Curufin"
+      ],
+      "clues": [
+        "Grandson of the greatest of the Elven craftsmen, this character did not follow his father in his oath.",
+        "This character led the guild of Elven-smiths in a western realm called Hollin.",
+        "This character alone forged three rings that were kept free of the enemy's touch.",
+        "This character hid the three rings before his realm fell, and was tortured for their whereabouts.",
+        "After his death this character's body was displayed as a banner by the host that destroyed his realm."
+      ],
+      "references": [
+        {
+          "source": "Tolkien Gateway",
+          "url": "https://tolkiengateway.net/wiki/Celebrimbor",
+          "supports": "Grandson of Fëanor, stayed in Nargothrond against his father's oath; leader of the Gwaith-i-Mírdain; forged the Three; hid them; tortured and killed by Sauron; body used as a banner."
+        }
+      ]
+    },
+    {
+      "id": "ungoliant",
+      "name": "Ungoliant",
+      "difficulty": "HARD",
+      "group": "spider",
+      "aliases": [
+        "Spider of Unlight",
+        "Gloomweaver",
+        "Spider of the Void"
+      ],
+      "clues": [
+        "The origins of this creature are a mystery, though some of the Elves suspected a spirit corrupted by the Dark Lord at the beginning of time.",
+        "This creature devoured light and spun darkness in its place.",
+        "This creature drained the Two Trees of their light and poisoned them.",
+        "This creature demanded the jewels the Dark Lord had stolen, and he refused her.",
+        "This creature's end is uncertain, but it is said she devoured herself in her hunger."
+      ],
+      "references": [
+        {
+          "source": "Tolkien Gateway",
+          "url": "https://tolkiengateway.net/wiki/Ungoliant",
+          "supports": "Origins shrouded in mystery, thought by some Eldar to be an Ainu corrupted by Melkor; devoured light and spun Unlight; destroyed the Two Trees; Melkor refused her the jewels; said by some to have devoured herself."
+        }
+      ]
+    },
+    {
+      "id": "elendil",
+      "name": "Elendil",
+      "difficulty": "HARD",
+      "group": "man",
+      "aliases": [
+        "Elendil the Tall",
+        "Elendil the Faithful",
+        "Elendil the Fair",
+        "Tar-Elendil"
+      ],
+      "clues": [
+        "This character escaped the drowning of a great island with a fleet of ships.",
+        "This character led those of his people who had stayed faithful to the Valar.",
+        "This character founded two kingdoms in exile and was High King over both, ruling from the north.",
+        "This character fell in battle against the Dark Lord at the end of the Second Age, and his sword was broken beneath him.",
+        "This character's broken sword gave a shard that his son used to cut the Ring from the enemy's hand."
+      ],
+      "references": [
+        {
+          "source": "Tolkien Gateway",
+          "url": "https://tolkiengateway.net/wiki/Elendil",
+          "supports": "Escaped the Downfall of Númenor; leader of the Faithful; High King of Arnor and Gondor (with Isildur and Anárion); death at the hand of Sauron and the shattering of Narsil; Isildur's use of the shard."
+        }
+      ]
+    }
+  ]
+}

@@ -11,6 +11,7 @@ const LINKS = [
     { href: "/games/who-said-it", label: "Who Said It?" },
     { href: "/games/which-character", label: "Which Character?" },
     { href: "/games/lore-challenge", label: "Lore Challenge" },
+    { href: "/games/who-am-i", label: "Who Am I?" },
     { href: "/quotes", label: "Quotes" },
 ];
 
