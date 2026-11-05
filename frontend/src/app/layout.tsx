@@ -49,6 +49,7 @@ export const metadata: Metadata = {
         url: HOME_IMAGE.path,
         width: HOME_IMAGE.width,
         height: HOME_IMAGE.height,
+        type: HOME_IMAGE.type,
         alt: HOME_IMAGE.alt,
       },
     ],

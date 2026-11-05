@@ -44,3 +44,11 @@ Their provenance is recorded by the pages that use them; the Who Said It? frame 
 - **Modifications:** resized to 2400x1638 and converted from JPEG to AVIF. The page lays a dark green
   gradient over it.
 - **License:** the project owner downloaded it with permission to share it freely.
+
+## `share/*.jpg` — link-preview (Open Graph / Twitter) images
+
+`share/home.jpg`, `share/which-character.jpg` and `share/lore-challenge.jpg` are 1200×630 JPEG crops
+(full width, vertical window only) of `enchanted-forest.avif`, `which-character-hobbit-hole.avif` and
+`lore-challenge-archive-library.avif`. They exist only because AVIF is not reliably supported by
+link-preview crawlers; the site itself keeps using the AVIF files. Credits and licenses are those of
+the source images above.

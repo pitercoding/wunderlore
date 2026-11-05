@@ -13,34 +13,40 @@ export const DEFAULT_TITLE = "Wunderlore: Tolkien-inspired quotes and lore games
 export const SITE_DESCRIPTION =
   "Wunderlore is an interactive space for fantasy and literary lore, with quotes, characters and games inspired by Tolkien's world. An unofficial fan project.";
 
-// Pre-existing images from public/images (see ATTRIBUTIONS.md there). Sizes are the real
-// pixel dimensions of the files. Only images with a recorded origin get a page of their own;
-// the others fall back to the home scene.
+// Share-card images in public/images/share: 1200x630 JPEGs cropped from the page images in
+// public/images (see ATTRIBUTIONS.md there). They are separate files because AVIF is not
+// reliably supported by link-preview crawlers. Sizes are the real pixel dimensions of the
+// files. Only images with a recorded origin get a page of their own; the others fall back to
+// the home scene.
 export interface ShareImage {
   path: string;
   width: number;
   height: number;
+  type: string;
   alt: string;
 }
 
 export const HOME_IMAGE: ShareImage = {
-  path: "/images/enchanted-forest.avif",
-  width: 2400,
-  height: 1363,
+  path: "/images/share/home.jpg",
+  width: 1200,
+  height: 630,
+  type: "image/jpeg",
   alt: "A sunlit enchanted forest with mist and soft light between the trees.",
 };
 
 export const WHICH_CHARACTER_IMAGE: ShareImage = {
-  path: "/images/which-character-hobbit-hole.avif",
-  width: 2400,
-  height: 1600,
+  path: "/images/share/which-character.jpg",
+  width: 1200,
+  height: 630,
+  type: "image/jpeg",
   alt: "A round hobbit-hole entrance under a leafy canopy.",
 };
 
 export const LORE_CHALLENGE_IMAGE: ShareImage = {
-  path: "/images/lore-challenge-archive-library.avif",
-  width: 2400,
-  height: 1638,
+  path: "/images/share/lore-challenge.jpg",
+  width: 1200,
+  height: 630,
+  type: "image/jpeg",
   alt: "An old library reading hall with tall windows and shelves fading into shadow.",
 };
 
@@ -73,7 +79,13 @@ export function pageMetadata({
   // openGraph/twitter titles do not go through the layout template, so build the full title.
   const fullTitle = title ? `${title} | ${SITE_NAME}` : DEFAULT_TITLE;
   const images = [
-    { url: image.path, width: image.width, height: image.height, alt: image.alt },
+    {
+      url: image.path,
+      width: image.width,
+      height: image.height,
+      type: image.type,
+      alt: image.alt,
+    },
   ];
 
   return {

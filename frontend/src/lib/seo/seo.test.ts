@@ -85,6 +85,19 @@ describe("share images", () => {
             ).not.toThrow();
         },
     );
+
+    it.each([HOME_IMAGE, WHICH_CHARACTER_IMAGE, LORE_CHALLENGE_IMAGE])(
+        "$path is a 1200x630 JPEG, not AVIF",
+        ({ path: imagePath, width, height, type }) => {
+            expect(imagePath).toMatch(/\.jpe?g$/);
+            expect(type).toBe("image/jpeg");
+            expect([width, height]).toEqual([1200, 630]);
+
+            const file = readFileSync(path.join(process.cwd(), "public", imagePath));
+            // JPEG files start with the SOI marker FF D8 FF.
+            expect([...file.subarray(0, 3)]).toEqual([0xff, 0xd8, 0xff]);
+        },
+    );
 });
 
 describe("sitemap", () => {
