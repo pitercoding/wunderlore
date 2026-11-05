@@ -45,6 +45,28 @@ class LoreChallengeContentTest {
             "silvan", "house", "first", "second", "third", "fourth", "amon", "cirith", "dol",
             "tol", "ered", "ephel", "tom", "great", "black");
 
+    // Other names of an answer (normalized, without a leading "the"). A text that uses the
+    // alias gives the answer away just as much as the answer itself does, e.g. "the Golden Wood"
+    // for Lothlórien. Only aliases that are a clue to the answer belong here: the name used as
+    // the question's own subject ("Bridge of Khazad-dûm" in a question about Moria) is the
+    // asked-for answer of a different question and is listed under that one.
+    private static final Map<String, List<String>> ALIASES = Map.ofEntries(
+            Map.entry("lothlórien", List.of("golden wood", "lórien")),
+            Map.entry("erebor", List.of("lonely mountain")),
+            Map.entry("moria", List.of("khazad-dûm", "dwarrowdelf")),
+            Map.entry("weathertop", List.of("amon sûl")),
+            Map.entry("mount doom", List.of("orodruin")),
+            Map.entry("rivendell", List.of("imladris")),
+            Map.entry("grey havens", List.of("mithlond")),
+            Map.entry("nazgûl", List.of("ringwraith", "ringwraiths")),
+            Map.entry("mûmakil", List.of("oliphaunt", "oliphaunts")),
+            Map.entry("eregion", List.of("hollin")),
+            Map.entry("hollin", List.of("eregion")),
+            Map.entry("mithrandir", List.of("grey pilgrim")),
+            Map.entry("bregalad", List.of("quickbeam")),
+            Map.entry("dol guldur", List.of("necromancer")),
+            Map.entry("necromancer", List.of("dol guldur")));
+
     // Pairs reviewed one by one and kept on purpose: "source->target", with the reason. A source
     // text naming the answer of a target is acceptable only when the mention gives nothing away.
     // Every entry must still be a real match (see shouldKeepTheLeakExceptionsCurrent), so the
@@ -171,6 +193,16 @@ class LoreChallengeContentTest {
         all().forEach(question -> answers.add(normalize(question.answer())));
 
         assertThat(answers).containsAll(PERVASIVE_ANSWERS);
+    }
+
+    // An alias entry that names no answer of the bank would silently check nothing.
+    @Test
+    void shouldOnlyListAliasesOfRealAnswers() {
+        Set<String> answers = new HashSet<>();
+
+        all().forEach(question -> answers.add(normalize(question.answer())));
+
+        assertThat(answers).containsAll(ALIASES.keySet());
     }
 
     // The pairs the editorial review singled out. Each one used to reveal the answer of the other
@@ -300,7 +332,11 @@ class LoreChallengeContentTest {
             return null;
         }
 
-        for (String term : termsOf(answer)) {
+        List<String> terms = new ArrayList<>(termsOf(answer));
+
+        terms.addAll(ALIASES.getOrDefault(answer, List.of()));
+
+        for (String term : terms) {
             if (containsWord(source.prompt(), term)) {
                 return "prompt";
             }
