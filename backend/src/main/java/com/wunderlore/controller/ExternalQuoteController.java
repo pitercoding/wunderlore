@@ -35,10 +35,11 @@ public class ExternalQuoteController {
             @RequestParam(defaultValue = "20") @Min(1) @Max(100) int limit) {
         LoreData data = loreDataService.getData();
 
-        return paginate(data.quotes(), data.charactersById(), page, limit);
+        // Only the reduced public catalog is ever paginated; the full quote list is not reachable from here.
+        return paginate(data.catalogQuotes(), data.charactersById(), page, limit);
     }
 
-    // Slices the in-memory quotes the same way The One API paginates them:
+    // Slices the public catalog the same way The One API paginates quotes:
     // pages is at least 1, a page past the end returns an empty docs list,
     // and offset stays null because the request is page-based.
     private CatalogQuotePage paginate(

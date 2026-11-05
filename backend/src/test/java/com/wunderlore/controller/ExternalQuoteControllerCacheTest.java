@@ -51,25 +51,28 @@ class ExternalQuoteControllerCacheTest {
                                 .thenReturn(new ExternalQuoteResponse(List.of(q3), 3, PAGE_SIZE, null, 2, 2));
                 when(theOneApiClient.getCharacters(1, PAGE_SIZE))
                                 .thenReturn(new ExternalCharacterResponse(
-                                                List.of(new ExternalCharacter("sam", "Samwise Gamgee")),
-                                                1, PAGE_SIZE, null, 1, 1));
+                                                List.of(
+                                                                new ExternalCharacter("sam", "Samwise Gamgee"),
+                                                                new ExternalCharacter("gandalf", "Gandalf")),
+                                                2, PAGE_SIZE, null, 1, 1));
 
                 mockMvc.perform(get("/api/catalog/quotes").param("limit", "2"))
                                 .andExpect(status().isOk())
                                 .andExpect(jsonPath("$.docs[0]._id").value("q1"))
                                 .andExpect(jsonPath("$.docs[1]._id").value("q2"))
                                 .andExpect(jsonPath("$.docs[0].characterName").value("Samwise Gamgee"))
-                                .andExpect(jsonPath("$.total").value(3))
-                                .andExpect(jsonPath("$.pages").value(2));
+                                // q3 has a blank dialog and an unknown character, so it is not public.
+                                .andExpect(jsonPath("$.total").value(2))
+                                .andExpect(jsonPath("$.pages").value(1));
 
                 mockMvc.perform(get("/api/catalog/quotes").param("page", "2").param("limit", "2"))
                                 .andExpect(status().isOk())
-                                .andExpect(jsonPath("$.docs.length()").value(1))
-                                .andExpect(jsonPath("$.docs[0]._id").value("q3"));
+                                .andExpect(jsonPath("$.docs.length()").value(0))
+                                .andExpect(jsonPath("$.total").value(2));
 
                 mockMvc.perform(get("/api/catalog/quotes"))
                                 .andExpect(status().isOk())
-                                .andExpect(jsonPath("$.docs.length()").value(3));
+                                .andExpect(jsonPath("$.docs.length()").value(2));
 
                 verify(theOneApiClient, times(1)).getQuotes(1, PAGE_SIZE);
                 verify(theOneApiClient, times(1)).getQuotes(2, PAGE_SIZE);

@@ -9,7 +9,10 @@ import com.wunderlore.lore.LoreQuote;
 import com.wunderlore.support.LogCapture;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.spi.ILoggingEvent;
+import com.jayway.jsonpath.JsonPath;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
@@ -25,8 +28,10 @@ import java.nio.charset.StandardCharsets;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.IntStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -100,7 +105,7 @@ class ExternalQuoteControllerTest {
                 when(loreDataService.getData()).thenReturn(new LoreData(
                                 List.of(quote),
                                 Map.of("gollum", new LoreCharacter("gollum", "Gollum")),
-                                List.of()));
+                                List.of(quote)));
 
                 mockMvc.perform(get("/api/catalog/quotes"))
                                 .andExpect(status().isOk())
@@ -120,7 +125,7 @@ class ExternalQuoteControllerTest {
                 when(loreDataService.getData()).thenReturn(new LoreData(
                                 List.of(quote),
                                 Map.of("gollum", new LoreCharacter("gollum", "Gollum")),
-                                List.of()));
+                                List.of(quote)));
 
                 mockMvc.perform(get("/api/catalog/quotes"))
                                 .andExpect(status().isOk())
@@ -133,15 +138,15 @@ class ExternalQuoteControllerTest {
         }
 
         @Test
-        void shouldKeepNullQuoteFieldsNullInTheCatalog() throws Exception {
-                LoreQuote quote = new LoreQuote("q1", null, null, null, null);
+        void shouldKeepOptionalQuoteFieldsNullInTheCatalog() throws Exception {
+                LoreQuote quote = new LoreQuote("q1", "Short line", null, null, null);
 
                 when(loreDataService.getData()).thenReturn(loreData(List.of(quote)));
 
                 mockMvc.perform(get("/api/catalog/quotes"))
                                 .andExpect(status().isOk())
                                 .andExpect(jsonPath("$.docs[0]._id").value("q1"))
-                                .andExpect(jsonPath("$.docs[0].dialog").value(nullValue()))
+                                .andExpect(jsonPath("$.docs[0].dialog").value("Short line"))
                                 .andExpect(jsonPath("$.docs[0].movie").value(nullValue()))
                                 .andExpect(jsonPath("$.docs[0].character").value(nullValue()))
                                 .andExpect(jsonPath("$.docs[0].id").value(nullValue()))
@@ -157,7 +162,7 @@ class ExternalQuoteControllerTest {
                 when(loreDataService.getData()).thenReturn(new LoreData(
                                 quotes,
                                 Map.of("frodo", new LoreCharacter("frodo", "Frodo Baggins")),
-                                List.of()));
+                                quotes));
 
                 mockMvc.perform(get("/api/catalog/quotes"))
                                 .andExpect(status().isOk())
@@ -180,7 +185,7 @@ class ExternalQuoteControllerTest {
                                 Map.of(
                                                 "frodo", new LoreCharacter("frodo", "Frodo Baggins"),
                                                 "sam", new LoreCharacter("sam", "Samwise Gamgee")),
-                                List.of()));
+                                quotes));
 
                 mockMvc.perform(get("/api/catalog/quotes")
                                 .param("page", "2")
@@ -228,27 +233,111 @@ class ExternalQuoteControllerTest {
         }
 
         @Test
-        void shouldIncludeQuotesWithoutDialogOrKnownCharacter() throws Exception {
-                List<LoreQuote> quotes = List.of(
-                                new LoreQuote("q1", "", "movie-1", "frodo", "q1"),
-                                new LoreQuote("q2", null, "movie-1", "frodo", "q2"),
-                                new LoreQuote("q3", "Unknown author", "movie-1", "sauron", "q3"),
-                                new LoreQuote("q4", "No author", "movie-1", null, "q4"));
+        void shouldServeOnlyShortAttributedQuotesFromTheLoadedQuotes() throws Exception {
+                LoreQuote shortQuote = new LoreQuote("q1", "Short", "movie-1", "frodo", "q1");
+                LoreQuote blank = new LoreQuote("q2", " ", "movie-1", "frodo", "q2");
+                LoreQuote missing = new LoreQuote("q3", null, "movie-1", "frodo", "q3");
+                LoreQuote tooLong = new LoreQuote("q4", "x".repeat(61), "movie-1", "frodo", "q4");
+                List<LoreQuote> quotes = List.of(shortQuote, blank, missing, tooLong);
 
-                // attributedQuotes is empty on purpose: the catalog must not rely on it.
                 when(loreDataService.getData()).thenReturn(new LoreData(
                                 quotes,
+                                Map.of("frodo", new LoreCharacter("frodo", "Frodo Baggins")),
+                                quotes));
+
+                mockMvc.perform(get("/api/catalog/quotes"))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.docs.length()").value(1))
+                                .andExpect(jsonPath("$.docs[0]._id").value("q1"))
+                                .andExpect(jsonPath("$.total").value(1));
+        }
+
+        @Test
+        void shouldNotServeQuotesThatAreOnlyInTheUnfilteredList() throws Exception {
+                LoreQuote hidden = new LoreQuote("hidden", "Hidden", "movie-1", "frodo", "hidden");
+
+                // The unfiltered quotes list never feeds the catalog.
+                when(loreDataService.getData()).thenReturn(new LoreData(
+                                List.of(hidden),
                                 Map.of("frodo", new LoreCharacter("frodo", "Frodo Baggins")),
                                 List.of()));
 
                 mockMvc.perform(get("/api/catalog/quotes"))
                                 .andExpect(status().isOk())
-                                .andExpect(jsonPath("$.docs.length()").value(4))
-                                .andExpect(jsonPath("$.docs[0]._id").value("q1"))
-                                .andExpect(jsonPath("$.docs[1]._id").value("q2"))
-                                .andExpect(jsonPath("$.docs[2]._id").value("q3"))
-                                .andExpect(jsonPath("$.docs[3]._id").value("q4"))
-                                .andExpect(jsonPath("$.total").value(4));
+                                .andExpect(jsonPath("$.docs.length()").value(0))
+                                .andExpect(jsonPath("$.total").value(0));
+        }
+
+        @Test
+        void shouldCapThePublicCatalogAtOneHundredQuotes() throws Exception {
+                when(loreDataService.getData()).thenReturn(loreData(numberedQuotes(2383)));
+
+                mockMvc.perform(get("/api/catalog/quotes"))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.total").value(100))
+                                .andExpect(jsonPath("$.limit").value(20))
+                                .andExpect(jsonPath("$.page").value(1))
+                                .andExpect(jsonPath("$.pages").value(5))
+                                .andExpect(jsonPath("$.docs.length()").value(20))
+                                .andExpect(jsonPath("$.offset").doesNotExist());
+        }
+
+        @Test
+        void shouldServeTheLastPageOfTheReducedCatalog() throws Exception {
+                when(loreDataService.getData()).thenReturn(loreData(numberedQuotes(2383)));
+
+                mockMvc.perform(get("/api/catalog/quotes").param("page", "5"))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.docs.length()").value(20))
+                                .andExpect(jsonPath("$.total").value(100))
+                                .andExpect(jsonPath("$.page").value(5))
+                                .andExpect(jsonPath("$.pages").value(5));
+        }
+
+        @Test
+        void shouldNotRevealQuotesBeyondTheReducedCatalog() throws Exception {
+                when(loreDataService.getData()).thenReturn(loreData(numberedQuotes(2383)));
+
+                // The original catalog had 120 pages of 20; none past the 5th may have content.
+                for (String page : List.of("6", "7", "120", String.valueOf(Integer.MAX_VALUE))) {
+                        mockMvc.perform(get("/api/catalog/quotes").param("page", page))
+                                        .andExpect(status().isOk())
+                                        .andExpect(jsonPath("$.docs.length()").value(0))
+                                        .andExpect(jsonPath("$.total").value(100))
+                                        .andExpect(jsonPath("$.pages").value(5));
+                }
+        }
+
+        @Test
+        void shouldNeverReturnMoreThanTheCatalogWhateverTheLimit() throws Exception {
+                when(loreDataService.getData()).thenReturn(loreData(numberedQuotes(2383)));
+
+                mockMvc.perform(get("/api/catalog/quotes").param("limit", "100"))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.docs.length()").value(100))
+                                .andExpect(jsonPath("$.total").value(100))
+                                .andExpect(jsonPath("$.pages").value(1));
+
+                mockMvc.perform(get("/api/catalog/quotes").param("page", "2").param("limit", "100"))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.docs.length()").value(0));
+        }
+
+        @Test
+        void shouldNotReturnTheSameQuoteTwiceAcrossPages() throws Exception {
+                when(loreDataService.getData()).thenReturn(loreData(numberedQuotes(2383)));
+
+                Set<String> ids = new HashSet<>();
+
+                for (int page = 1; page <= 5; page++) {
+                        String body = mockMvc.perform(get("/api/catalog/quotes").param("page", String.valueOf(page)))
+                                        .andExpect(status().isOk())
+                                        .andReturn().getResponse().getContentAsString();
+
+                        ids.addAll(JsonPath.<List<String>>read(body, "$.docs[*]._id"));
+                }
+
+                assertThat(ids).hasSize(100);
         }
 
         @Test
@@ -432,6 +521,46 @@ class ExternalQuoteControllerTest {
                 verifyNoInteractions(loreDataService);
         }
 
+        @ParameterizedTest
+        @ValueSource(strings = { "-1", "-2147483648", "abc", "1.5", "99999999999" })
+        void shouldRejectInvalidPageParameters(String page) throws Exception {
+                mockMvc.perform(get("/api/catalog/quotes").param("page", page))
+                                .andExpect(status().isBadRequest());
+
+                verifyNoInteractions(loreDataService);
+        }
+
+        @ParameterizedTest
+        @ValueSource(strings = { "-1", "-2147483648", "1000", "2147483647", "abc", "1.5", "99999999999" })
+        void shouldRejectInvalidLimitParameters(String limit) throws Exception {
+                mockMvc.perform(get("/api/catalog/quotes").param("limit", limit))
+                                .andExpect(status().isBadRequest());
+
+                verifyNoInteractions(loreDataService);
+        }
+
+        @Test
+        void shouldTreatAnEmptyPageParameterAsAbsentAndUseTheDefault() throws Exception {
+                when(loreDataService.getData()).thenReturn(loreData(numberedQuotes(2383)));
+
+                mockMvc.perform(get("/api/catalog/quotes").param("page", ""))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.page").value(1))
+                                .andExpect(jsonPath("$.limit").value(20))
+                                .andExpect(jsonPath("$.total").value(100));
+        }
+
+        @Test
+        void shouldTreatAnEmptyLimitParameterAsAbsentAndUseTheDefault() throws Exception {
+                when(loreDataService.getData()).thenReturn(loreData(numberedQuotes(2383)));
+
+                mockMvc.perform(get("/api/catalog/quotes").param("limit", ""))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.limit").value(20))
+                                .andExpect(jsonPath("$.docs.length()").value(20))
+                                .andExpect(jsonPath("$.total").value(100));
+        }
+
         @Test
         void shouldLogLoadFailureOnlyAtDebugWithoutUpstreamBody() throws Exception {
                 when(loreDataService.getData())
@@ -459,7 +588,7 @@ class ExternalQuoteControllerTest {
         }
 
         private static LoreData loreData(List<LoreQuote> quotes) {
-                return new LoreData(quotes, Map.of(), List.of());
+                return new LoreData(quotes, Map.of(), quotes);
         }
 
         private static List<LoreQuote> numberedQuotes(int count) {

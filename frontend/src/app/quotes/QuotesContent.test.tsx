@@ -266,6 +266,53 @@ describe("QuotesContent", () => {
         expect(redirectMock).toHaveBeenCalledWith("/quotes?page=3");
     });
 
+    describe("with the reduced public catalog (100 quotes, 5 pages of 20)", () => {
+        const reduced = { total: 100, limit: 20, pages: 5 };
+
+        it("shows the reduced total and page count on the first page", async () => {
+            getQuotesMock.mockResolvedValue(quotePage({ ...reduced, page: 1 }));
+
+            await renderQuotes();
+
+            expect(getQuotesMock).toHaveBeenCalledWith(1, 20);
+            expect(screen.getByText("100 quotes available")).toBeInTheDocument();
+            expect(pagination().getByText("Page 1 of 5")).toBeInTheDocument();
+            expect(pagination().getByRole("link", { name: "Next" })).toHaveAttribute(
+                "href",
+                "/quotes?page=2",
+            );
+        });
+
+        it("disables Next on the fifth and last page", async () => {
+            getQuotesMock.mockResolvedValue(quotePage({ ...reduced, page: 5 }));
+
+            await renderQuotes("5");
+
+            const nav = pagination();
+            expect(nav.getByText("Page 5 of 5")).toBeInTheDocument();
+            expect(nav.getByRole("link", { name: "Previous" })).toHaveAttribute(
+                "href",
+                "/quotes?page=4",
+            );
+            expect(nav.queryByRole("link", { name: "Next" })).not.toBeInTheDocument();
+            expect(nav.getByText("Next")).toHaveAttribute("aria-disabled", "true");
+        });
+
+        it.each(["6", "120"])(
+            "redirects page %s, which no longer exists, to the last page",
+            async (page) => {
+                getQuotesMock.mockResolvedValue(
+                    quotePage({ ...reduced, docs: [], page: Number(page) }),
+                );
+
+                await expect(renderQuotes(page)).rejects.toThrow(
+                    "NEXT_REDIRECT /quotes?page=5",
+                );
+                expect(redirectMock).toHaveBeenCalledWith("/quotes?page=5");
+            },
+        );
+    });
+
     it.each([
         ["a 503 without a retry time", new ApiError("API request failed with status 503", 503), UNAVAILABLE],
         ["a 503 with an invalid retry time", new ApiError("API request failed with status 503", 503, Number.NaN), UNAVAILABLE],
