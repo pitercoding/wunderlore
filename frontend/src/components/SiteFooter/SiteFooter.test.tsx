@@ -10,4 +10,12 @@ describe("SiteFooter", () => {
             /unofficial fan project.*not affiliated with, endorsed or sponsored by the Tolkien Estate or the rights holders of the film adaptations/,
         );
     });
+
+    it("links to the image credits", () => {
+        render(<SiteFooter />);
+
+        expect(
+            screen.getByRole("link", { name: "Image credits" }),
+        ).toHaveAttribute("href", "/images/ATTRIBUTIONS.md");
+    });
 });

@@ -14,3 +14,27 @@
     text-align: center;
     text-wrap: balance;
 }
+
+.links {
+    margin-top: var(--space-2);
+    font-size: var(--text-xs);
+    text-align: center;
+}
+
+/* Padding keeps the target at least 24px tall (WCAG 2.2 AA, target size). */
+.link {
+    display: inline-block;
+    padding: 0.4rem 0.5rem;
+    color: var(--scene-text-muted);
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+}
+
+.link:hover {
+    color: var(--scene-text);
+}
+
+.link:focus-visible {
+    outline: 2px solid var(--scene-glow);
+    outline-offset: 2px;
+}

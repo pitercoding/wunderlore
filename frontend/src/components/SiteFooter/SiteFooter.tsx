@@ -9,6 +9,12 @@ export default function SiteFooter() {
                 endorsed or sponsored by the Tolkien Estate or the rights holders of
                 the film adaptations.
             </p>
+
+            <p className={styles.links}>
+                <a href="/images/ATTRIBUTIONS.md" className={styles.link}>
+                    Image credits
+                </a>
+            </p>
         </footer>
     );
 }
