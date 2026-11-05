@@ -16,12 +16,12 @@ class LoreChallengeQuestionBankTest {
     private final LoreChallengeQuestionBank bank = new LoreChallengeQuestionBank();
 
     @Test
-    void shouldHoldTenQuestionsForEveryCategoryAndDifficulty() {
+    void shouldHoldTwentyQuestionsForEveryCategoryAndDifficulty() {
         for (LoreChallengeCategory category : LoreChallengeCategory.values()) {
             for (LoreChallengeDifficulty difficulty : LoreChallengeDifficulty.values()) {
                 assertThat(bank.count(category, difficulty))
                         .as("%s %s", category, difficulty)
-                        .isEqualTo(10);
+                        .isEqualTo(20);
             }
         }
     }
@@ -60,7 +60,7 @@ class LoreChallengeQuestionBankTest {
             }
         }
 
-        assertThat(ids).hasSize(150);
+        assertThat(ids).hasSize(300);
     }
 
     @Test

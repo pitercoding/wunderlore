@@ -28,7 +28,7 @@ import org.junit.jupiter.api.Test;
 class LoreChallengeContentTest {
 
     private static final Pattern ID_PATTERN =
-            Pattern.compile("(characters|places|peoples|history|events)-(easy|medium|hard)-(0[1-9]|10)");
+            Pattern.compile("(characters|places|peoples|history|events)-(easy|medium|hard)-(0[1-9]|1[0-9]|20)");
 
     // Answers that are the vocabulary of the whole story rather than a clue: the Ring, its maker,
     // the three most visible protagonists and the names of the peoples. They are named in so many
@@ -43,7 +43,7 @@ class LoreChallengeContentTest {
     private static final Set<String> NOT_A_SHORT_FORM = Set.of(
             "the", "mount", "minas", "tar", "ar", "battle", "council", "last", "white", "grey",
             "silvan", "house", "first", "second", "third", "fourth", "amon", "cirith", "dol",
-            "tol", "ered", "ephel", "tom");
+            "tol", "ered", "ephel", "tom", "great", "black");
 
     // Pairs reviewed one by one and kept on purpose: "source->target", with the reason. A source
     // text naming the answer of a target is acceptable only when the mention gives nothing away.
@@ -69,7 +69,7 @@ class LoreChallengeContentTest {
             for (LoreChallengeDifficulty difficulty : LoreChallengeDifficulty.values()) {
                 List<String> expected = new ArrayList<>();
 
-                for (int number = 1; number <= 10; number++) {
+                for (int number = 1; number <= 20; number++) {
                     expected.add("%s-%s-%02d".formatted(
                             category.name().toLowerCase(Locale.ROOT),
                             difficulty.name().toLowerCase(Locale.ROOT),

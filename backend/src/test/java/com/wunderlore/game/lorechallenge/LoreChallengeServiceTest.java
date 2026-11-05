@@ -192,6 +192,42 @@ class LoreChallengeServiceTest {
     }
 
     @Test
+    void shouldDrawTenOfTheTwentyQuestionsOfACategoryAndDifficulty() {
+        Set<String> bankIds = new HashSet<>();
+        Set<String> seen = new HashSet<>();
+
+        realBank.find(LoreChallengeCategory.PLACES, LoreChallengeDifficulty.HARD)
+                .forEach(question -> bankIds.add(question.id()));
+        assertThat(bankIds).hasSize(20);
+
+        for (long seed = 0; seed < 40; seed++) {
+            List<QuestionView> served = serve(service(realBank, seed)
+                    .createMatch(LoreChallengeCategory.PLACES, LoreChallengeDifficulty.HARD));
+
+            assertThat(served).hasSize(10);
+            served.forEach(view -> seen.add(view.questionId()));
+        }
+
+        // Every question served belongs to the pool, and the draw is not always the same ten.
+        assertThat(bankIds).containsAll(seen);
+        assertThat(seen.size()).isGreaterThan(10);
+    }
+
+    @Test
+    void shouldDrawDifferentQuestionsOfEachCategoryAcrossAllMatches() {
+        Map<LoreChallengeCategory, Set<String>> seen = new EnumMap<>(LoreChallengeCategory.class);
+
+        for (long seed = 0; seed < 40; seed++) {
+            for (QuestionView view : serve(service(realBank, seed).createMatch(null, LoreChallengeDifficulty.MEDIUM))) {
+                seen.computeIfAbsent(view.questionCategory(), key -> new HashSet<>()).add(view.questionId());
+            }
+        }
+
+        assertThat(seen).hasSize(5);
+        assertThat(seen.values()).allSatisfy(ids -> assertThat(ids.size()).isGreaterThan(2));
+    }
+
+    @Test
     void shouldStampTheMatchWithTheClockTime() {
         LoreChallengeMatch match = service(realBank, 7).createMatch(null, LoreChallengeDifficulty.EASY);
 
