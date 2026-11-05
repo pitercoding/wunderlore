@@ -55,7 +55,7 @@ export default async function QuotesContent({
     return (
         <QuotesFrame
             title="Quotes"
-            description="Explore memorable quotes from the world of The Lord of the Rings."
+            description="Memorable lines from the film adaptations of The Lord of the Rings. They may differ from Tolkien's books."
         >
             <section aria-label="Quote catalog" className={styles.quoteList}>
                 {quotePage.docs.length === 0 ? (

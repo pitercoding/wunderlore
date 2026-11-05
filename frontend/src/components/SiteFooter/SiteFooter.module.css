@@ -1,0 +1,16 @@
+/* Always dark, like the scenes above it, whatever the OS theme. */
+.footer {
+    padding: var(--space-5) var(--gutter);
+    border-top: 1px solid var(--scene-border);
+    background: var(--scene-night);
+}
+
+.notice {
+    max-width: 46rem;
+    margin-inline: auto;
+    color: var(--scene-text-muted);
+    font-size: var(--text-xs);
+    line-height: var(--leading-relaxed);
+    text-align: center;
+    text-wrap: balance;
+}

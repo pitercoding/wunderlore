@@ -8,6 +8,7 @@ import {
   SITE_NAME,
   SITE_URL,
 } from "@/lib/seo/site";
+import SiteFooter from "@/components/SiteFooter/SiteFooter";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -66,7 +67,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} ${newsreader.variable}`}
     >
-      <body>{children}</body>
+      <body>
+        {children}
+        <SiteFooter />
+      </body>
     </html>
   );
 }

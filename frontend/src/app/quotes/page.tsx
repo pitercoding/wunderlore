@@ -10,7 +10,7 @@ import styles from "./page.module.css";
 export const metadata = pageMetadata({
     title: "Quotes",
     description:
-        "Browse memorable lines from Tolkien's Middle-earth, page by page, each with the character who spoke it.",
+        "Browse memorable lines spoken in the Middle-earth films, page by page, each with the character who said it.",
     path: "/quotes",
 });
 
