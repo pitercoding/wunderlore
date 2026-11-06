@@ -13,7 +13,7 @@
       "clues": [
         "Both of this character's parents died in a boating accident long before any adventure began.",
         "A beloved older relative adopted this character, then left behind his home and a small golden trinket.",
-        "A wound from a cursed blade, taken beneath a ruined watchtower on a hill, never fully healed.",
+        "A wound from a cursed blade, taken beneath a ruined watchtower on a hill, still ached a year later.",
         "At a council in Rivendell, this character volunteered to carry a dangerous object to the land where it was made.",
         "At the Cracks of Doom this character could not give up the Ring willingly, and lost a finger to the creature who seized it."
       ],
@@ -22,6 +22,16 @@
           "source": "Tolkien Gateway",
           "url": "https://tolkiengateway.net/wiki/Frodo_Baggins",
           "supports": "Parents died in a boating accident; adopted by Bilbo; Morgul-knife wound on Weathertop; volunteered at the Council of Elrond; finger bitten off by Gollum at Mount Doom."
+        },
+        {
+          "source": "Tolkien Gateway",
+          "url": "https://tolkiengateway.net/wiki/Morgul-knife",
+          "supports": "One year after the stabbing the wound in Frodo's shoulder ached again."
+        },
+        {
+          "source": "Tolkien Gateway",
+          "url": "https://tolkiengateway.net/wiki/Weathertop",
+          "supports": "Weathertop is a hill with the ruins of a tower."
         }
       ]
     },
@@ -39,7 +49,7 @@
       "clues": [
         "Raised by a gardener, this character loved plants, tales of the Elves and a quiet life.",
         "Caught eavesdropping beneath a window, this character was sent on a journey instead of being punished.",
-        "A small box of soil from an elven queen's forest later brought trees back to a ravaged homeland.",
+        "A small box of soil from an elven lady's orchard later brought trees back to a ravaged homeland.",
         "When a giant spider seemed to have killed his master, this character took up the burden himself for a time.",
         "This character carried his master up the slopes of Mount Doom when strength failed, and later served many terms as Mayor of the Shire."
       ],
@@ -47,7 +57,7 @@
         {
           "source": "Tolkien Gateway",
           "url": "https://tolkiengateway.net/wiki/Samwise_Gamgee",
-          "supports": "Gardener's son; overheard by Gandalf under the window; Galadriel's gift of earth; took the Ring in Cirith Ungol; carried Frodo up Mount Doom; Mayor of the Shire."
+          "supports": "Gardener's son; overheard by Gandalf under the window; Galadriel's gift of earth from her orchard; took the Ring in Cirith Ungol; carried Frodo up Mount Doom; Mayor of the Shire."
         }
       ]
     },
@@ -66,7 +76,7 @@
         "Stormcrow"
       ],
       "clues": [
-        "One of a handful of beings who came from across the Sea in the guise of an old man, sent to guide rather than to rule.",
+        "One of a handful of beings who came from across the Sea in the guise of an old man, sent to advise and persuade the free peoples.",
         "A wanderer with a fondness for fireworks, rarely seen without his pipe.",
         "This character fell in battle with a fire-demon on a bridge in the deep dark, and returned in a brighter form.",
         "This character bore a ring of fire, given long before by the shipwright of the Grey Havens.",
@@ -77,6 +87,11 @@
           "source": "Tolkien Gateway",
           "url": "https://tolkiengateway.net/wiki/Gandalf",
           "supports": "One of the Istari; fireworks; usually seen with a pipe; fall on the Bridge of Khazad-dûm and return as Gandalf the White; Narya passed to him by Círdan; rode Shadowfax."
+        },
+        {
+          "source": "Tolkien Gateway",
+          "url": "https://tolkiengateway.net/wiki/Wizards",
+          "supports": "The mission of the Istari was to advise and persuade Men and Elves to resist Sauron."
         }
       ]
     },
@@ -106,6 +121,16 @@
           "source": "Tolkien Gateway",
           "url": "https://tolkiengateway.net/wiki/Aragorn_II_Elessar",
           "supports": "Fostered in Rivendell under another name; descent from Elendil; Ranger who guided the hobbits from Bree; used the Orthanc-stone to show himself to Sauron; crowned King of the Reunited Kingdom; married Arwen."
+        },
+        {
+          "source": "Tolkien Gateway",
+          "url": "https://tolkiengateway.net/wiki/Strider_(chapter)",
+          "supports": "Strider offers guidance and protection to the hobbits at Bree."
+        },
+        {
+          "source": "Tolkien Gateway",
+          "url": "https://tolkiengateway.net/wiki/A_Knife_in_the_Dark",
+          "supports": "Strider leads the hobbits out of Bree toward Weathertop."
         }
       ]
     },
@@ -146,7 +171,7 @@
       "clues": [
         "This character's father had been one of the company that once set out to reclaim a mountain from a dragon.",
         "This character asked an elven lady for a single strand of her hair and was given three.",
-        "Alongside a Ranger and an Elf, this character ran for days across wide plains in pursuit of a band of Orcs.",
+        "Alongside a Ranger and an Elf, this character ran for many days in pursuit of a band of Orcs.",
         "At a great fortress in a mountain valley, this character fought on the wall, and afterwards marveled at the glittering caves behind it.",
         "Many years after the War of the Ring, this character sailed West in the company of an Elf who had become his closest friend."
       ],
@@ -155,6 +180,11 @@
           "source": "Tolkien Gateway",
           "url": "https://tolkiengateway.net/wiki/Gimli",
           "supports": "Son of Glóin of Thorin's company; three strands of Galadriel's hair; pursuit across Rohan; Helm's Deep and the Glittering Caves; fought beside Legolas; sailed West (Fo.A. 120)."
+        },
+        {
+          "source": "Tolkien Gateway",
+          "url": "https://tolkiengateway.net/wiki/The_Riders_of_Rohan",
+          "supports": "Aragorn, Legolas and Gimli pursue the captured hobbits for many days."
         }
       ]
     },
@@ -208,6 +238,16 @@
           "source": "Tolkien Gateway",
           "url": "https://tolkiengateway.net/wiki/Sauron",
           "supports": "Maia of Aulë; fair guise and the Rings of Power; captivity in Númenor and its Downfall; Isildur cut the Ring from his hand; Barad-dûr, Nazgûl, the Eye."
+        },
+        {
+          "source": "Tolkien Gateway",
+          "url": "https://tolkiengateway.net/wiki/Elendil",
+          "supports": "Isildur used Narsil's broken blade to cut the Ring from Sauron's hand."
+        },
+        {
+          "source": "Tolkien Gateway",
+          "url": "https://tolkiengateway.net/wiki/Eye_of_Sauron",
+          "supports": "The Eye is also called the Lidless Eye."
         }
       ]
     },
@@ -280,7 +320,7 @@
       "clues": [
         "This character was a respectable, comfort-loving soul until an unexpected party of guests changed everything.",
         "This character was hired as a burglar by a company seeking to reclaim a mountain and its treasure.",
-        "In a dark cave, this character won a game of riddles and walked away with a magic ring.",
+        "In a dark cave, this character found a magic ring, then won a game of riddles against the creature who had lost it.",
         "This character wrote the story of his journey, which later became part of the Red Book of Westmarch.",
         "After vanishing from his own eleventy-first birthday party, this character eventually left Middle-earth over the Sea."
       ],
@@ -288,7 +328,7 @@
         {
           "source": "Tolkien Gateway",
           "url": "https://tolkiengateway.net/wiki/Bilbo_Baggins",
-          "supports": "Hired as burglar by Thorin's company; riddle game; found the Ring; authored the Red Book material; vanished at his 111th birthday; sailed West."
+          "supports": "Hired as burglar by Thorin's company; found the Ring and won the riddle game; authored the Red Book material; vanished at his 111th birthday; sailed West."
         }
       ]
     },
@@ -309,13 +349,13 @@
         "This character made his home in a black tower inside a ringed fortress, where he kept a seeing-stone.",
         "Gazing into a stone of far-seeing, this character was ensnared by his greater enemy and betrayed his task.",
         "This character's fires felled forests, and in pits beneath his tower he bred a stronger kind of Orc.",
-        "After his fall, this character took over the Shire in disguise, and was finally killed by his own former servant."
+        "After his fall, this character took over the Shire under an assumed name, and was finally killed by his own former servant."
       ],
       "references": [
         {
           "source": "Tolkien Gateway",
           "url": "https://tolkiengateway.net/wiki/Saruman",
-          "supports": "Head of the Istari; Orthanc and its palantír; corruption through the palantír; felling of trees and Uruk-hai; occupation of the Shire and death at Gríma's hand."
+          "supports": "Head of the Istari; Orthanc and its palantír; corruption through the palantír; felling of trees and Uruk-hai; occupation of the Shire as \"Sharkey\" and death at Gríma's hand."
         }
       ]
     },
@@ -361,18 +401,23 @@
         "This character's brother was imprisoned for disobedience on the orders of a sly advisor.",
         "In disguise, this character rode into war with a small hobbit on her saddle.",
         "This character confronted the Lord of the Nazgûl and declared herself no man, fulfilling an old prophecy.",
-        "This character put down the sword, learned the arts of healing, and married a prince of Ithilien."
+        "This character's longing for war faded, and she married a prince of Ithilien."
       ],
       "references": [
         {
           "source": "Tolkien Gateway",
           "url": "https://tolkiengateway.net/wiki/%C3%89owyn",
-          "supports": "Fear of a cage; rode as Dernhelm with Merry; slew the Witch-king; healed and married Faramir."
+          "supports": "Fear of a cage; rode as Dernhelm with Merry; slew the Witch-king; met Faramir in the Houses of Healing and married him."
         },
         {
           "source": "Tolkien Gateway",
           "url": "https://tolkiengateway.net/wiki/Th%C3%A9oden",
           "supports": "On Gríma's orders Éomer was arrested and imprisoned for his disobedience."
+        },
+        {
+          "source": "Tolkien Gateway",
+          "url": "https://tolkiengateway.net/wiki/The_Steward_and_the_King",
+          "supports": "Éowyn's longing for war faded and she agreed to wed Faramir."
         }
       ]
     },
@@ -443,7 +488,7 @@
         "This character and his kin learned to speak from the Elves, in a time when the world was young.",
         "A shepherd of trees who never says anything in haste, this character had long lost his wife.",
         "This character took two hobbits as guests and gave them a draught that made them grow taller.",
-        "This character called a great assembly of his people that lasted three days.",
+        "This character called a great assembly of his people that lasted for days.",
         "This character led his people to break a dam and flood the stronghold of a wizard."
       ],
       "references": [
@@ -456,6 +501,16 @@
           "source": "Tolkien Gateway",
           "url": "https://tolkiengateway.net/wiki/Ent-draught",
           "supports": "The Ent-draughts taken by Merry and Pippin added three inches or more to their heights."
+        },
+        {
+          "source": "Tolkien Gateway",
+          "url": "https://tolkiengateway.net/wiki/Entmoot",
+          "supports": "The Entmoot lasted for days before the Ents resolved to attack Isengard."
+        },
+        {
+          "source": "Tolkien Gateway",
+          "url": "https://tolkiengateway.net/wiki/Battle_of_Isengard",
+          "supports": "The attackers broke the dam, which flooded Isengard."
         }
       ]
     },
@@ -473,7 +528,7 @@
       ],
       "clues": [
         "This cheerful character wears a blue coat and yellow boots, and answers most questions in song.",
-        "This character's wife is the daughter of a river.",
+        "This character's wife is known as the River-daughter.",
         "This character freed travelers from a malevolent willow and from a wight in a burial mound.",
         "This character claims to have known the first raindrop and the first acorn.",
         "This character put on the Ring without turning invisible, and it seemed to have no hold on him."
@@ -482,7 +537,12 @@
         {
           "source": "Tolkien Gateway",
           "url": "https://tolkiengateway.net/wiki/Tom_Bombadil",
-          "supports": "Blue coat and yellow boots; Goldberry as River-daughter; rescue from Old Man Willow and the barrow-wight; the oldest, remembering the first raindrop and acorn; unaffected by the Ring."
+          "supports": "Blue coat and yellow boots; Goldberry, called the River-daughter; rescue from Old Man Willow and the barrow-wight; the oldest, remembering the first raindrop and acorn; unaffected by the Ring."
+        },
+        {
+          "source": "Tolkien Gateway",
+          "url": "https://tolkiengateway.net/wiki/Goldberry",
+          "supports": "Goldberry is called the River-daughter; her parentage is uncertain on the page."
         }
       ]
     },
@@ -500,7 +560,7 @@
       ],
       "clues": [
         "This character was a royal advisor whose silken words were more poison than counsel.",
-        "This character lusted after his king's niece and wanted to remove those who stood between them.",
+        "This character lusted after his king's niece, and hoped to win her as the price of his treachery.",
         "This character secretly served a wizard while holding a place of trust at a royal court.",
         "From a high window, this character hurled a heavy dark globe at those standing below, nearly striking one of them.",
         "In the end this character killed his former master on a doorstep in the Shire and was shot dead by hobbit archers."
@@ -551,7 +611,7 @@
       ],
       "clues": [
         "Heir to a kingdom lost to a dragon, this character worked a humble trade in exile.",
-        "This character led a company of thirteen Dwarves, a wizard and a burglar on a long journey east.",
+        "One of thirteen Dwarves, this character led them, a wizard and a burglar on a long journey east.",
         "A wizard gave this character a map and a key at the start of the quest.",
         "Dragon-sickness took hold of this character inside the mountain, and he would not share the treasure.",
         "Mortally wounded at the Battle of Five Armies, this character apologized to the burglar for his harsh words before he died."
@@ -599,8 +659,8 @@
         "Skin-changer"
       ],
       "clues": [
-        "This character keeps bees and fine cattle in a wooden hall, and speaks to animals.",
-        "This character is a man by day, but a great black bear by night.",
+        "This character keeps bees and tame horses in a wooden hall, and speaks to animals.",
+        "This character is a man who can take the shape of a great black bear.",
         "After suspicious questioning, this character sheltered a company of Dwarves for several days and lent them ponies.",
         "This character arrived at a great battle just in time, in the shape of an enormous bear.",
         "After the battle this character became a great chief and founded a line whose members were said to take bear-shape in times of need."
@@ -609,7 +669,12 @@
         {
           "source": "Tolkien Gateway",
           "url": "https://tolkiengateway.net/wiki/Beorn",
-          "supports": "Keeper of bees and cattle; changes between man and bear; hosted the Dwarves and lent ponies; fought at the Battle of Five Armies; became a great chief with bear-shifting descendants."
+          "supports": "Keeper of bees and tame horses; changes between man and bear; hosted the Dwarves and lent ponies; fought at the Battle of Five Armies; became a great chief with bear-shifting descendants."
+        },
+        {
+          "source": "Tolkien Gateway",
+          "url": "https://tolkiengateway.net/wiki/Queer_Lodgings",
+          "supports": "Beorn keeps bees and tame horses in his wooden hall."
         }
       ]
     },
@@ -710,7 +775,7 @@
         "Sent away as a child by his mother, this character was fostered in an Elven kingdom.",
         "A curse on this character's family was spoken by the Dark Lord himself, because of his father's defiance.",
         "This character wielded a black sword that spoke at the last.",
-        "This character slew a dragon by crawling beneath it, but its dying words revealed a dreadful truth about his wife.",
+        "This character slew a dragon by striking it from below, but its dying words revealed a dreadful truth about his wife.",
         "This character ended his own life by falling upon his sword after losing his family."
       ],
       "references": [
@@ -718,6 +783,26 @@
           "source": "Tolkien Gateway",
           "url": "https://tolkiengateway.net/wiki/T%C3%BArin_Turambar",
           "supports": "Fostered in Doriath; Morgoth's curse on Húrin's kin; Gurthang; slaying of Glaurung and revelation about Níniel; death on his sword at Cabed-en-Aras."
+        },
+        {
+          "source": "Tolkien Gateway",
+          "url": "https://tolkiengateway.net/wiki/H%C3%BArin",
+          "supports": "Húrin refused Morgoth, and the Dark Lord cursed his kin."
+        },
+        {
+          "source": "Tolkien Gateway",
+          "url": "https://tolkiengateway.net/wiki/Gurthang",
+          "supports": "The black sword answers Túrin in a cold voice before his death."
+        },
+        {
+          "source": "Tolkien Gateway",
+          "url": "https://tolkiengateway.net/wiki/Glaurung",
+          "supports": "Glaurung's last words reveal Níniel's identity; Túrin then casts himself upon his sword."
+        },
+        {
+          "source": "Tolkien Gateway",
+          "url": "https://tolkiengateway.net/wiki/Of_T%C3%BArin_Turambar",
+          "supports": "Túrin found Glaurung over the gorge of Cabed-en-Aras and approached from below."
         }
       ]
     },
@@ -773,6 +858,11 @@
           "source": "Tolkien Gateway",
           "url": "https://tolkiengateway.net/wiki/Beren",
           "supports": "Barahir's band slain; Finrod's ring; Thingol's bride-price; the Silmaril and Carcharoth taking his hand; return from Mandos."
+        },
+        {
+          "source": "Tolkien Gateway",
+          "url": "https://tolkiengateway.net/wiki/Finrod",
+          "supports": "Finrod gave Barahir his ring after Barahir saved his life; Beren's quest repaid that debt."
         }
       ]
     },
@@ -792,7 +882,7 @@
       "clues": [
         "A king's daughter, this character was also the child of a being of divine race.",
         "Her beauty was said to be the fairest that ever was among the children of the world.",
-        "With her song, this character cast a Dark Lord into a deep sleep.",
+        "With her magic and her dance, this character put a Dark Lord into a deep sleep.",
         "This character was imprisoned by her own father in a house built among the branches of a great beech, and escaped by her magic.",
         "This character chose to die like Men in order to share the fate of her husband."
       ],
@@ -800,7 +890,7 @@
         {
           "source": "Tolkien Gateway",
           "url": "https://tolkiengateway.net/wiki/L%C3%BAthien",
-          "supports": "Daughter of Thingol and Melian; her beauty; put Morgoth to sleep with her song; the cloak of hair and escape from Hírilorn; chose mortality with Beren."
+          "supports": "Daughter of Thingol and Melian; her beauty; put Morgoth to sleep with her magic and dance; escape from Hírilorn; chose mortality with Beren."
         },
         {
           "source": "Tolkien Gateway",
@@ -851,7 +941,7 @@
       ],
       "clues": [
         "This character stood spellbound in a woodland for years, and awoke as ruler of an Elven people.",
-        "This character's realm was protected by a girdle that nobody could cross without his leave.",
+        "This character's realm was ringed by a girdle of enchantment, woven by his wife, that kept out unwelcome visitors.",
         "This character set an impossible bride-price: a jewel from the crown of the Dark Lord.",
         "Greed for a jewel set in a necklace led a party of Dwarves to murder this character.",
         "After this character's death his wife left, the girdle fell, and his kingdom was ruined."
@@ -861,6 +951,11 @@
           "source": "Tolkien Gateway",
           "url": "https://tolkiengateway.net/wiki/Thingol",
           "supports": "Enchanted by Melian in Nan Elmoth; the Girdle of Melian; demanded a Silmaril of Beren; slain by Dwarves over the Nauglamír; Melian's departure and the ruin of Doriath."
+        },
+        {
+          "source": "Tolkien Gateway",
+          "url": "https://tolkiengateway.net/wiki/Girdle_of_Melian",
+          "supports": "Melian set the Girdle around Doriath; on Thingol's death she departed and the Girdle vanished."
         }
       ]
     },
@@ -929,7 +1024,7 @@
       "clues": [
         "The origins of this creature are a mystery, though some of the Elves suspected a spirit corrupted by the Dark Lord at the beginning of time.",
         "This creature devoured light and spun darkness in its place.",
-        "This creature drained the Two Trees of their light and poisoned them.",
+        "This creature drained the Two Trees of their light until they withered.",
         "This creature demanded the jewels the Dark Lord had stolen, and he refused her.",
         "This creature's end is uncertain, but it is said she devoured herself in her hunger."
       ],
