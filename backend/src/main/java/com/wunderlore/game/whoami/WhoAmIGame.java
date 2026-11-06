@@ -2,7 +2,6 @@ package com.wunderlore.game.whoami;
 
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -32,8 +31,8 @@ public final class WhoAmIGame {
     public record Option(String id, String text) {
     }
 
-    // The four options shown for one clue. characterIdByOption stays inside the backend: it is
-    // how a wrong answer is remembered, so that it is not offered again.
+    // The four options of one round, the same on every clue. characterIdByOption stays inside the
+    // backend: it maps an option id to the character it stands for.
     public record Options(
             List<Option> options,
             String correctOptionId,
@@ -45,8 +44,9 @@ public final class WhoAmIGame {
         }
     }
 
-    // Chooses the options for one clue. Provided by the service, which owns the randomness; the
-    // excluded ids are characters the player already ruled out in this round.
+    // Chooses the options of one round, once, when the game is created. Provided by the service,
+    // which owns the randomness. The game always passes an empty set of excluded ids: the options
+    // are never redrawn during a round.
     @FunctionalInterface
     public interface OptionDrawer {
 
@@ -113,24 +113,24 @@ public final class WhoAmIGame {
     private static final class Round {
 
         final WhoAmICharacter character;
-        final Set<String> ruledOut = new HashSet<>();
 
         int clueNumber = 1;
-        Options options;
+        // Drawn once, when the game is created, and never replaced.
+        final Options options;
         int wrongAttempts;
         boolean finished;
         boolean identified;
         int points;
         int cluesUsed;
 
-        Round(WhoAmICharacter character) {
+        Round(WhoAmICharacter character, Options options) {
             this.character = character;
+            this.options = options;
         }
     }
 
     private final WhoAmIDifficulty difficulty;
     private final List<Round> rounds = new ArrayList<>();
-    private final OptionDrawer drawer;
     private final Instant createdAt;
 
     private int current;
@@ -146,14 +146,10 @@ public final class WhoAmIGame {
         }
 
         this.difficulty = difficulty;
-        this.drawer = drawer;
         this.createdAt = createdAt;
 
         for (WhoAmICharacter character : characters) {
-            Round round = new Round(character);
-
-            round.options = drawer.draw(character, Set.of());
-            rounds.add(round);
+            rounds.add(new Round(character, drawer.draw(character, Set.of())));
         }
     }
 
@@ -211,13 +207,14 @@ public final class WhoAmIGame {
             finish(round, true, POINTS_BY_CLUE[answeredClue - 1], answeredClue);
         } else {
             round.wrongAttempts++;
-            round.ruledOut.add(chosenCharacterId);
 
             if (answeredClue == TOTAL_CLUES) {
                 finish(round, false, 0, TOTAL_CLUES);
             } else {
+                // The same four options stay for the whole round. Drawing new wrong ones here
+                // would let a player find the right one as the only option present in every
+                // set, without reading a single clue.
                 round.clueNumber++;
-                round.options = drawer.draw(round.character, Set.copyOf(round.ruledOut));
             }
         }
 

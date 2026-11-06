@@ -97,7 +97,34 @@ final class WhoAmITestData {
         }
     }
 
-    static WhoAmIGame game(WhoAmIDifficulty difficulty, FixedDrawer drawer, Instant createdAt) {
+    // Like FixedDrawer, but every call offers three wrong options never offered before, as the
+    // real drawer does when it draws again. A game that redraws during a round shows it here.
+    static final class VaryingDrawer implements WhoAmIGame.OptionDrawer {
+
+        int calls;
+
+        @Override
+        public Options draw(WhoAmICharacter correct, Set<String> excludedCharacterIds) {
+            int call = ++calls;
+            Map<String, String> ids = new HashMap<>();
+
+            ids.put("a", correct.id());
+            ids.put("b", "filler-" + call + "-b");
+            ids.put("c", "filler-" + call + "-c");
+            ids.put("d", "filler-" + call + "-d");
+
+            return new Options(
+                    List.of(
+                            new Option("a", correct.name()),
+                            new Option("b", "Filler " + call + " B"),
+                            new Option("c", "Filler " + call + " C"),
+                            new Option("d", "Filler " + call + " D")),
+                    "a",
+                    ids);
+        }
+    }
+
+    static WhoAmIGame game(WhoAmIDifficulty difficulty, WhoAmIGame.OptionDrawer drawer, Instant createdAt) {
         List<WhoAmICharacter> characters = new ArrayList<>();
 
         for (int i = 0; i < WhoAmIGame.TOTAL_ROUNDS; i++) {

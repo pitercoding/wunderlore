@@ -102,17 +102,90 @@ class WhoAmIGameTest {
     }
 
     @Test
-    void shouldRuleOutWrongAnswersWhenDrawingTheNextOptions() {
+    void shouldDrawOptionsOnlyOncePerRoundAndNeverAgainAfterAWrongAnswer() {
         FixedDrawer drawer = new FixedDrawer();
         WhoAmIGame game = WhoAmITestData.game(WhoAmIDifficulty.EASY, drawer, START);
 
         game.answer(1, 1, "b");
         game.answer(1, 2, "c");
 
-        // Ten initial draws, then one per wrong answer, excluding what was already guessed.
-        assertThat(drawer.excluded).hasSize(12);
-        assertThat(drawer.excluded.get(10)).containsExactly("filler-b");
-        assertThat(drawer.excluded.get(11)).containsExactlyInAnyOrder("filler-b", "filler-c");
+        // Ten initial draws, one per round, with nothing excluded; none after a wrong answer.
+        assertThat(drawer.excluded).hasSize(10);
+        assertThat(drawer.excluded).allSatisfy(excluded -> assertThat(excluded).isEmpty());
+    }
+
+    private static List<String> texts(List<WhoAmIGame.Option> options) {
+        return options.stream().map(WhoAmIGame.Option::text).toList();
+    }
+
+    @Test
+    void shouldKeepTheSameFourOptionsOnEveryClueEvenWhenTheDrawerWouldVary() {
+        WhoAmITestData.VaryingDrawer drawer = new WhoAmITestData.VaryingDrawer();
+        WhoAmIGame game = WhoAmITestData.game(WhoAmIDifficulty.MEDIUM, drawer, START);
+        List<WhoAmIGame.Option> first = game.currentRound().options();
+
+        assertThat(first).hasSize(4);
+
+        for (int clue = 1; clue < WhoAmIGame.TOTAL_CLUES; clue++) {
+            AnswerOutcome outcome = game.answer(1, clue, "b");
+
+            // Same ids, same names, same order, in the answer and in a later read of the round.
+            assertThat(outcome.next().options()).isEqualTo(first);
+            assertThat(game.currentRound().options()).isEqualTo(first);
+        }
+
+        // One draw per round at creation, none while a round goes on.
+        assertThat(drawer.calls).isEqualTo(WhoAmIGame.TOTAL_ROUNDS);
+    }
+
+    @Test
+    void shouldNotLetAnyOptionDisappearAfterAWrongAnswer() {
+        WhoAmIGame game = WhoAmITestData.game(
+                WhoAmIDifficulty.MEDIUM, new WhoAmITestData.VaryingDrawer(), START);
+        List<String> before = texts(game.currentRound().options());
+
+        List<String> after = texts(game.answer(1, 1, "b").next().options());
+
+        assertThat(after).containsExactlyInAnyOrderElementsOf(before);
+        // The option that was just ruled out is still shown, and so is the correct one.
+        assertThat(after).contains("Filler 1 B", "Alderon");
+    }
+
+    @Test
+    void shouldStillAcceptTheCorrectOptionOnALaterClueAfterAWrongAnswer() {
+        WhoAmIGame game = WhoAmITestData.game(
+                WhoAmIDifficulty.MEDIUM, new WhoAmITestData.VaryingDrawer(), START);
+
+        game.answer(1, 1, "b");
+        game.answer(1, 2, "c");
+        AnswerOutcome outcome = game.answer(1, 3, "a");
+
+        assertThat(outcome.correct()).isTrue();
+        assertThat(outcome.pointsAwarded()).isEqualTo(60);
+        assertThat(outcome.score()).isEqualTo(60);
+    }
+
+    @Test
+    void shouldNotExposeTheCorrectOptionInWhatAWrongAnswerSendsBack() {
+        WhoAmIGame game = newGame();
+
+        WhoAmIGame.NextClue next = game.answer(1, 1, "b").next();
+
+        assertThat(next.toString()).doesNotContain("Hint 3", "Hint 5", "correct", "characterId");
+        assertThat(game.currentRound().toString()).doesNotContain("correct", "characterId");
+    }
+
+    @Test
+    void shouldResumeAtTheSameClueAndOptionsAfterAWrongAnswer() {
+        WhoAmIGame game = WhoAmITestData.game(
+                WhoAmIDifficulty.MEDIUM, new WhoAmITestData.VaryingDrawer(), START);
+        WhoAmIGame.NextClue next = game.answer(1, 1, "b").next();
+        WhoAmIGame.RoundView resumed = game.currentRound();
+
+        // What a client that lost its state reads back is exactly what the answer announced.
+        assertThat(resumed.clueNumber()).isEqualTo(next.clueNumber());
+        assertThat(resumed.clues()).isEqualTo(next.clues());
+        assertThat(resumed.options()).isEqualTo(next.options());
     }
 
     @Test

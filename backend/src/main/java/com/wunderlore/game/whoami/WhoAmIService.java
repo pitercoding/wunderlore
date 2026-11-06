@@ -53,10 +53,10 @@ public class WhoAmIService {
 
     // The correct character and three wrong ones from the same difficulty, in random positions.
     // Wrong answers come from bank.wrongAnswerCandidates (never an alias of the right one, never
-    // one declared incompatible), skipping the ones the player already ruled out. One of them is
-    // preferably of the same kind as the right answer, so the options are plausible. The wrong
-    // ones are drawn again for every clue, which is what makes later clues worth using; the
-    // right one is of course always there.
+    // one declared incompatible), skipping any excluded id. One of them is preferably of the same
+    // kind as the right answer, so the options are plausible. The game draws once per round and
+    // keeps the result for every clue: drawing again after a wrong answer would leave the right
+    // one as the only option present in every set.
     Options drawOptions(WhoAmICharacter correct, Set<String> excludedCharacterIds) {
         List<WhoAmICharacter> candidates = new ArrayList<>();
 

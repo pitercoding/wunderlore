@@ -148,6 +148,46 @@ class WhoAmIServiceTest {
     }
 
     @Test
+    void shouldNotLeakTheCorrectOptionByTheIntersectionOfTheOptionsAcrossClues() {
+        for (WhoAmIDifficulty difficulty : WhoAmIDifficulty.values()) {
+            for (int run = 0; run < 25; run++) {
+                WhoAmIGame game = service.createGame(difficulty);
+
+                for (int round = 1; round <= WhoAmIGame.TOTAL_ROUNDS; round++) {
+                    WhoAmICharacter character = characterOf(game);
+                    String correctId = correctOptionId(game.currentRound(), character);
+                    List<WhoAmIGame.Option> shown = game.currentRound().options();
+                    Set<String> common = new HashSet<>();
+
+                    shown.forEach(option -> common.add(option.text()));
+
+                    // Four wrong answers in a row, each one on a different option.
+                    List<String> wrongIds = shown.stream()
+                            .map(WhoAmIGame.Option::id)
+                            .filter(id -> !id.equals(correctId))
+                            .toList();
+
+                    for (int clue = 1; clue <= 3; clue++) {
+                        AnswerOutcome outcome = game.answer(round, clue, wrongIds.get(clue - 1));
+
+                        assertThat(outcome.next().options()).isEqualTo(shown);
+                        common.retainAll(outcome.next().options().stream()
+                                .map(WhoAmIGame.Option::text)
+                                .toList());
+                    }
+
+                    // Nothing was narrowed down: the intersection is still all four options.
+                    assertThat(common).hasSize(4);
+
+                    game.answer(round, 4, correctId);
+                }
+
+                assertThat(game.isFinished()).isTrue();
+            }
+        }
+    }
+
+    @Test
     void shouldPlaceTheCorrectOptionInDifferentPositions() {
         WhoAmICharacter character = BANK.find(WhoAmIDifficulty.MEDIUM).get(0);
         Set<String> positions = new HashSet<>();
