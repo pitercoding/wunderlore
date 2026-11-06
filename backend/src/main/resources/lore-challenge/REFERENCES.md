@@ -408,3 +408,47 @@ Each URL is the Tolkien Gateway page opened in the browser: `https://tolkiengate
 | events-hard-18 | SUPPORTED | https://tolkiengateway.net/wiki/Boromir | Body laid in a boat and sent over the Rauros-falls. | 'With his weapons' not in the snippet read. | Keep |
 | events-hard-19 | SUPPORTED | https://tolkiengateway.net/wiki/Sharkey | Sharkey probably from Orkish sharku, 'old man' (footnote to The Scouring of the Shire); name used by his ruffians (page Saruman). | - | Keep |
 | events-hard-20 | SUPPORTED | https://tolkiengateway.net/wiki/Legolas | Shot the descending Fell beast from the sky. | - | Keep |
+
+## Fifth pass (primary-source review of the 17 PARTIALLY SUPPORTED questions)
+Scope: exactly the 17 questions marked PARTIALLY SUPPORTED in the Fourth pass. The other 133 questions of the 11-20 range and everything recorded above are untouched.
+
+### Method and honest limits
+
+- **No primary work was consulted in this pass.** No authorised copy of *The Hobbit*, *The Lord of the Rings* (with its appendices), *The Silmarillion*, *Unfinished Tales* or *The History of Middle-earth* was available to the reviewer. Nothing was fetched from unofficial copies, mirrors or quote sites, and no passage was reconstructed from memory or inference.
+- **Consequence.** No pending detail could be confirmed or refuted against a book. `PRIMARY CONFIRMED` was therefore not assigned to any question. All 17 keep the Fourth-pass class, `PARTIALLY SUPPORTED`, with the same caveat.
+- **Wording unchanged.** With no primary evidence there is no safe basis for a correction, so no prompt, answer, distractor or explanation was edited. No question was replaced.
+- **Earlier confirmation is secondary.** The Tolkien Gateway snippets recorded in the Fourth pass are still secondary and are not presented here as primary confirmation.
+- **Pending checks.** To close a row, the named work must be read directly in an identifiable edition (title, book/chapter or appendix, and page only if the edition is known).
+
+### Result
+
+| Class | Count |
+|---|---|
+| PRIMARY CONFIRMED | 0 |
+| PARTIALLY SUPPORTED | 17 |
+| NOT VERIFIED | 0 |
+| **Total** | **17** |
+
+### Per-question record
+
+'Work to consult' names where the check has to be made. It is a to-do, not a record of a passage read.
+
+| ID | Previous class | Pending detail | Work to consult | Evidence consulted this pass | Result | Change | Remaining limit |
+|---|---|---|---|---|---|---|---|
+| characters-medium-11 | PARTIALLY SUPPORTED | Beregond killing the 'porter of the Closed Door' (Tolkien Gateway says 'two guards') | The Lord of the Rings (Gondor chapters of Books V and VI) | None | Still PARTIALLY SUPPORTED | None | Identity of the guard killed is unconfirmed; explanation may overstate it |
+| characters-medium-16 | PARTIALLY SUPPORTED | Shadowfax carried Gandalf 'without saddle or bridle' | The Lord of the Rings (Shadowfax passages) | None | Still PARTIALLY SUPPORTED | None | Detail unconfirmed in the book |
+| characters-medium-18 | PARTIALLY SUPPORTED | Lobelia's umbrella; her bequest for homeless hobbits | The Lord of the Rings (Shire chapters and Appendix on the Shire) | None | Still PARTIALLY SUPPORTED | None | Both details unconfirmed in the book |
+| characters-hard-16 | PARTIALLY SUPPORTED | Feast at the completion of Meduseld | The Lord of the Rings, Appendix A (Rohan); Unfinished Tales if relevant | None | Still PARTIALLY SUPPORTED | None | Feast unconfirmed |
+| places-easy-20 | PARTIALLY SUPPORTED | Harad described as 'hot' | The Lord of the Rings (Harad passages) | None | Still PARTIALLY SUPPORTED | None | Adjective 'hot' unconfirmed |
+| places-medium-11 | PARTIALLY SUPPORTED | Army gathering at Dunharrow before riding to Gondor | The Lord of the Rings, Book V | None | Still PARTIALLY SUPPORTED | None | Gathering unconfirmed in the book |
+| places-medium-18 | PARTIALLY SUPPORTED | Flood of the Bruinen sweeping away the Ringwraiths | The Lord of the Rings, Book I (Rivendell approach) | None | Still PARTIALLY SUPPORTED | None | Flood and its cause unconfirmed in the book |
+| peoples-easy-16 | PARTIALLY SUPPORTED | Explanation: choice of kindred (already reworded in the Fourth pass) | The Silmarillion; The Lord of the Rings, Appendix A | None | Still PARTIALLY SUPPORTED | None (Fourth-pass wording kept) | Wording rests on Tolkien Gateway only |
+| peoples-easy-17 | PARTIALLY SUPPORTED | Prompt says Entwives 'wandered away'; page says they settled | The Lord of the Rings, Book III (Treebeard) | None | Still PARTIALLY SUPPORTED | None | Wording ambiguity registered in the Fourth pass remains |
+| peoples-medium-17 | PARTIALLY SUPPORTED | Flets/talans; arguable 'Sindar' distractor | The Lord of the Rings, Book II (Lothlorien); Unfinished Tales | None | Still PARTIALLY SUPPORTED | None | Distractor arguable; not resolved |
+| history-easy-17 | PARTIALLY SUPPORTED | Lembas 'sustains through a long day's labour' | The Lord of the Rings, Book II | None | Still PARTIALLY SUPPORTED | None | Phrase unconfirmed in the book |
+| history-medium-14 | PARTIALLY SUPPORTED | Landing in Aman and drowning of the island | The Silmarillion (Akallabeth) | None | Still PARTIALLY SUPPORTED | None | Explanation details unconfirmed |
+| history-hard-16 | PARTIALLY SUPPORTED | Crowned in 1945 | The Lord of the Rings, Appendix A (Gondor) | None | Still PARTIALLY SUPPORTED | None | Year of coronation unconfirmed |
+| events-easy-20 | PARTIALLY SUPPORTED | Beacons calling Rohan for aid | The Lord of the Rings, Book V | None | Still PARTIALLY SUPPORTED | None | Call to Rohan unconfirmed |
+| events-medium-15 | PARTIALLY SUPPORTED | Pine-cones set alight against the Wargs | The Hobbit (the trees and the Wargs) | None | Still PARTIALLY SUPPORTED | None | Detail unconfirmed in the book |
+| events-medium-16 | PARTIALLY SUPPORTED | Exact mechanism of the breach of the Deeping Wall | The Lord of the Rings, Book III (Helm's Deep) | None | Still PARTIALLY SUPPORTED | None (Fourth-pass wording kept) | Book mechanism still a primary-source question |
+| events-hard-12 | PARTIALLY SUPPORTED | Gothmog taking command after the Witch-king falls | The Lord of the Rings, Book V | None | Still PARTIALLY SUPPORTED | None | Taking of command unconfirmed |
