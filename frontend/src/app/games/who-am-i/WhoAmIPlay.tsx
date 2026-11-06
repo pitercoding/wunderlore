@@ -63,8 +63,8 @@ export default function WhoAmIPlay({
         headingRef.current?.focus();
     }, []);
 
-    // After a wrong answer the clicked option is replaced by a new set, which drops focus:
-    // move it to the clue that was just revealed.
+    // After a wrong answer the buttons are disabled while the answer is checked, which drops
+    // focus: move it to the clue that was just revealed.
     useEffect(() => {
         if (!mounted.current) {
             mounted.current = true;

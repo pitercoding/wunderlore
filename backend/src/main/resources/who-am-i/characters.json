@@ -114,7 +114,7 @@
         "Heir to a line of kings that traced its descent from Elendil, though no king had ruled that line's realm for ages.",
         "A Ranger of the North, this character guided four small travelers through the wild lands of Eriador.",
         "This character looked into a seeing-stone and openly challenged the Dark Lord.",
-        "Crowned king of both Gondor and Arnor, this character wed Arwen, daughter of Elrond."
+        "Crowned king of both Gondor and Arnor, this character wed the daughter of Elrond."
       ],
       "references": [
         {
@@ -1060,6 +1060,621 @@
           "url": "https://tolkiengateway.net/wiki/Elendil",
           "supports": "Escaped the Downfall of Númenor; leader of the Faithful; High King of Arnor and Gondor (with Isildur and Anárion); death at the hand of Sauron and the shattering of Narsil; Isildur's use of the shard."
         }
+      ]
+    },
+    {
+      "id": "meriadoc-brandybuck",
+      "name": "Meriadoc Brandybuck",
+      "difficulty": "EASY",
+      "group": "hobbit",
+      "aliases": [
+        "Merry",
+        "Meriadoc",
+        "Kalimac",
+        "Holdwine",
+        "Merry Brandybuck"
+      ],
+      "clues": [
+        "As a teenager, this character watched a hobbit turn invisible to avoid a meeting, then looked into that hobbit's private diary.",
+        "At the gate of a Dwarf-city, a wizard commended this character as being on the right track with the riddle, though it was accidental.",
+        "Held captive once by a willow tree and once by a barrow-wight, this character was rescued both times by the same rescuer, who let the hobbits keep the daggers found in the barrow.",
+        "This character offered a king of Rohan his service, was told to stay behind, and rode to war secretly behind a young rider.",
+        "On the Pelennor Fields this character stabbed the sinew behind the knee of the leader of the Nazgûl with a blade from a burial mound, breaking the spell that protected him."
+      ],
+      "references": [
+        {
+          "source": "Tolkien Gateway",
+          "url": "https://tolkiengateway.net/wiki/Meriadoc_Brandybuck",
+          "supports": "Saw Bilbo become invisible to avoid a meeting and looked into his private diary; Gandalf commended him at the gate of Moria for being on the right track with the riddle; captured by Old Man Willow and by a Barrow-wight and rescued by Tom Bombadil, who told the hobbits to keep the Barrow daggers; offered his service to Théoden, was forbidden to ride to war and rode with Dernhelm; pierced the sinew behind the Witch-king's knee with the Barrow-blade."
+        },
+        {
+          "source": "Tolkien Gateway",
+          "url": "https://tolkiengateway.net/wiki/Witch-king",
+          "supports": "The Witch-king is the chief of the Nazgûl; Merry's wound to his leg and Éowyn's killing blow on the Pelennor Fields."
+        }
+      ],
+      "incompatibleWith": [
+        "witch-king-of-angmar"
+      ]
+    },
+    {
+      "id": "arwen",
+      "name": "Arwen",
+      "difficulty": "EASY",
+      "group": "half-elven",
+      "aliases": [
+        "Arwen Undómiel",
+        "Undómiel",
+        "Evenstar",
+        "Elerondiel"
+      ],
+      "clues": [
+        "This character inherited an elven jewel that had passed from her grandmother to her mother.",
+        "Her father ruled that the man she loved could not marry her until he was king of both Gondor and Arnor.",
+        "She wove a black standard worked with mithril, gems and gold, which her brothers carried to her betrothed.",
+        "Said to resemble a heroine of the First Age, she, like that heroine, gave up elven immortality to marry a mortal.",
+        "This daughter of an Elf-lord wed a king on Mid-year's Day, and passed her own place on the ship West to the Ring-bearer."
+      ],
+      "references": [
+        {
+          "source": "Tolkien Gateway",
+          "url": "https://tolkiengateway.net/wiki/Arwen",
+          "supports": "The Elfstone passed from Galadriel to Celebrían to Arwen; Elrond's condition that Aragorn be king of Gondor and Arnor before they wed; Arwen wove the standard carried by her brothers to Aragorn; resembles Lúthien and, like her, gave up Elven immortality to marry a mortal; wed on Mid-year's Day and gave Frodo passage in her place."
+        }
+      ]
+    },
+    {
+      "id": "shelob",
+      "name": "Shelob",
+      "difficulty": "EASY",
+      "group": "spider",
+      "aliases": [
+        "Her Ladyship"
+      ],
+      "clues": [
+        "This creature was the last child of a great spider-like being that mated with and devoured others of her kind in a mountain valley.",
+        "Her lair in a mountain range was established long before the Dark Lord raised his tower nearby, and she served no master but herself.",
+        "A creature searching for his lost treasure once bowed before her and promised to bring her food.",
+        "The Dark Lord let her stay because she was an excellent guard of a pass into his land.",
+        "This creature stung a hobbit into a death-like coma, then impaled herself on his friend's sword and was blinded by the light of a phial."
+      ],
+      "references": [
+        {
+          "source": "Tolkien Gateway",
+          "url": "https://tolkiengateway.net/wiki/Shelob",
+          "supports": "Last child of Ungoliant, who mated with and devoured other spider-like creatures in Nan Dungortheb; lair in the Ephel Dúath long before Barad-dûr; served no one but herself; Gollum bowed to her and promised food; Sauron let her stay as a guard of Cirith Ungol; stung Frodo into a death-like coma, impaled herself on Sting and was blinded by the Phial."
+        }
+      ]
+    },
+    {
+      "id": "bard-the-bowman",
+      "name": "Bard the Bowman",
+      "difficulty": "EASY",
+      "group": "man",
+      "aliases": [
+        "Bard",
+        "Bard I",
+        "Dragon-shooter"
+      ],
+      "clues": [
+        "This heir of the last lord of a ruined city, whose family had fled downriver, lived in a town built on a lake.",
+        "He kept an inherited arrow that had never failed him and that he always recovered, saving it for his last shot.",
+        "A thrush that had overheard a burglar describe a dragon told him where it had no armor.",
+        "After the town burned, he led its people to demand part of the treasure from the Dwarves, and later took a hobbit's share of gold and silver in return for a gem.",
+        "Slayer of the dragon that burned his town, he became the first king of rebuilt Dale."
+      ],
+      "references": [
+        {
+          "source": "Tolkien Gateway",
+          "url": "https://tolkiengateway.net/wiki/Bard",
+          "supports": "Heir of Girion, last Lord of Dale, whose family fled down the River Running; lived in Lake-town; the black arrow he always recovered; the thrush told him of the bare spot; demanded part of the treasure and took Bilbo's fourteenth share for the Arkenstone; slew Smaug and became the first King of restored Dale. (Bard the Bowman redirects to Bard.)"
+        }
+      ]
+    },
+    {
+      "id": "witch-king-of-angmar",
+      "name": "Witch-king of Angmar",
+      "difficulty": "EASY",
+      "group": "nazgul",
+      "aliases": [
+        "Witch-king",
+        "Lord of the Nazgûl",
+        "Chief of the Nazgûl",
+        "Black Captain",
+        "Dwimmerlaik",
+        "Lord of Minas Morgul"
+      ],
+      "clues": [
+        "Around the year 1300 of the Third Age, this being founded a northern realm and exploited the disunity of the three kingdoms that had split from a greater one.",
+        "In 1409 his forces besieged and destroyed a famed tower of the Dúnedain; a ruler of Arthedain was slain in the same attack.",
+        "An elf-lord foretold that this being would never fall by the hand of man.",
+        "In the year 2002 he captured Minas Ithil, a stronghold of Gondor, and in 3019 he led an army from it against Minas Tirith.",
+        "Chief of the Nine, he stabbed a hobbit at Weathertop with a blade whose tip broke off in the wound, and he perished on the Pelennor Fields at the hands of a woman and a hobbit."
+      ],
+      "references": [
+        {
+          "source": "Tolkien Gateway",
+          "url": "https://tolkiengateway.net/wiki/Witch-king",
+          "supports": "Founded Angmar c. T.A. 1300 and exploited the disunity of Arnor's three successor kingdoms; the siege and destruction of Amon Sûl in 1409 and the death of King Arveleg I; Glorfindel's prophecy that he would not fall by the hand of man; took Minas Ithil and led his army from there in 3019; stabbed Frodo on Weathertop with a Morgul-knife whose tip broke off; slain by Éowyn and Merry. (Requested URL /wiki/Witch-king_of_Angmar redirects here.)"
+        }
+      ],
+      "incompatibleWith": [
+        "meriadoc-brandybuck"
+      ]
+    },
+    {
+      "id": "balin",
+      "name": "Balin",
+      "difficulty": "EASY",
+      "group": "dwarf",
+      "aliases": [
+        "Balin son of Fundin"
+      ],
+      "clues": [
+        "Born in 2763, this Dwarf was only seven years old when a dragon drove his people from their mountain home.",
+        "In 2841 he set out with his younger brother and an exiled king toward the Lonely Mountain, but the journey ended when the king was captured.",
+        "As his company's look-out, he failed to notice a burglar creeping past him, and later grew fondest of that burglar.",
+        "Speaking for his company before a woodland king, his surly answers led to all the Dwarves being imprisoned.",
+        "In 2989 he led a colony into an ancient Dwarf-mansion, proclaimed himself its ruler, and was slain by an orc archer at a mere; a later company found his tomb."
+      ],
+      "references": [
+        {
+          "source": "Tolkien Gateway",
+          "url": "https://tolkiengateway.net/wiki/Balin",
+          "supports": "Born T.A. 2763, seven years old when Smaug took Erebor; went with Thráin II and his brother Dwalin in 2841; the company's look-out and Bilbo's fondest companion; spokesman before the Elvenking whose surly answers led to their confinement; led the Moria expedition of 2989, proclaimed himself Lord of Moria and was killed by an orc archer at Mirrormere; his tomb was found by the Fellowship."
+        }
+      ]
+    },
+    {
+      "id": "radagast",
+      "name": "Radagast",
+      "difficulty": "EASY",
+      "group": "wizard",
+      "aliases": [
+        "Radagast the Brown",
+        "Aiwendil",
+        "Hravandil"
+      ],
+      "clues": [
+        "This being was sent as a guardian to the first Elves at their awakening, though it is unclear what shape he took there or how long he stayed.",
+        "In 2851 he aided another wizard's search for the Ring with birds and beasts as spies, acting in good faith and unaware of that wizard's real ambitions.",
+        "He lived at the western edge of a great forest, and a fellow wizard scorned him as 'the Simple' and 'the Fool'.",
+        "In 3018 he was sent to find a fellow wizard, warned him that the Nazgûl were abroad, and passed on an invitation that unwittingly led to that wizard's capture.",
+        "Dressed in earthen brown, he sent a great eagle to a captive wizard on the pinnacle of Orthanc."
+      ],
+      "references": [
+        {
+          "source": "Tolkien Gateway",
+          "url": "https://tolkiengateway.net/wiki/Radagast",
+          "supports": "Guardian sent to Cuiviénen (shape and duration unclear); sent as a Wizard in the form of an old man; dwelt at Rhosgobel; scorned by Saruman as the Simple and the Fool; in T.A. 2851 aided Saruman's Ring search with birds and beasts in good faith; in 3018 sent to find Gandalf, warned him of the Nazgûl and passed on Saruman's invitation, which unwittingly led to Gandalf's capture; wore earthen brown."
+        },
+        {
+          "source": "Tolkien Gateway",
+          "url": "https://tolkiengateway.net/wiki/Gwaihir",
+          "supports": "Radagast, as Gandalf instructed, sent Gwaihir to Isengard to rescue Gandalf from the pinnacle of Orthanc."
+        }
+      ]
+    },
+    {
+      "id": "durins-bane",
+      "name": "Durin's Bane",
+      "difficulty": "EASY",
+      "group": "balrog",
+      "aliases": [
+        "Balrog of Moria",
+        "Balrog",
+        "Flame of Udûn",
+        "the Terror"
+      ],
+      "clues": [
+        "This being survived the war that ended the First Age by hiding at the roots of a mountain range, where it lay dormant for thousands of years.",
+        "In 1980 of the Third Age, miners digging for mithril woke it, and it slew their king.",
+        "For about five hundred years it held the halls of a Dwarf-kingdom, and orcs and trolls feared it.",
+        "It confronted a company on a narrow bridge, wielding a sword of fire and a many-thonged whip.",
+        "It fell when a wizard broke the bridge, but its whip dragged him down too; they fought for days on a mountain peak until it was cast down."
+      ],
+      "references": [
+        {
+          "source": "Tolkien Gateway",
+          "url": "https://tolkiengateway.net/wiki/Durin%27s_Bane",
+          "supports": "Survived the War of Wrath and hid beneath the Misty Mountains for over five millennia; woken by mithril-miners in T.A. 1980, slew Durin VI; Moria was left to the Balrog for about 500 years and Orcs and Trolls feared it; the sword of fire and many-thonged whip on the Bridge of Khazad-dûm; fell when Gandalf broke the bridge, was pursued to the peak of Zirakzigil and cast down."
+        }
+      ],
+      "incompatibleWith": [
+        "gandalf"
+      ]
+    },
+    {
+      "id": "eomer",
+      "name": "Éomer",
+      "difficulty": "MEDIUM",
+      "group": "man",
+      "aliases": [
+        "Éomer Éadig"
+      ],
+      "clues": [
+        "At eleven this character lost his father to orc raiders and soon his mother, and was adopted by his uncle, a king.",
+        "As Third Marshal he commanded the East-mark from his home in a town of the Folde, and fell into the king's disfavor because of the king's advisor.",
+        "He disobeyed a ban on pursuing the orcs who had captured two hobbits, and killed their leader near the edge of a great forest.",
+        "Meeting three strangers on the plains, he let them go against his realm's law and lent them horses, asking that they be returned.",
+        "Hailed as King of the Mark by his dying uncle, he charged in cold fury at the sight of his fallen sister."
+      ],
+      "references": [
+        {
+          "source": "Tolkien Gateway",
+          "url": "https://tolkiengateway.net/wiki/%C3%89omer",
+          "supports": "Father killed by Orcs when he was eleven and mother died soon after; adopted by Théoden; Third Marshal commanding the East-mark from Aldburg in the Folde; Gríma's influence put him in disfavour; disobeyed the ban to pursue the Orcs that held two hobbits and killed their leader Uglúk near Fangorn; lent horses to Aragorn's party against Rohan's law; hailed King of the Mark by the dying Théoden and charged on seeing Éowyn fallen."
+        }
+      ]
+    },
+    {
+      "id": "glorfindel",
+      "name": "Glorfindel",
+      "difficulty": "MEDIUM",
+      "group": "elf",
+      "aliases": [
+        "Laurefindele",
+        "Glorfindel of Rivendell"
+      ],
+      "clues": [
+        "This elf-lord died in a fall with a demon of fire, but the Valar allowed him to be re-embodied in recognition of his deeds and sent him back to Middle-earth.",
+        "In 1975 he came with a force from the hidden valley to a northern battle, and foretold that the enemy chief would not fall by the hand of man.",
+        "He was chosen to seek the Ring-bearer partly because the Ringwraiths did not frighten him; five of them fled from him.",
+        "He set a wounded hobbit on his white horse, which carried the hobbit across a ford.",
+        "An elf of Rivendell, tall and golden-haired, he suggested at a great council that the Ring would be safe in the depths of the Sea, but a wizard objected."
+      ],
+      "references": [
+        {
+          "source": "Tolkien Gateway",
+          "url": "https://tolkiengateway.net/wiki/Glorfindel",
+          "supports": "Fell with a Balrog in the abyss and was re-embodied by Manwë's permission because of his deeds, then sent to Middle-earth; led a force from Rivendell to the Battle of Fornost (T.A. 1975) and prophesied the Witch-king would not fall by the hand of man; chosen to seek the Ring-bearer partly because he did not fear the Ringwraiths (five fled from him); put Frodo on Asfaloth, which carried him over the Ford of Bruinen; at the Council of Elrond first suggested the Ring would be safe in the depths of the Sea, which Gandalf objected to; tall, golden-haired."
+        }
+      ]
+    },
+    {
+      "id": "thranduil",
+      "name": "Thranduil",
+      "difficulty": "MEDIUM",
+      "group": "elf",
+      "aliases": [
+        "Elvenking",
+        "Elvenking of Mirkwood"
+      ],
+      "clues": [
+        "In autumn this ruler wore a crown of berries and red leaves, and in spring one of woodland flowers.",
+        "In the Last Alliance his father fell charging ahead of the signal, and two-thirds of his people perished.",
+        "When a shadow fell on the southern part of his forest, he moved north and delved his halls underground, said to be partly in memory of a lost elven city.",
+        "He imprisoned a company of Dwarves after they disturbed his feast, but a burglar with a magic ring helped them escape.",
+        "Father of an Elf chosen for the Fellowship of the Ring, he besieged a mountain together with the Men of a lake-town."
+      ],
+      "references": [
+        {
+          "source": "Tolkien Gateway",
+          "url": "https://tolkiengateway.net/wiki/Thranduil",
+          "supports": "Wore a crown of berries and red leaves in autumn and woodland flowers in spring; Oropher fell at Dagorlad charging before Gil-galad's signal and two-thirds of Thranduil's people died; moved his halls north and underground, partly in memory (it was said) of Menegroth; imprisoned the Dwarves after repeated disturbance of his feast and Bilbo helped them escape; father of Legolas, chosen for the Fellowship; besieged the Mountain with Bard."
+        }
+      ]
+    },
+    {
+      "id": "haldir",
+      "name": "Haldir",
+      "difficulty": "MEDIUM",
+      "group": "elf",
+      "aliases": [
+        "Haldir of Lórien"
+      ],
+      "clues": [
+        "Unlike his two brothers, this elf had travelled beyond his homeland and spoke the Common Speech.",
+        "He guarded the northern borders of his forest realm as a marchwarden.",
+        "On 15-16 January of 3019, he and his brothers met the Fellowship of the Ring as it arrived in his land.",
+        "Because of the old ill-feeling between Elves and Dwarves, he made one of the travelers go blindfolded until his lady said otherwise.",
+        "He guided the travelers to Caras Galadhon, and later led them to the boats for their departure."
+      ],
+      "references": [
+        {
+          "source": "Tolkien Gateway",
+          "url": "https://tolkiengateway.net/wiki/Haldir",
+          "supports": "Unlike his brothers Rumil and Orophin he had travelled outside Lórien and knew Westron; a marchwarden guarding the forest's northern borders; he and his brothers met the Fellowship on 15-16 January T.A. 3019; made Gimli go blindfolded until Galadriel said otherwise; guided the Fellowship to Caras Galadhon and later led them to the Elven boats. (Haldir_of_Lorien redirects to Haldir.)"
+        }
+      ]
+    },
+    {
+      "id": "isildur",
+      "name": "Isildur",
+      "difficulty": "MEDIUM",
+      "group": "man",
+      "aliases": [],
+      "clues": [
+        "In disguise, he stole a fruit from a doomed tree in a royal city, and is said to have been grievously wounded by the guards.",
+        "When his island homeland sank, he escaped in one of three ships under his command, carrying a young tree.",
+        "He ruled a southern kingdom jointly with his brother, their thrones side by side, and lived in a city where he planted a white tree.",
+        "He used a shard of his father's broken sword to cut the Ring from the Dark Lord's hand, then ignored the advice of Elf-lords and kept it as payment for his lost kin.",
+        "Ambushed by orcs at the Gladden Fields, he put on the Ring to vanish, swam the river, and was shot in the reeds when it slipped from his finger."
+      ],
+      "references": [
+        {
+          "source": "Tolkien Gateway",
+          "url": "https://tolkiengateway.net/wiki/Isildur",
+          "supports": "Stole a fruit of Nimloth in disguise and was reportedly wounded by the King's guards; three of the nine ships of the Downfall were his and the young White Tree sailed in his ship; ruled Gondor jointly with Anárion, lived at Minas Ithil and planted the White Tree there; cut the Ring from Sauron with the hilt-shard of Narsil and ignored the advice of Elrond and Círdan; killed at the Gladden Fields after the Ring slipped from his finger."
+        }
+      ]
+    },
+    {
+      "id": "gwaihir",
+      "name": "Gwaihir",
+      "difficulty": "MEDIUM",
+      "group": "eagle",
+      "aliases": [
+        "Gwaihir the Windlord",
+        "Windlord",
+        "Gwaehir"
+      ],
+      "clues": [
+        "He is the brother of another great eagle, and the mightiest of the descendants of Thorondor, the eagle he served in the First Age.",
+        "At the time of the War of the Ring, he was the swiftest of the Great Eagles.",
+        "He rescued a wizard from the pinnacle of a tower on an autumn night, but could not carry him far and left him at a city of horse-lords.",
+        "Sent by a lady, he found the wizard on a high peak after a great fight and carried him to Lothlórien.",
+        "After the Ring's destruction, he and two other eagles flew into Mordor and carried two hobbits out."
+      ],
+      "references": [
+        {
+          "source": "Tolkien Gateway",
+          "url": "https://tolkiengateway.net/wiki/Gwaihir",
+          "supports": "Mightiest of the descendants of Thorondor and brother of Landroval; swiftest of the Great Eagles at the time of the War of the Ring; rescued Gandalf from the pinnacle of Orthanc and left him at Edoras; sent by Galadriel to find Gandalf on Celebdil and carried him to Lothlórien; with Landroval and Meneldor carried Frodo and Sam out of Mordor. The page marks the identification with the Eagle of The Hobbit as disputed; no clue uses it."
+        }
+      ]
+    },
+    {
+      "id": "dain-ironfoot",
+      "name": "Dáin Ironfoot",
+      "difficulty": "MEDIUM",
+      "group": "dwarf",
+      "aliases": [
+        "Dáin II",
+        "Dáin II Ironfoot",
+        "Dáin"
+      ],
+      "clues": [
+        "At thirty-two, this Dwarf beheaded an orc chieftain with a red axe before the East-gate of a great Dwarf-hall.",
+        "Looking alone past that gate, he judged that his people could not return to the hall at that time, and dissuaded a king from entering it.",
+        "For more than a century he ruled a land of hills in the north, making his people the strongest in Wilderland.",
+        "He marched to a great battle with over five hundred Dwarves, meaning to drive off Elves and Men until a wizard warned him of orcs.",
+        "After the previous king fell, he became King under the Mountain, and died aged over 250 defending the body of a king of Dale."
+      ],
+      "references": [
+        {
+          "source": "Tolkien Gateway",
+          "url": "https://tolkiengateway.net/wiki/D%C3%A1in_Ironfoot",
+          "supports": "At thirty-two killed Azog with his red axe before the East-gate of Moria; dissuaded Thráin II from entering Moria; Lord of the Iron Hills T.A. 2805-2941; came to the Battle of Five Armies with over five hundred Dwarves; became King under the Mountain after Thorin's fall and died aged 252 defending King Brand's body. (Dáin_II_Ironfoot redirects here.)"
+        }
+      ]
+    },
+    {
+      "id": "morgoth",
+      "name": "Morgoth",
+      "difficulty": "HARD",
+      "group": "dark-lord",
+      "aliases": [
+        "Melkor",
+        "Bauglir",
+        "Melko"
+      ],
+      "clues": [
+        "Mightiest of his kind, he wandered the Void seeking a flame that was not there.",
+        "His discords clashed with the Theme of the Creator, who answered with a second and a third Theme.",
+        "With the help of a spider he destroyed the Two Trees, killed Finwë at Formenos, and stole the Silmarils.",
+        "He was wounded seven times in single combat by a king of the Noldor, and one wound left him with a lasting limp.",
+        "Thrust into the Void after the War of Wrath, he is prophesied to return and be slain at the Last Battle by a hero of Men."
+      ],
+      "references": [
+        {
+          "source": "Tolkien Gateway",
+          "url": "https://tolkiengateway.net/wiki/Morgoth",
+          "supports": "Wandered the Void seeking the Flame Imperishable; his discords and Eru's second and third Themes; with Ungoliant destroyed the Two Trees, slew Finwë at Formenos and took the Silmarils; wounded seven times by Fingolfin, whose foot-wound left him a lasting limp; thrust into the Void after the War of Wrath; the Second Prophecy of Mandos."
+        }
+      ],
+      "incompatibleWith": [
+        "fingolfin"
+      ]
+    },
+    {
+      "id": "maedhros",
+      "name": "Maedhros",
+      "difficulty": "HARD",
+      "group": "elf",
+      "aliases": [
+        "Maitimo",
+        "Nelyafinwë",
+        "Russandol",
+        "Maedros"
+      ],
+      "clues": [
+        "Alone among his brothers, he refused to help burn the ships at Losgar, having hoped to send them back for a friend.",
+        "Captured through a feigned surrender of a jewel, he hung by one wrist from a steel shackle on a mountain for about thirty years.",
+        "Rescued by a friend with the help of the king of the Eagles, he lost his hand because the chain could not be broken.",
+        "He gave up the High Kingship to his uncle, and later formed a great union of Elves and Men that was broken at the Nirnaeth Arnoediad.",
+        "After the final war he stole one of the last two jewels with his brother, and burned by it, leapt into a fiery chasm."
+      ],
+      "references": [
+        {
+          "source": "Tolkien Gateway",
+          "url": "https://tolkiengateway.net/wiki/Maedhros",
+          "supports": "Alone of his brothers refused to help burn the ships at Losgar; captured by a feigned surrender, hung by a steel shackle on Thangorodrim for about thirty years; rescued by Fingon with Thorondor and lost his hand; gave up the High Kingship to Fingolfin; formed the Union of Maedhros, broken at the Nirnaeth Arnoediad; stole a Silmaril with Maglor and leapt into a chasm."
+        },
+        {
+          "source": "Tolkien Gateway",
+          "url": "https://tolkiengateway.net/wiki/Fingon",
+          "supports": "Maedhros had expected to send the ships back for Fingon; Fingon, carried by Thorondor, found Maedhros and cut off his hand because the chain could not be broken."
+        }
+      ]
+    },
+    {
+      "id": "hurin",
+      "name": "Húrin",
+      "difficulty": "HARD",
+      "group": "man",
+      "aliases": [
+        "Húrin Thalion",
+        "Thalion",
+        "Umarth"
+      ],
+      "clues": [
+        "He was shorter than the other men of his kin, taking after his mother's people, though in all else he resembled his strong, fiery-tempered grandfather.",
+        "His little daughter, whose name meant Laughter, died of a plague at the age of three.",
+        "At the Nirnaeth he held a rearguard with the men of his land, killing seventy foes and crying a battle-cry for each, until he was taken captive.",
+        "For refusing to reveal a hidden city, he was cursed and chained on a mountain, forced to watch his family's fate for twenty-eight years.",
+        "Freed at last, he slew a Dwarf who had betrayed his son, took a famed necklace, and threw it down before the king of Doriath."
+      ],
+      "references": [
+        {
+          "source": "Tolkien Gateway",
+          "url": "https://tolkiengateway.net/wiki/H%C3%BArin",
+          "supports": "Shorter than other men of his kin, taking after his mother's people but otherwise like his grandfather Hador; his daughter Urwen (Lalaith, 'Laughter') died of plague aged three; held the rearguard at the Nirnaeth Arnoediad and cried a battle-cry for each of seventy foes slain before Gothmog bound him; cursed by Morgoth and chained on Thangorodrim for 28 years; killed Mîm, who had betrayed Túrin, took the Nauglamír and threw it before Thingol."
+        }
+      ],
+      "incompatibleWith": [
+        "turin-turambar",
+        "turgon"
+      ]
+    },
+    {
+      "id": "melian",
+      "name": "Melian",
+      "difficulty": "HARD",
+      "group": "maia",
+      "aliases": [
+        "Melyanna"
+      ],
+      "clues": [
+        "In the Gardens of Lórien, this Maia taught nightingales to sing.",
+        "After a dream warned her, she left her home across the Sea and led the Maiar who guarded the newly awakened Elves, the only woman among them.",
+        "Her blood passed to Elves and Men, for she is the only known Ainu to have had a child with one of the Children of Ilúvatar.",
+        "She alone repelled a monstrous spider from her kingdom, and her barrier kept out anyone less powerful than herself.",
+        "After her king's death she departed to mourn in the Halls of Mandos, and without her protection the realm fell."
+      ],
+      "references": [
+        {
+          "source": "Tolkien Gateway",
+          "url": "https://tolkiengateway.net/wiki/Melian",
+          "supports": "Taught nightingales to sing in the Gardens of Lórien; left Valinor after a warning in a dream and led the Maiar guarding the Elves at Cuiviénen, the only female among them; the only known Ainu to have had a child with a Child of Ilúvatar; alone repelled Ungoliant; the Girdle of Melian kept out anyone less powerful than her; after Thingol's death she left for the Halls of Mandos and Doriath fell."
+        }
+      ],
+      "incompatibleWith": [
+        "thingol",
+        "luthien"
+      ]
+    },
+    {
+      "id": "beleg",
+      "name": "Beleg",
+      "difficulty": "HARD",
+      "group": "elf",
+      "aliases": [
+        "Beleg Cúthalion",
+        "Cúthalion",
+        "Strongbow"
+      ],
+      "clues": [
+        "This Sinda, chief of the marchwardens of an Elven kingdom, was considered the best archer and huntsman of his time.",
+        "With a fellow captain, he was among the few Elves of his realm to fight at the Nirnaeth Arnoediad.",
+        "He sought out a fugitive friend, won a pardon from the king for him, and chose a sword the queen warned him was malicious.",
+        "He followed an orc-band into Taur-nu-Fuin, met an Elf of Nargothrond who had escaped slavery in the Dark Lord's mines, and rescued his friend during a thunderstorm.",
+        "While he cut his friend's bonds, his blade slipped; the friend awoke, seized the sword he had brought, and killed him by mistake."
+      ],
+      "references": [
+        {
+          "source": "Tolkien Gateway",
+          "url": "https://tolkiengateway.net/wiki/Beleg",
+          "supports": "A Sinda, chief of the marchwardens and best archer and huntsman of his time; with Mablung one of the few Elves of Doriath at the Nirnaeth Arnoediad; won Thingol's pardon for Túrin and took Anglachel despite Melian's warning; followed Orcs into Taur-nu-Fuin, met Gwindor and rescued Túrin in a thunderstorm; slain by Túrin with Anglachel after the blade slipped while cutting his bonds."
+        }
+      ],
+      "incompatibleWith": [
+        "turin-turambar"
+      ]
+    },
+    {
+      "id": "glaurung",
+      "name": "Glaurung",
+      "difficulty": "HARD",
+      "group": "dragon",
+      "aliases": [
+        "Father of Dragons",
+        "Great Worm",
+        "Glorund"
+      ],
+      "clues": [
+        "Emerging while still young, this creature displeased his master, who allowed no further sallies for about two hundred years.",
+        "Fully grown, he led the greatest army yet of balrogs and orcs in the battle that broke a long siege.",
+        "At the Nirnaeth Arnoediad, he and his brood split two hosts apart; a Dwarf-lord whom he slew wounded his belly with a last stroke.",
+        "Though wingless, he breathed fire; with a spellbinding gaze he persuaded a hero to abandon a captive maiden, then lay on the hoard of a ruined Elven stronghold.",
+        "Ambushed in a gorge, he was dealt a mortal blow by a black sword; with his last breath he revealed his plot, and as he died his spell on a young woman was undone."
+      ],
+      "references": [
+        {
+          "source": "Tolkien Gateway",
+          "url": "https://tolkiengateway.net/wiki/Glaurung",
+          "supports": "Emerged still young in F.A. 260 and Morgoth allowed no sallies for about 200 years; fully grown at the Dagor Bragollach with the largest army of balrogs and orcs yet; at the Nirnaeth Arnoediad split the hosts of Maedhros and Fingon and was wounded in the belly by Azaghal; wingless fire-breather; spellbound Túrin into abandoning Finduilas and lay on the hoard of Nargothrond; ambushed at Cabed-en-Aras and killed by Gurthang; his last words revealed his plot and his spells were undone."
+        }
+      ],
+      "incompatibleWith": [
+        "turin-turambar"
+      ]
+    },
+    {
+      "id": "turgon",
+      "name": "Turgon",
+      "difficulty": "HARD",
+      "group": "elf",
+      "aliases": [
+        "Turukano",
+        "Turgon the Wise"
+      ],
+      "clues": [
+        "When his wife fell into the waters on a crossing of ice, this prince saved only their daughter.",
+        "Guided by a dream from a Vala, he secretly led skilled craftsmen to build a hidden city in a vale, finishing it in the year 116.",
+        "Before leaving his first home, he left arms and armor there for one who would come in the Elves' hour of need.",
+        "He sent seven ships west to ask the Valar for help, but all were wrecked and only one sailor survived.",
+        "Warned to leave, he refused, ordered the gates of his realm blocked, and died defending his tower when the Dark Lord's host came."
+      ],
+      "references": [
+        {
+          "source": "Tolkien Gateway",
+          "url": "https://tolkiengateway.net/wiki/Turgon",
+          "supports": "Saved only Idril when Elenwë fell into the waters on the Helcaraxe; guided by a dream from Ulmo, built Gondolin, finished F.A. 116; left a sword, mail and helm at Vinyamar for one who would come; with Círdan's help sent seven ships west, all wrecked, Voronwë the only survivor; refused Tuor's warning from Ulmo, blocked the Seven Gates and died defending the Tower of the King."
+        }
+      ],
+      "incompatibleWith": [
+        "tuor",
+        "hurin"
+      ]
+    },
+    {
+      "id": "tuor",
+      "name": "Tuor",
+      "difficulty": "HARD",
+      "group": "man",
+      "aliases": [
+        "Ulmondil",
+        "Eladar",
+        "Tuor son of Huor"
+      ],
+      "clues": [
+        "A Man descended from all three Houses of the Edain, he was named by his father before he was born.",
+        "Fostered by Grey-elves, he was later a thrall of an Easterling chief for three years, then spent four years alone as an outlaw.",
+        "Guided by a sign from a Vala, he was the first Man to reach the Great Sea, then followed seven swans to an abandoned city and took the arms left there.",
+        "He carried a warning from a Vala to a hidden king, who refused it, and later wed that king's daughter.",
+        "When the hidden city fell, he threw a traitor from the walls and escaped with his wife by a secret way; their son's name meant Sea-friend."
+      ],
+      "references": [
+        {
+          "source": "Tolkien Gateway",
+          "url": "https://tolkiengateway.net/wiki/Tuor",
+          "supports": "Descended from all Three Houses of the Edain, named by Huor before his birth; fostered by Annael's Elves; thrall of Lorgan for three years and then four years an outlaw; guided by Ulmo's sign, the first Man to reach the Great Sea, followed seven swans to the abandoned city of Vinyamar and took the arms left by Turgon; delivered Ulmo's warning to Turgon, who refused it, and married Idril; threw Maeglin from the walls and escaped with Idril; son Eärendil ('Sea-friend')."
+        }
+      ],
+      "incompatibleWith": [
+        "turgon",
+        "earendil"
       ]
     }
   ]

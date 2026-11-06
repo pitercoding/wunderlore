@@ -1,6 +1,6 @@
 # Who Am I? — sources and verification record
 
-Scope: the 36 characters (12 per difficulty) and their 180 clues in `characters.json`.
+Scope: the 59 characters (20 EASY, 19 MEDIUM, 20 HARD) and their 295 clues in `characters.json`. The original 36 characters (12 per difficulty, 180 clues) are covered first; the 23 characters added on 2026-11-06 are covered from "Expansion of 2026-11-06" onwards, with their own method and status levels.
 
 ## How to read this record
 
@@ -113,7 +113,7 @@ Status column: **Passage read** or **Partly confirmed (see audit)**, as defined 
 | 2 | Heir to a line of kings that traced its descent from Elendil, though no king had ruled that line's realm for ages. | Tolkien Gateway — Aragorn | https://tolkiengateway.net/wiki/Aragorn_II_Elessar | Passage read |
 | 3 | A Ranger of the North, this character guided four small travelers through the wild lands of Eriador. | Tolkien Gateway — Strider (chapter) | https://tolkiengateway.net/wiki/Strider_(chapter) | Passage read |
 | 4 | This character looked into a seeing-stone and openly challenged the Dark Lord. | Tolkien Gateway — Aragorn | https://tolkiengateway.net/wiki/Aragorn_II_Elessar | Passage read |
-| 5 | Crowned king of both Gondor and Arnor, this character wed Arwen, daughter of Elrond. | Tolkien Gateway — Aragorn | https://tolkiengateway.net/wiki/Aragorn_II_Elessar | Passage read |
+| 5 | Crowned king of both Gondor and Arnor, this character wed the daughter of Elrond. | Tolkien Gateway — Aragorn | https://tolkiengateway.net/wiki/Aragorn_II_Elessar | Passage read |
 
 ### Legolas (`legolas`, EASY)
 
@@ -434,4 +434,309 @@ Status column: **Passage read** or **Partly confirmed (see audit)**, as defined 
 | 3 | This character founded two kingdoms in exile and was High King over both, ruling from the north. | Tolkien Gateway — Elendil | https://tolkiengateway.net/wiki/Elendil | Passage read |
 | 4 | This character fell in battle against the Dark Lord at the end of the Second Age, and his sword was broken beneath him. | Tolkien Gateway — Elendil | https://tolkiengateway.net/wiki/Elendil | Passage read |
 | 5 | This character's broken sword gave a shard that his son used to cut the Ring from the enemy's hand. | Tolkien Gateway — Elendil | https://tolkiengateway.net/wiki/Elendil | Passage read |
+
+## Expansion of 2026-11-06 (23 new characters)
+
+Scope: 8 EASY, 7 MEDIUM and 8 HARD characters added to the 36 above (now 59: 20 EASY, 19 MEDIUM, 20 HARD; 295 clues).
+
+### How these 23 characters were researched and checked
+
+- **Source:** Tolkien Gateway only, as above. The primary works were not consulted, so **no clue is verified against the books**. Where a page cites a chapter, that citation is the wiki's.
+- **Access:** automated fetching of the site was refused (HTTP 403), so the pages were read in the user's own Chrome browser, with the user's explicit authorization. No proxy, mirror or other workaround was used.
+- **Who read what:**
+  - **Read in full by the lead session** (the session that wrote the clues): Meriadoc Brandybuck, Shelob, Bard, Radagast and Húrin (5 pages).
+  - **Read by subagents** working in separate browser tabs, who wrote fact notes that the lead then used to draft the clues: the other 18 character pages (Arwen, Witch-king, Balin, Durin's Bane, Éomer, Glorfindel, Thranduil, Haldir, Isildur, Gwaihir, Dáin Ironfoot, Morgoth, Maedhros, Beleg, Glaurung, Turgon, Tuor, and Melian), plus the Fingon page, which supports Maedhros (19 pages in all). The lead did not read these 19 pages personally.
+  - **Second review:** after drafting, three further subagents re-opened the pages and judged each of the 115 draft clues as SUPPORTED, PARTIAL or UNSUPPORTED, reading the surrounding passage and not just keywords. Result: **97 SUPPORTED, 18 PARTIAL, 0 UNSUPPORTED**.
+  - **Reconciliation of the counts.** The 115 clues of the final bank are in four groups, and the status column of the tables below follows the same four groups (plus the lead-read split):
+    - **92 clues unchanged since the second review**, all SUPPORTED there: 74 on pages read by subagents only, 18 on pages that the lead also read (Meriadoc Brandybuck 4-5, Shelob 1-5, Bard 1-5, Radagast 3 and 5, Húrin 2-5).
+    - **19 clues reworded after the second review**: the 18 that were rated PARTIAL, plus Thranduil 3. Thranduil 3 had been rated SUPPORTED; the lead reworded it only to keep the page's hedge ("it was said"). Of the 19, 3 sit on pages the lead read and were checked against them (Meriadoc Brandybuck 1 and 3, Radagast 4); the other 16 were **not re-read against the pages** after rewording (Arwen 4; Witch-king 2 and 5; Éomer 2; Glorfindel 5; Thranduil 3 and 5; Haldir 3; Gwaihir 1 and 2; Dáin Ironfoot 2; Beleg 1 and 4; Glaurung 5; Turgon 4; Tuor 3).
+    - **4 clues written after the second review** (Meriadoc Brandybuck 2, Radagast 1 and 2, Húrin 1). Each replaced a clue that the second review had rated SUPPORTED, but that was ambiguous (Meriadoc Brandybuck 2, Radagast 2, Húrin 1) or stated as fact something the page hedges (Radagast 1). The lead read the passage on the page for each. The four originals, all rated SUPPORTED by the second review, were:
+      - Meriadoc Brandybuck 2: "With a few friends, this character secretly planned to follow the Ring-bearer, arranging ponies and supplies before the journey began." (Replaced because it also fits Samwise Gamgee.)
+      - Radagast 1: "This being was once a guardian of the first Elves at their awakening, under a name meaning 'wild beast friend'." (The reviewer rated it SUPPORTED while noting that the page says the meaning is only "most likely"; replaced to avoid stating the hedged meaning as fact.)
+      - Radagast 2: "He came to Middle-earth in the body of an old man, linked to one of the Valar, and was forbidden to match the Dark Lord's power." (Replaced because it fits any Wizard.)
+      - Húrin 1: "As a youth he and his brother were saved from pursuit by a mist sent by a Vala, and carried to a hidden city by Eagles." (Replaced because it also fits his brother Huor.)
+    - Check: 92 + 19 + 4 = 115; and 97 SUPPORTED − 1 (Thranduil 3) − 4 (replaced) = 92.
+  - Pages read personally by the lead: 5 (Meriadoc Brandybuck, Shelob, Bard, Radagast, Húrin). The first three were read before drafting; Radagast and Húrin were read after the second review, to resolve the ambiguity and hedge above.
+- **What "status" means in the tables below:**
+  - *Passage read (lead); also confirmed by the second review*: the lead read the page, and the second review also confirmed the clue.
+  - *Confirmed by the second review (page read by subagents only)*: the lead did not read the page; subagents did, twice, independently.
+  - *Reworded after the second review...*: see above.
+  - Nothing here means "verified against the books".
+
+### Editorial review of ambiguity (before implementation)
+
+Each new clue was compared with the other clues of the same difficulty, new and existing.
+
+- **Replaced:** Húrin 1 (the original, about being saved from pursuit and flown to Gondolin, also fits his brother Huor; it now uses his shorter stature, which the page states), Radagast 2 (the original, about an old man's body and a prohibition, fits any Wizard; it now uses the 2851 Ring search), Merry 2 (the original, a plot to follow the Ring-bearer, also fits Samwise; it now uses the riddle at the Moria gate).
+- **Existing clue changed (one word group):** Aragorn 5, from "wed Arwen, daughter of Elrond" to "wed the daughter of Elrond". Arwen is now an EASY character, and the bank refuses a clue that names another character of the same difficulty. The meaning and position of the clue are unchanged. No other existing clue was altered.
+- **Pairs declared with `incompatibleWith`** (never offered together, in either direction), because a clue of one describes events of the other: Durin's Bane–Gandalf, Meriadoc Brandybuck–Witch-king, Morgoth–Fingolfin, Húrin–Túrin, Húrin–Turgon, Melian–Thingol, Melian–Lúthien, Beleg–Túrin, Glaurung–Túrin, Turgon–Tuor, Tuor–Eärendil.
+- **Shared context kept on purpose:** a few early clues share a setting with another character of the same difficulty but are settled by a later clue of the same character (for example the Fellowship in Haldir 3, the Witch-king's prophecy in Glorfindel 2, Hobbit-captive scenes in Meriadoc Brandybuck 3). No clue was rewritten only to make it differ.
+- **Not resolved by wording:** none left open.
+
+### Candidates dropped
+
+- **Goldberry:** the page is a short stub marked "needs expansion", and the existing Tom Bombadil clue 2 already uses her epithet.
+- **Gil-galad:** the page records conflicting parentage, so most of his history would rest on a disputed point.
+- **Fingon:** overlaps heavily with Fingolfin and Maedhros, and the page contradicts itself on his part in the Kinslaying.
+
+### Caveats that stay
+
+- **Glorfindel:** clue 1 relies on the identification of the Gondolin lord with the Rivendell Elf, as the page presents it; the page treats the date of his return as uncertain (no clue gives a date). Clue 5 keeps the page's "at first suggested".
+- **Glaurung:** the page says it is unclear what his "brood" is (clue 3 uses the word only as the page does), and clue 5 says his last words revealed his plot and his spell was undone, as the page does, not that the revelation broke it.
+- **Thranduil:** clue 3 keeps the page's hedge ("it was said"); clue 5 does not claim he is the only Elf in the Fellowship, which the page does not state.
+- **Radagast:** the page says it is unclear which shape he took at Cuiviénen and how long he stayed (clue 1), and that he acted in good faith (clue 2).
+- Pages carry some uncertainty of their own: Gwaihir (the page marks as disputed whether he is the Eagle of The Hobbit; no clue uses it), Balin (death year 2994 or 2995, no clue uses it), Húrin (Nirnaeth dated 472 here and 471 on the Morgoth page, no clue gives a year).
+- Redirects: Bard_the_Bowman → Bard, Witch-king_of_Angmar → Witch-king, Haldir_of_Lorien → Haldir, Dáin_II_Ironfoot → Dáin_Ironfoot. The final URLs are the ones listed.
+
+## Facts and sources: the 23 characters added on 2026-11-06
+
+### Meriadoc Brandybuck (`meriadoc-brandybuck`, EASY)
+
+Declared `incompatibleWith`: `witch-king-of-angmar`.
+
+| Clue | Wording | Source | URL | Status and notes |
+|---|---|---|---|---|
+| 1 | As a teenager, this character watched a hobbit turn invisible to avoid a meeting, then looked into that hobbit's private diary. | Tolkien Gateway — Meriadoc Brandybuck | https://tolkiengateway.net/wiki/Meriadoc_Brandybuck | Passage read (lead); reworded after the second review |
+| 2 | At the gate of a Dwarf-city, a wizard commended this character as being on the right track with the riddle, though it was accidental. | Tolkien Gateway — Meriadoc Brandybuck | https://tolkiengateway.net/wiki/Meriadoc_Brandybuck | Passage read (lead); clue written after the second review. Caveat: Replaces a clue (the conspiracy to follow Frodo) that also fitted Samwise. |
+| 3 | Held captive once by a willow tree and once by a barrow-wight, this character was rescued both times by the same rescuer, who let the hobbits keep the daggers found in the barrow. | Tolkien Gateway — Meriadoc Brandybuck | https://tolkiengateway.net/wiki/Meriadoc_Brandybuck | Passage read (lead); reworded after the second review |
+| 4 | This character offered a king of Rohan his service, was told to stay behind, and rode to war secretly behind a young rider. | Tolkien Gateway — Meriadoc Brandybuck | https://tolkiengateway.net/wiki/Meriadoc_Brandybuck | Passage read (lead); also confirmed by the second review |
+| 5 | On the Pelennor Fields this character stabbed the sinew behind the knee of the leader of the Nazgûl with a blade from a burial mound, breaking the spell that protected him. | Tolkien Gateway — Meriadoc Brandybuck; Tolkien Gateway — Witch-king | https://tolkiengateway.net/wiki/Meriadoc_Brandybuck ; https://tolkiengateway.net/wiki/Witch-king | Passage read (lead); also confirmed by the second review |
+
+### Arwen (`arwen`, EASY)
+
+| Clue | Wording | Source | URL | Status and notes |
+|---|---|---|---|---|
+| 1 | This character inherited an elven jewel that had passed from her grandmother to her mother. | Tolkien Gateway — Arwen | https://tolkiengateway.net/wiki/Arwen | Confirmed by the second review (page read by subagents only) |
+| 2 | Her father ruled that the man she loved could not marry her until he was king of both Gondor and Arnor. | Tolkien Gateway — Arwen | https://tolkiengateway.net/wiki/Arwen | Confirmed by the second review (page read by subagents only) |
+| 3 | She wove a black standard worked with mithril, gems and gold, which her brothers carried to her betrothed. | Tolkien Gateway — Arwen | https://tolkiengateway.net/wiki/Arwen | Confirmed by the second review (page read by subagents only) |
+| 4 | Said to resemble a heroine of the First Age, she, like that heroine, gave up elven immortality to marry a mortal. | Tolkien Gateway — Arwen | https://tolkiengateway.net/wiki/Arwen | Reworded after the second review; the new wording was not re-read against the page |
+| 5 | This daughter of an Elf-lord wed a king on Mid-year's Day, and passed her own place on the ship West to the Ring-bearer. | Tolkien Gateway — Arwen | https://tolkiengateway.net/wiki/Arwen | Confirmed by the second review (page read by subagents only) |
+
+### Shelob (`shelob`, EASY)
+
+| Clue | Wording | Source | URL | Status and notes |
+|---|---|---|---|---|
+| 1 | This creature was the last child of a great spider-like being that mated with and devoured others of her kind in a mountain valley. | Tolkien Gateway — Shelob | https://tolkiengateway.net/wiki/Shelob | Passage read (lead); also confirmed by the second review |
+| 2 | Her lair in a mountain range was established long before the Dark Lord raised his tower nearby, and she served no master but herself. | Tolkien Gateway — Shelob | https://tolkiengateway.net/wiki/Shelob | Passage read (lead); also confirmed by the second review |
+| 3 | A creature searching for his lost treasure once bowed before her and promised to bring her food. | Tolkien Gateway — Shelob | https://tolkiengateway.net/wiki/Shelob | Passage read (lead); also confirmed by the second review |
+| 4 | The Dark Lord let her stay because she was an excellent guard of a pass into his land. | Tolkien Gateway — Shelob | https://tolkiengateway.net/wiki/Shelob | Passage read (lead); also confirmed by the second review |
+| 5 | This creature stung a hobbit into a death-like coma, then impaled herself on his friend's sword and was blinded by the light of a phial. | Tolkien Gateway — Shelob | https://tolkiengateway.net/wiki/Shelob | Passage read (lead); also confirmed by the second review |
+
+### Bard the Bowman (`bard-the-bowman`, EASY)
+
+| Clue | Wording | Source | URL | Status and notes |
+|---|---|---|---|---|
+| 1 | This heir of the last lord of a ruined city, whose family had fled downriver, lived in a town built on a lake. | Tolkien Gateway — Bard | https://tolkiengateway.net/wiki/Bard | Passage read (lead); also confirmed by the second review |
+| 2 | He kept an inherited arrow that had never failed him and that he always recovered, saving it for his last shot. | Tolkien Gateway — Bard | https://tolkiengateway.net/wiki/Bard | Passage read (lead); also confirmed by the second review |
+| 3 | A thrush that had overheard a burglar describe a dragon told him where it had no armor. | Tolkien Gateway — Bard | https://tolkiengateway.net/wiki/Bard | Passage read (lead); also confirmed by the second review |
+| 4 | After the town burned, he led its people to demand part of the treasure from the Dwarves, and later took a hobbit's share of gold and silver in return for a gem. | Tolkien Gateway — Bard | https://tolkiengateway.net/wiki/Bard | Passage read (lead); also confirmed by the second review |
+| 5 | Slayer of the dragon that burned his town, he became the first king of rebuilt Dale. | Tolkien Gateway — Bard | https://tolkiengateway.net/wiki/Bard | Passage read (lead); also confirmed by the second review |
+
+### Witch-king of Angmar (`witch-king-of-angmar`, EASY)
+
+Declared `incompatibleWith`: `meriadoc-brandybuck`.
+
+| Clue | Wording | Source | URL | Status and notes |
+|---|---|---|---|---|
+| 1 | Around the year 1300 of the Third Age, this being founded a northern realm and exploited the disunity of the three kingdoms that had split from a greater one. | Tolkien Gateway — Witch-king | https://tolkiengateway.net/wiki/Witch-king | Confirmed by the second review (page read by subagents only) |
+| 2 | In 1409 his forces besieged and destroyed a famed tower of the Dúnedain; a ruler of Arthedain was slain in the same attack. | Tolkien Gateway — Witch-king | https://tolkiengateway.net/wiki/Witch-king | Reworded after the second review; the new wording was not re-read against the page |
+| 3 | An elf-lord foretold that this being would never fall by the hand of man. | Tolkien Gateway — Witch-king | https://tolkiengateway.net/wiki/Witch-king | Confirmed by the second review (page read by subagents only). Caveat: Glorfindel's prophecy is on both the Witch-king and Glorfindel pages. |
+| 4 | In the year 2002 he captured Minas Ithil, a stronghold of Gondor, and in 3019 he led an army from it against Minas Tirith. | Tolkien Gateway — Witch-king | https://tolkiengateway.net/wiki/Witch-king | Confirmed by the second review (page read by subagents only) |
+| 5 | Chief of the Nine, he stabbed a hobbit at Weathertop with a blade whose tip broke off in the wound, and he perished on the Pelennor Fields at the hands of a woman and a hobbit. | Tolkien Gateway — Witch-king | https://tolkiengateway.net/wiki/Witch-king | Reworded after the second review; the new wording was not re-read against the page |
+
+### Balin (`balin`, EASY)
+
+| Clue | Wording | Source | URL | Status and notes |
+|---|---|---|---|---|
+| 1 | Born in 2763, this Dwarf was only seven years old when a dragon drove his people from their mountain home. | Tolkien Gateway — Balin | https://tolkiengateway.net/wiki/Balin | Confirmed by the second review (page read by subagents only) |
+| 2 | In 2841 he set out with his younger brother and an exiled king toward the Lonely Mountain, but the journey ended when the king was captured. | Tolkien Gateway — Balin | https://tolkiengateway.net/wiki/Balin | Confirmed by the second review (page read by subagents only) |
+| 3 | As his company's look-out, he failed to notice a burglar creeping past him, and later grew fondest of that burglar. | Tolkien Gateway — Balin | https://tolkiengateway.net/wiki/Balin | Confirmed by the second review (page read by subagents only) |
+| 4 | Speaking for his company before a woodland king, his surly answers led to all the Dwarves being imprisoned. | Tolkien Gateway — Balin | https://tolkiengateway.net/wiki/Balin | Confirmed by the second review (page read by subagents only) |
+| 5 | In 2989 he led a colony into an ancient Dwarf-mansion, proclaimed himself its ruler, and was slain by an orc archer at a mere; a later company found his tomb. | Tolkien Gateway — Balin | https://tolkiengateway.net/wiki/Balin | Confirmed by the second review (page read by subagents only). Caveat: The page gives his death as T.A. 2994 in the text and 2995 in a navbox; the clue gives no year of death. |
+
+### Radagast (`radagast`, EASY)
+
+| Clue | Wording | Source | URL | Status and notes |
+|---|---|---|---|---|
+| 1 | This being was sent as a guardian to the first Elves at their awakening, though it is unclear what shape he took there or how long he stayed. | Tolkien Gateway — Radagast | https://tolkiengateway.net/wiki/Radagast | Passage read (lead); clue written after the second review. Caveat: The page says it is unclear which shape he took at Cuiviénen and how long he remained; the identification with the guardian Hrávandil is the page's own. |
+| 2 | In 2851 he aided another wizard's search for the Ring with birds and beasts as spies, acting in good faith and unaware of that wizard's real ambitions. | Tolkien Gateway — Radagast | https://tolkiengateway.net/wiki/Radagast | Passage read (lead); clue written after the second review. Caveat: The page says Radagast acted in good faith, knowing nothing of Saruman's real ambitions. |
+| 3 | He lived at the western edge of a great forest, and a fellow wizard scorned him as 'the Simple' and 'the Fool'. | Tolkien Gateway — Radagast | https://tolkiengateway.net/wiki/Radagast | Passage read (lead); also confirmed by the second review |
+| 4 | In 3018 he was sent to find a fellow wizard, warned him that the Nazgûl were abroad, and passed on an invitation that unwittingly led to that wizard's capture. | Tolkien Gateway — Radagast | https://tolkiengateway.net/wiki/Radagast | Passage read (lead); reworded after the second review |
+| 5 | Dressed in earthen brown, he sent a great eagle to a captive wizard on the pinnacle of Orthanc. | Tolkien Gateway — Radagast; Tolkien Gateway — Gwaihir | https://tolkiengateway.net/wiki/Radagast ; https://tolkiengateway.net/wiki/Gwaihir | Passage read (lead); also confirmed by the second review |
+
+### Durin's Bane (`durins-bane`, EASY)
+
+Declared `incompatibleWith`: `gandalf`.
+
+| Clue | Wording | Source | URL | Status and notes |
+|---|---|---|---|---|
+| 1 | This being survived the war that ended the First Age by hiding at the roots of a mountain range, where it lay dormant for thousands of years. | Tolkien Gateway — Durin's Bane | https://tolkiengateway.net/wiki/Durin%27s_Bane | Confirmed by the second review (page read by subagents only) |
+| 2 | In 1980 of the Third Age, miners digging for mithril woke it, and it slew their king. | Tolkien Gateway — Durin's Bane | https://tolkiengateway.net/wiki/Durin%27s_Bane | Confirmed by the second review (page read by subagents only) |
+| 3 | For about five hundred years it held the halls of a Dwarf-kingdom, and orcs and trolls feared it. | Tolkien Gateway — Durin's Bane | https://tolkiengateway.net/wiki/Durin%27s_Bane | Confirmed by the second review (page read by subagents only) |
+| 4 | It confronted a company on a narrow bridge, wielding a sword of fire and a many-thonged whip. | Tolkien Gateway — Durin's Bane | https://tolkiengateway.net/wiki/Durin%27s_Bane | Confirmed by the second review (page read by subagents only) |
+| 5 | It fell when a wizard broke the bridge, but its whip dragged him down too; they fought for days on a mountain peak until it was cast down. | Tolkien Gateway — Durin's Bane | https://tolkiengateway.net/wiki/Durin%27s_Bane | Confirmed by the second review (page read by subagents only) |
+
+### Éomer (`eomer`, MEDIUM)
+
+| Clue | Wording | Source | URL | Status and notes |
+|---|---|---|---|---|
+| 1 | At eleven this character lost his father to orc raiders and soon his mother, and was adopted by his uncle, a king. | Tolkien Gateway — Éomer | https://tolkiengateway.net/wiki/%C3%89omer | Confirmed by the second review (page read by subagents only) |
+| 2 | As Third Marshal he commanded the East-mark from his home in a town of the Folde, and fell into the king's disfavor because of the king's advisor. | Tolkien Gateway — Éomer | https://tolkiengateway.net/wiki/%C3%89omer | Reworded after the second review; the new wording was not re-read against the page |
+| 3 | He disobeyed a ban on pursuing the orcs who had captured two hobbits, and killed their leader near the edge of a great forest. | Tolkien Gateway — Éomer | https://tolkiengateway.net/wiki/%C3%89omer | Confirmed by the second review (page read by subagents only) |
+| 4 | Meeting three strangers on the plains, he let them go against his realm's law and lent them horses, asking that they be returned. | Tolkien Gateway — Éomer | https://tolkiengateway.net/wiki/%C3%89omer | Confirmed by the second review (page read by subagents only) |
+| 5 | Hailed as King of the Mark by his dying uncle, he charged in cold fury at the sight of his fallen sister. | Tolkien Gateway — Éomer | https://tolkiengateway.net/wiki/%C3%89omer | Confirmed by the second review (page read by subagents only) |
+
+### Glorfindel (`glorfindel`, MEDIUM)
+
+| Clue | Wording | Source | URL | Status and notes |
+|---|---|---|---|---|
+| 1 | This elf-lord died in a fall with a demon of fire, but the Valar allowed him to be re-embodied in recognition of his deeds and sent him back to Middle-earth. | Tolkien Gateway — Glorfindel | https://tolkiengateway.net/wiki/Glorfindel | Confirmed by the second review (page read by subagents only). Caveat: Relies on Tolkien's later identification of the Gondolin lord with the Rivendell Elf, as the page presents it; the page treats the dates of his return as uncertain (no date is used in the clue). |
+| 2 | In 1975 he came with a force from the hidden valley to a northern battle, and foretold that the enemy chief would not fall by the hand of man. | Tolkien Gateway — Glorfindel | https://tolkiengateway.net/wiki/Glorfindel | Confirmed by the second review (page read by subagents only) |
+| 3 | He was chosen to seek the Ring-bearer partly because the Ringwraiths did not frighten him; five of them fled from him. | Tolkien Gateway — Glorfindel | https://tolkiengateway.net/wiki/Glorfindel | Confirmed by the second review (page read by subagents only) |
+| 4 | He set a wounded hobbit on his white horse, which carried the hobbit across a ford. | Tolkien Gateway — Glorfindel | https://tolkiengateway.net/wiki/Glorfindel | Confirmed by the second review (page read by subagents only) |
+| 5 | An elf of Rivendell, tall and golden-haired, he suggested at a great council that the Ring would be safe in the depths of the Sea, but a wizard objected. | Tolkien Gateway — Glorfindel | https://tolkiengateway.net/wiki/Glorfindel | Reworded after the second review; the new wording was not re-read against the page. Caveat: The page says he 'at first' suggested the Sea; the wording keeps that and the objection by Gandalf. |
+
+### Thranduil (`thranduil`, MEDIUM)
+
+| Clue | Wording | Source | URL | Status and notes |
+|---|---|---|---|---|
+| 1 | In autumn this ruler wore a crown of berries and red leaves, and in spring one of woodland flowers. | Tolkien Gateway — Thranduil | https://tolkiengateway.net/wiki/Thranduil | Confirmed by the second review (page read by subagents only) |
+| 2 | In the Last Alliance his father fell charging ahead of the signal, and two-thirds of his people perished. | Tolkien Gateway — Thranduil | https://tolkiengateway.net/wiki/Thranduil | Confirmed by the second review (page read by subagents only) |
+| 3 | When a shadow fell on the southern part of his forest, he moved north and delved his halls underground, said to be partly in memory of a lost elven city. | Tolkien Gateway — Thranduil | https://tolkiengateway.net/wiki/Thranduil | Reworded after the second review; the new wording was not re-read against the page. Caveat: The page hedges the motive ('it was said'); the clue keeps the hedge. The page's own note says Unfinished Tales gives a different account of the halls. |
+| 4 | He imprisoned a company of Dwarves after they disturbed his feast, but a burglar with a magic ring helped them escape. | Tolkien Gateway — Thranduil | https://tolkiengateway.net/wiki/Thranduil | Confirmed by the second review (page read by subagents only) |
+| 5 | Father of an Elf chosen for the Fellowship of the Ring, he besieged a mountain together with the Men of a lake-town. | Tolkien Gateway — Thranduil | https://tolkiengateway.net/wiki/Thranduil | Reworded after the second review; the new wording was not re-read against the page. Caveat: The page says Legolas was one of the nine of the Fellowship; 'only Elf' is not stated, so the clue does not claim it. |
+
+### Haldir (`haldir`, MEDIUM)
+
+| Clue | Wording | Source | URL | Status and notes |
+|---|---|---|---|---|
+| 1 | Unlike his two brothers, this elf had travelled beyond his homeland and spoke the Common Speech. | Tolkien Gateway — Haldir | https://tolkiengateway.net/wiki/Haldir | Confirmed by the second review (page read by subagents only) |
+| 2 | He guarded the northern borders of his forest realm as a marchwarden. | Tolkien Gateway — Haldir | https://tolkiengateway.net/wiki/Haldir | Confirmed by the second review (page read by subagents only) |
+| 3 | On 15-16 January of 3019, he and his brothers met the Fellowship of the Ring as it arrived in his land. | Tolkien Gateway — Haldir | https://tolkiengateway.net/wiki/Haldir | Reworded after the second review; the new wording was not re-read against the page |
+| 4 | Because of the old ill-feeling between Elves and Dwarves, he made one of the travelers go blindfolded until his lady said otherwise. | Tolkien Gateway — Haldir | https://tolkiengateway.net/wiki/Haldir | Confirmed by the second review (page read by subagents only) |
+| 5 | He guided the travelers to Caras Galadhon, and later led them to the boats for their departure. | Tolkien Gateway — Haldir | https://tolkiengateway.net/wiki/Haldir | Confirmed by the second review (page read by subagents only) |
+
+### Isildur (`isildur`, MEDIUM)
+
+| Clue | Wording | Source | URL | Status and notes |
+|---|---|---|---|---|
+| 1 | In disguise, he stole a fruit from a doomed tree in a royal city, and is said to have been grievously wounded by the guards. | Tolkien Gateway — Isildur | https://tolkiengateway.net/wiki/Isildur | Confirmed by the second review (page read by subagents only) |
+| 2 | When his island homeland sank, he escaped in one of three ships under his command, carrying a young tree. | Tolkien Gateway — Isildur | https://tolkiengateway.net/wiki/Isildur | Confirmed by the second review (page read by subagents only) |
+| 3 | He ruled a southern kingdom jointly with his brother, their thrones side by side, and lived in a city where he planted a white tree. | Tolkien Gateway — Isildur | https://tolkiengateway.net/wiki/Isildur | Confirmed by the second review (page read by subagents only) |
+| 4 | He used a shard of his father's broken sword to cut the Ring from the Dark Lord's hand, then ignored the advice of Elf-lords and kept it as payment for his lost kin. | Tolkien Gateway — Isildur | https://tolkiengateway.net/wiki/Isildur | Confirmed by the second review (page read by subagents only) |
+| 5 | Ambushed by orcs at the Gladden Fields, he put on the Ring to vanish, swam the river, and was shot in the reeds when it slipped from his finger. | Tolkien Gateway — Isildur | https://tolkiengateway.net/wiki/Isildur | Confirmed by the second review (page read by subagents only) |
+
+### Gwaihir (`gwaihir`, MEDIUM)
+
+| Clue | Wording | Source | URL | Status and notes |
+|---|---|---|---|---|
+| 1 | He is the brother of another great eagle, and the mightiest of the descendants of Thorondor, the eagle he served in the First Age. | Tolkien Gateway — Gwaihir | https://tolkiengateway.net/wiki/Gwaihir | Reworded after the second review; the new wording was not re-read against the page |
+| 2 | At the time of the War of the Ring, he was the swiftest of the Great Eagles. | Tolkien Gateway — Gwaihir | https://tolkiengateway.net/wiki/Gwaihir | Reworded after the second review; the new wording was not re-read against the page |
+| 3 | He rescued a wizard from the pinnacle of a tower on an autumn night, but could not carry him far and left him at a city of horse-lords. | Tolkien Gateway — Gwaihir | https://tolkiengateway.net/wiki/Gwaihir | Confirmed by the second review (page read by subagents only) |
+| 4 | Sent by a lady, he found the wizard on a high peak after a great fight and carried him to Lothlórien. | Tolkien Gateway — Gwaihir | https://tolkiengateway.net/wiki/Gwaihir | Confirmed by the second review (page read by subagents only) |
+| 5 | After the Ring's destruction, he and two other eagles flew into Mordor and carried two hobbits out. | Tolkien Gateway — Gwaihir | https://tolkiengateway.net/wiki/Gwaihir | Confirmed by the second review (page read by subagents only) |
+
+### Dáin Ironfoot (`dain-ironfoot`, MEDIUM)
+
+| Clue | Wording | Source | URL | Status and notes |
+|---|---|---|---|---|
+| 1 | At thirty-two, this Dwarf beheaded an orc chieftain with a red axe before the East-gate of a great Dwarf-hall. | Tolkien Gateway — Dáin Ironfoot | https://tolkiengateway.net/wiki/D%C3%A1in_Ironfoot | Confirmed by the second review (page read by subagents only) |
+| 2 | Looking alone past that gate, he judged that his people could not return to the hall at that time, and dissuaded a king from entering it. | Tolkien Gateway — Dáin Ironfoot | https://tolkiengateway.net/wiki/D%C3%A1in_Ironfoot | Reworded after the second review; the new wording was not re-read against the page |
+| 3 | For more than a century he ruled a land of hills in the north, making his people the strongest in Wilderland. | Tolkien Gateway — Dáin Ironfoot | https://tolkiengateway.net/wiki/D%C3%A1in_Ironfoot | Confirmed by the second review (page read by subagents only) |
+| 4 | He marched to a great battle with over five hundred Dwarves, meaning to drive off Elves and Men until a wizard warned him of orcs. | Tolkien Gateway — Dáin Ironfoot | https://tolkiengateway.net/wiki/D%C3%A1in_Ironfoot | Confirmed by the second review (page read by subagents only) |
+| 5 | After the previous king fell, he became King under the Mountain, and died aged over 250 defending the body of a king of Dale. | Tolkien Gateway — Dáin Ironfoot | https://tolkiengateway.net/wiki/D%C3%A1in_Ironfoot | Confirmed by the second review (page read by subagents only) |
+
+### Morgoth (`morgoth`, HARD)
+
+Declared `incompatibleWith`: `fingolfin`.
+
+| Clue | Wording | Source | URL | Status and notes |
+|---|---|---|---|---|
+| 1 | Mightiest of his kind, he wandered the Void seeking a flame that was not there. | Tolkien Gateway — Morgoth | https://tolkiengateway.net/wiki/Morgoth | Confirmed by the second review (page read by subagents only) |
+| 2 | His discords clashed with the Theme of the Creator, who answered with a second and a third Theme. | Tolkien Gateway — Morgoth | https://tolkiengateway.net/wiki/Morgoth | Confirmed by the second review (page read by subagents only) |
+| 3 | With the help of a spider he destroyed the Two Trees, killed Finwë at Formenos, and stole the Silmarils. | Tolkien Gateway — Morgoth | https://tolkiengateway.net/wiki/Morgoth | Confirmed by the second review (page read by subagents only) |
+| 4 | He was wounded seven times in single combat by a king of the Noldor, and one wound left him with a lasting limp. | Tolkien Gateway — Morgoth | https://tolkiengateway.net/wiki/Morgoth | Confirmed by the second review (page read by subagents only) |
+| 5 | Thrust into the Void after the War of Wrath, he is prophesied to return and be slain at the Last Battle by a hero of Men. | Tolkien Gateway — Morgoth | https://tolkiengateway.net/wiki/Morgoth | Confirmed by the second review (page read by subagents only) |
+
+### Maedhros (`maedhros`, HARD)
+
+| Clue | Wording | Source | URL | Status and notes |
+|---|---|---|---|---|
+| 1 | Alone among his brothers, he refused to help burn the ships at Losgar, having hoped to send them back for a friend. | Tolkien Gateway — Maedhros; Tolkien Gateway — Fingon | https://tolkiengateway.net/wiki/Maedhros ; https://tolkiengateway.net/wiki/Fingon | Confirmed by the second review (page read by subagents only) |
+| 2 | Captured through a feigned surrender of a jewel, he hung by one wrist from a steel shackle on a mountain for about thirty years. | Tolkien Gateway — Maedhros | https://tolkiengateway.net/wiki/Maedhros | Confirmed by the second review (page read by subagents only) |
+| 3 | Rescued by a friend with the help of the king of the Eagles, he lost his hand because the chain could not be broken. | Tolkien Gateway — Maedhros; Tolkien Gateway — Fingon | https://tolkiengateway.net/wiki/Maedhros ; https://tolkiengateway.net/wiki/Fingon | Confirmed by the second review (page read by subagents only) |
+| 4 | He gave up the High Kingship to his uncle, and later formed a great union of Elves and Men that was broken at the Nirnaeth Arnoediad. | Tolkien Gateway — Maedhros | https://tolkiengateway.net/wiki/Maedhros | Confirmed by the second review (page read by subagents only) |
+| 5 | After the final war he stole one of the last two jewels with his brother, and burned by it, leapt into a fiery chasm. | Tolkien Gateway — Maedhros | https://tolkiengateway.net/wiki/Maedhros | Confirmed by the second review (page read by subagents only) |
+
+### Húrin (`hurin`, HARD)
+
+Declared `incompatibleWith`: `turin-turambar`, `turgon`.
+
+| Clue | Wording | Source | URL | Status and notes |
+|---|---|---|---|---|
+| 1 | He was shorter than the other men of his kin, taking after his mother's people, though in all else he resembled his strong, fiery-tempered grandfather. | Tolkien Gateway — Húrin | https://tolkiengateway.net/wiki/H%C3%BArin | Passage read (lead); clue written after the second review. Caveat: Added to replace a clue that also fitted Huor; the trait is stated on the page as a quotation from The Children of Húrin. |
+| 2 | His little daughter, whose name meant Laughter, died of a plague at the age of three. | Tolkien Gateway — Húrin | https://tolkiengateway.net/wiki/H%C3%BArin | Passage read (lead); also confirmed by the second review |
+| 3 | At the Nirnaeth he held a rearguard with the men of his land, killing seventy foes and crying a battle-cry for each, until he was taken captive. | Tolkien Gateway — Húrin | https://tolkiengateway.net/wiki/H%C3%BArin | Passage read (lead); also confirmed by the second review. Caveat: The Nirnaeth date differs between the Húrin page (472) and the Morgoth page (471); the clue gives no year. |
+| 4 | For refusing to reveal a hidden city, he was cursed and chained on a mountain, forced to watch his family's fate for twenty-eight years. | Tolkien Gateway — Húrin | https://tolkiengateway.net/wiki/H%C3%BArin | Passage read (lead); also confirmed by the second review |
+| 5 | Freed at last, he slew a Dwarf who had betrayed his son, took a famed necklace, and threw it down before the king of Doriath. | Tolkien Gateway — Húrin | https://tolkiengateway.net/wiki/H%C3%BArin | Passage read (lead); also confirmed by the second review |
+
+### Melian (`melian`, HARD)
+
+Declared `incompatibleWith`: `thingol`, `luthien`.
+
+| Clue | Wording | Source | URL | Status and notes |
+|---|---|---|---|---|
+| 1 | In the Gardens of Lórien, this Maia taught nightingales to sing. | Tolkien Gateway — Melian | https://tolkiengateway.net/wiki/Melian | Confirmed by the second review (page read by subagents only) |
+| 2 | After a dream warned her, she left her home across the Sea and led the Maiar who guarded the newly awakened Elves, the only woman among them. | Tolkien Gateway — Melian | https://tolkiengateway.net/wiki/Melian | Confirmed by the second review (page read by subagents only) |
+| 3 | Her blood passed to Elves and Men, for she is the only known Ainu to have had a child with one of the Children of Ilúvatar. | Tolkien Gateway — Melian | https://tolkiengateway.net/wiki/Melian | Confirmed by the second review (page read by subagents only) |
+| 4 | She alone repelled a monstrous spider from her kingdom, and her barrier kept out anyone less powerful than herself. | Tolkien Gateway — Melian | https://tolkiengateway.net/wiki/Melian | Confirmed by the second review (page read by subagents only) |
+| 5 | After her king's death she departed to mourn in the Halls of Mandos, and without her protection the realm fell. | Tolkien Gateway — Melian | https://tolkiengateway.net/wiki/Melian | Confirmed by the second review (page read by subagents only) |
+
+### Beleg (`beleg`, HARD)
+
+Declared `incompatibleWith`: `turin-turambar`.
+
+| Clue | Wording | Source | URL | Status and notes |
+|---|---|---|---|---|
+| 1 | This Sinda, chief of the marchwardens of an Elven kingdom, was considered the best archer and huntsman of his time. | Tolkien Gateway — Beleg | https://tolkiengateway.net/wiki/Beleg | Reworded after the second review; the new wording was not re-read against the page |
+| 2 | With a fellow captain, he was among the few Elves of his realm to fight at the Nirnaeth Arnoediad. | Tolkien Gateway — Beleg | https://tolkiengateway.net/wiki/Beleg | Confirmed by the second review (page read by subagents only) |
+| 3 | He sought out a fugitive friend, won a pardon from the king for him, and chose a sword the queen warned him was malicious. | Tolkien Gateway — Beleg | https://tolkiengateway.net/wiki/Beleg | Confirmed by the second review (page read by subagents only) |
+| 4 | He followed an orc-band into Taur-nu-Fuin, met an Elf of Nargothrond who had escaped slavery in the Dark Lord's mines, and rescued his friend during a thunderstorm. | Tolkien Gateway — Beleg | https://tolkiengateway.net/wiki/Beleg | Reworded after the second review; the new wording was not re-read against the page |
+| 5 | While he cut his friend's bonds, his blade slipped; the friend awoke, seized the sword he had brought, and killed him by mistake. | Tolkien Gateway — Beleg | https://tolkiengateway.net/wiki/Beleg | Confirmed by the second review (page read by subagents only) |
+
+### Glaurung (`glaurung`, HARD)
+
+Declared `incompatibleWith`: `turin-turambar`.
+
+| Clue | Wording | Source | URL | Status and notes |
+|---|---|---|---|---|
+| 1 | Emerging while still young, this creature displeased his master, who allowed no further sallies for about two hundred years. | Tolkien Gateway — Glaurung | https://tolkiengateway.net/wiki/Glaurung | Confirmed by the second review (page read by subagents only) |
+| 2 | Fully grown, he led the greatest army yet of balrogs and orcs in the battle that broke a long siege. | Tolkien Gateway — Glaurung | https://tolkiengateway.net/wiki/Glaurung | Confirmed by the second review (page read by subagents only) |
+| 3 | At the Nirnaeth Arnoediad, he and his brood split two hosts apart; a Dwarf-lord whom he slew wounded his belly with a last stroke. | Tolkien Gateway — Glaurung | https://tolkiengateway.net/wiki/Glaurung | Confirmed by the second review (page read by subagents only). Caveat: The page says it is unclear what Glaurung's 'brood' is; the clue uses 'brood' only as the page does at the Nirnaeth Arnoediad. |
+| 4 | Though wingless, he breathed fire; with a spellbinding gaze he persuaded a hero to abandon a captive maiden, then lay on the hoard of a ruined Elven stronghold. | Tolkien Gateway — Glaurung | https://tolkiengateway.net/wiki/Glaurung | Confirmed by the second review (page read by subagents only) |
+| 5 | Ambushed in a gorge, he was dealt a mortal blow by a black sword; with his last breath he revealed his plot, and as he died his spell on a young woman was undone. | Tolkien Gateway — Glaurung | https://tolkiengateway.net/wiki/Glaurung | Reworded after the second review; the new wording was not re-read against the page. Caveat: The page says his last breath revealed his plot and his spells were undone; the clue does not claim the revelation itself broke the spell. |
+
+### Turgon (`turgon`, HARD)
+
+Declared `incompatibleWith`: `tuor`, `hurin`.
+
+| Clue | Wording | Source | URL | Status and notes |
+|---|---|---|---|---|
+| 1 | When his wife fell into the waters on a crossing of ice, this prince saved only their daughter. | Tolkien Gateway — Turgon | https://tolkiengateway.net/wiki/Turgon | Confirmed by the second review (page read by subagents only) |
+| 2 | Guided by a dream from a Vala, he secretly led skilled craftsmen to build a hidden city in a vale, finishing it in the year 116. | Tolkien Gateway — Turgon | https://tolkiengateway.net/wiki/Turgon | Confirmed by the second review (page read by subagents only) |
+| 3 | Before leaving his first home, he left arms and armor there for one who would come in the Elves' hour of need. | Tolkien Gateway — Turgon | https://tolkiengateway.net/wiki/Turgon | Confirmed by the second review (page read by subagents only) |
+| 4 | He sent seven ships west to ask the Valar for help, but all were wrecked and only one sailor survived. | Tolkien Gateway — Turgon | https://tolkiengateway.net/wiki/Turgon | Reworded after the second review; the new wording was not re-read against the page |
+| 5 | Warned to leave, he refused, ordered the gates of his realm blocked, and died defending his tower when the Dark Lord's host came. | Tolkien Gateway — Turgon | https://tolkiengateway.net/wiki/Turgon | Confirmed by the second review (page read by subagents only) |
+
+### Tuor (`tuor`, HARD)
+
+Declared `incompatibleWith`: `turgon`, `earendil`.
+
+| Clue | Wording | Source | URL | Status and notes |
+|---|---|---|---|---|
+| 1 | A Man descended from all three Houses of the Edain, he was named by his father before he was born. | Tolkien Gateway — Tuor | https://tolkiengateway.net/wiki/Tuor | Confirmed by the second review (page read by subagents only) |
+| 2 | Fostered by Grey-elves, he was later a thrall of an Easterling chief for three years, then spent four years alone as an outlaw. | Tolkien Gateway — Tuor | https://tolkiengateway.net/wiki/Tuor | Confirmed by the second review (page read by subagents only) |
+| 3 | Guided by a sign from a Vala, he was the first Man to reach the Great Sea, then followed seven swans to an abandoned city and took the arms left there. | Tolkien Gateway — Tuor | https://tolkiengateway.net/wiki/Tuor | Reworded after the second review; the new wording was not re-read against the page |
+| 4 | He carried a warning from a Vala to a hidden king, who refused it, and later wed that king's daughter. | Tolkien Gateway — Tuor | https://tolkiengateway.net/wiki/Tuor | Confirmed by the second review (page read by subagents only) |
+| 5 | When the hidden city fell, he threw a traitor from the walls and escaped with his wife by a secret way; their son's name meant Sea-friend. | Tolkien Gateway — Tuor | https://tolkiengateway.net/wiki/Tuor | Confirmed by the second review (page read by subagents only) |
 

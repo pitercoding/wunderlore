@@ -3,13 +3,18 @@ package com.wunderlore.game.whoami;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.UnaryOperator;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.core.io.ClassPathResource;
 
 // Two parts: the rules the bank enforces when it loads (checked with made-up characters), and
 // the real curated content, which must pass them. The real content is also what the editorial
@@ -321,6 +326,144 @@ class WhoAmICharacterBankTest {
                         .as(character.id())
                         .hasSizeGreaterThanOrEqualTo(7)
                         .allMatch(other -> other.difficulty() == difficulty);
+            }
+        }
+    }
+
+    // ---- the content as approved on 2026-11-06 (59 characters) ----
+
+    private static final Map<WhoAmIDifficulty, List<String>> ORIGINAL_IDS = Map.of(
+            WhoAmIDifficulty.EASY, List.of(
+                    "frodo-baggins", "samwise-gamgee", "gandalf", "aragorn", "legolas", "gimli",
+                    "gollum", "sauron", "galadriel", "boromir", "bilbo-baggins", "saruman"),
+            WhoAmIDifficulty.MEDIUM, List.of(
+                    "faramir", "eowyn", "theoden", "elrond", "treebeard", "tom-bombadil",
+                    "grima-wormtongue", "denethor", "thorin-oakenshield", "smaug", "beorn",
+                    "peregrin-took"),
+            WhoAmIDifficulty.HARD, List.of(
+                    "feanor", "fingolfin", "turin-turambar", "earendil", "beren", "luthien",
+                    "finrod-felagund", "thingol", "cirdan", "celebrimbor", "ungoliant", "elendil"));
+
+    private static final Set<String> ADDED_ON_2026_11_06 = Set.of(
+            "meriadoc-brandybuck", "arwen", "shelob", "bard-the-bowman", "witch-king-of-angmar",
+            "balin", "radagast", "durins-bane",
+            "eomer", "glorfindel", "thranduil", "haldir", "isildur", "gwaihir", "dain-ironfoot",
+            "morgoth", "maedhros", "hurin", "melian", "beleg", "glaurung", "turgon", "tuor");
+
+    private static List<WhoAmICharacter> all() {
+        List<WhoAmICharacter> all = new ArrayList<>();
+
+        for (WhoAmIDifficulty difficulty : WhoAmIDifficulty.values()) {
+            all.addAll(REAL.find(difficulty));
+        }
+
+        return all;
+    }
+
+    private static WhoAmICharacter byId(String id) {
+        return all().stream().filter(c -> c.id().equals(id)).findFirst().orElseThrow();
+    }
+
+    @Test
+    void shouldHaveTheApprovedNumberOfCharactersPerDifficulty() {
+        assertThat(REAL.count(WhoAmIDifficulty.EASY)).isEqualTo(20);
+        assertThat(REAL.count(WhoAmIDifficulty.MEDIUM)).isEqualTo(19);
+        assertThat(REAL.count(WhoAmIDifficulty.HARD)).isEqualTo(20);
+        assertThat(all()).hasSize(59);
+    }
+
+    @Test
+    void shouldKeepEveryOriginalCharacterWithItsIdAndDifficulty() {
+        ORIGINAL_IDS.forEach((difficulty, ids) -> assertThat(REAL.find(difficulty))
+                .extracting(WhoAmICharacter::id)
+                .containsAll(ids));
+    }
+
+    @Test
+    void shouldChangeOnlyTheFifthClueOfAragornAmongTheOriginalClues() {
+        // Arwen joined EASY, so the clue could no longer name her (see REFERENCES.md).
+        assertThat(byId("aragorn").clues().get(4))
+                .isEqualTo("Crowned king of both Gondor and Arnor, this character wed the daughter of Elrond.");
+        assertThat(byId("aragorn").clues().get(0))
+                .isEqualTo("Raised in secret by an elf-lord, this character was long hidden under a different name.");
+    }
+
+    @Test
+    void shouldStartEveryCharacterWithAClueNoOtherCharacterStartsWith() {
+        // The tests (and nothing else) identify a character by its first clue.
+        Set<String> firstClues = new HashSet<>();
+
+        for (WhoAmICharacter character : all()) {
+            assertThat(firstClues.add(character.clues().get(0))).as(character.id()).isTrue();
+        }
+    }
+
+    @Test
+    void shouldNotRepeatAnyClueAcrossCharacters() {
+        Set<String> seen = new HashSet<>();
+
+        for (WhoAmICharacter character : all()) {
+            for (String clue : character.clues()) {
+                assertThat(seen.add(WhoAmICharacterBank.normalize(clue)))
+                        .as("%s: %s", character.id(), clue)
+                        .isTrue();
+            }
+        }
+    }
+
+    @Test
+    void shouldDeclareTheKnownOverlapsBetweenCharactersAsIncompatible() {
+        List<List<String>> pairs = List.of(
+                List.of("durins-bane", "gandalf"),
+                List.of("meriadoc-brandybuck", "witch-king-of-angmar"),
+                List.of("morgoth", "fingolfin"),
+                List.of("hurin", "turin-turambar"),
+                List.of("hurin", "turgon"),
+                List.of("melian", "thingol"),
+                List.of("melian", "luthien"),
+                List.of("beleg", "turin-turambar"),
+                List.of("glaurung", "turin-turambar"),
+                List.of("turgon", "tuor"),
+                List.of("tuor", "earendil"));
+
+        for (List<String> pair : pairs) {
+            WhoAmICharacter first = byId(pair.get(0));
+            WhoAmICharacter second = byId(pair.get(1));
+
+            assertThat(first.difficulty()).isEqualTo(second.difficulty());
+            assertThat(REAL.wrongAnswerCandidates(first)).extracting(WhoAmICharacter::id)
+                    .doesNotContain(second.id());
+            assertThat(REAL.wrongAnswerCandidates(second)).extracting(WhoAmICharacter::id)
+                    .doesNotContain(first.id());
+        }
+    }
+
+    @Test
+    void shouldDocumentEveryCharacterAndEveryReferenceInReferencesMd() throws IOException {
+        assertThat(ADDED_ON_2026_11_06).hasSize(23);
+
+        String references;
+
+        try (InputStream stream = new ClassPathResource("who-am-i/REFERENCES.md").getInputStream()) {
+            references = new String(stream.readAllBytes(), StandardCharsets.UTF_8);
+        }
+
+        for (WhoAmICharacter character : all()) {
+            assertThat(references)
+                    .as("heading of %s", character.id())
+                    .contains("(`" + character.id() + "`, " + character.difficulty().name() + ")");
+
+            // Every reference of the 23 characters added on 2026-11-06 must be recorded; the
+            // original 36 are only required to have their section.
+            if (!ADDED_ON_2026_11_06.contains(character.id())) {
+                continue;
+            }
+
+            for (WhoAmICharacter.Reference reference : character.references()) {
+                assertThat(reference.source()).isEqualTo("Tolkien Gateway");
+                assertThat(reference.url()).startsWith("https://tolkiengateway.net/wiki/");
+                assertThat(references).as("%s: %s", character.id(), reference.url())
+                        .contains(reference.url());
             }
         }
     }

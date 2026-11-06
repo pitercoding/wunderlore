@@ -148,6 +148,46 @@ class WhoAmIServiceTest {
     }
 
     @Test
+    void shouldNotLeakTheCorrectOptionByTheIntersectionOfTheOptionsAcrossClues() {
+        for (WhoAmIDifficulty difficulty : WhoAmIDifficulty.values()) {
+            for (int run = 0; run < 25; run++) {
+                WhoAmIGame game = service.createGame(difficulty);
+
+                for (int round = 1; round <= WhoAmIGame.TOTAL_ROUNDS; round++) {
+                    WhoAmICharacter character = characterOf(game);
+                    String correctId = correctOptionId(game.currentRound(), character);
+                    List<WhoAmIGame.Option> shown = game.currentRound().options();
+                    Set<String> common = new HashSet<>();
+
+                    shown.forEach(option -> common.add(option.text()));
+
+                    // Four wrong answers in a row, each one on a different option.
+                    List<String> wrongIds = shown.stream()
+                            .map(WhoAmIGame.Option::id)
+                            .filter(id -> !id.equals(correctId))
+                            .toList();
+
+                    for (int clue = 1; clue <= 3; clue++) {
+                        AnswerOutcome outcome = game.answer(round, clue, wrongIds.get(clue - 1));
+
+                        assertThat(outcome.next().options()).isEqualTo(shown);
+                        common.retainAll(outcome.next().options().stream()
+                                .map(WhoAmIGame.Option::text)
+                                .toList());
+                    }
+
+                    // Nothing was narrowed down: the intersection is still all four options.
+                    assertThat(common).hasSize(4);
+
+                    game.answer(round, 4, correctId);
+                }
+
+                assertThat(game.isFinished()).isTrue();
+            }
+        }
+    }
+
+    @Test
     void shouldPlaceTheCorrectOptionInDifferentPositions() {
         WhoAmICharacter character = BANK.find(WhoAmIDifficulty.MEDIUM).get(0);
         Set<String> positions = new HashSet<>();
@@ -161,16 +201,26 @@ class WhoAmIServiceTest {
 
     @Test
     void shouldPreferAWrongOptionOfTheSameKind() {
-        // Gandalf and Saruman are the only wizards of the Easy bank.
+        // Gandalf, Saruman and Radagast are the wizards of the Easy bank: one of the other two
+        // is always among the options, whichever one the draw picks.
         WhoAmICharacter gandalf = BANK.find(WhoAmIDifficulty.EASY).stream()
                 .filter(c -> c.id().equals("gandalf"))
                 .findFirst()
                 .orElseThrow();
+        Set<String> otherWizards = new HashSet<>();
+
+        for (WhoAmICharacter c : BANK.find(WhoAmIDifficulty.EASY)) {
+            if (c.group().equals(gandalf.group()) && !c.id().equals(gandalf.id())) {
+                otherWizards.add(c.name());
+            }
+        }
+
+        assertThat(otherWizards).containsExactlyInAnyOrder("Saruman", "Radagast");
 
         for (int i = 0; i < 50; i++) {
             assertThat(service.drawOptions(gandalf, Set.of()).options())
                     .extracting(WhoAmIGame.Option::text)
-                    .contains("Saruman");
+                    .containsAnyElementsOf(otherWizards);
         }
     }
 
@@ -230,5 +280,69 @@ class WhoAmIServiceTest {
         }
 
         assertThat(game.currentRound().roundNumber()).isEqualTo(2);
+    }
+
+    @Test
+    void shouldNeverOfferACharacterDeclaredIncompatibleWithTheCorrectOne() {
+        for (WhoAmIDifficulty difficulty : WhoAmIDifficulty.values()) {
+            for (WhoAmICharacter character : BANK.find(difficulty)) {
+                for (int draw = 0; draw < 40; draw++) {
+                    Options options = service.drawOptions(character, Set.of());
+
+                    for (String shownId : options.characterIdByOption().values()) {
+                        if (shownId.equals(character.id())) {
+                            continue;
+                        }
+
+                        WhoAmICharacter shown = BANK.find(difficulty).stream()
+                                .filter(c -> c.id().equals(shownId))
+                                .findFirst()
+                                .orElseThrow();
+
+                        assertThat(character.incompatibleWith()).as(character.id()).doesNotContain(shownId);
+                        assertThat(shown.incompatibleWith()).as(shownId).doesNotContain(character.id());
+                    }
+                }
+            }
+        }
+    }
+
+    @Test
+    void shouldKeepTheSameFourOptionsOnAllFiveCluesForEveryCuratedCharacter() {
+        for (WhoAmIDifficulty difficulty : WhoAmIDifficulty.values()) {
+            List<WhoAmICharacter> all = BANK.find(difficulty);
+            int size = WhoAmIGame.TOTAL_ROUNDS;
+
+            // Two windows that together cover every character of the difficulty.
+            for (List<WhoAmICharacter> window : List.of(
+                    all.subList(0, size), all.subList(all.size() - size, all.size()))) {
+                WhoAmIGame game = new WhoAmIGame(difficulty, window, service::drawOptions, START);
+
+                for (int round = 1; round <= size; round++) {
+                    WhoAmICharacter character = window.get(round - 1);
+                    WhoAmIGame.RoundView view = game.currentRound();
+                    String correctId = correctOptionId(view, character);
+                    List<WhoAmIGame.Option> shown = view.options();
+                    List<String> wrongIds = shown.stream()
+                            .map(WhoAmIGame.Option::id)
+                            .filter(id -> !id.equals(correctId))
+                            .toList();
+
+                    assertThat(shown).as(character.id()).hasSize(4);
+
+                    for (int clue = 1; clue <= 3; clue++) {
+                        AnswerOutcome outcome = game.answer(round, clue, wrongIds.get(clue - 1));
+
+                        assertThat(outcome.next().options()).as(character.id()).isEqualTo(shown);
+                    }
+
+                    // Clue 4 still shows the same four options; a correct answer ends the round.
+                    assertThat(game.currentRound().options()).as(character.id()).isEqualTo(shown);
+                    game.answer(round, 4, correctId);
+                }
+
+                assertThat(game.isFinished()).isTrue();
+            }
+        }
     }
 }
