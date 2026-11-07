@@ -14,6 +14,7 @@ const LINKS = [
     { href: "/games/who-am-i", label: "Who Am I?" },
     { href: "/games/where-in-middle-earth", label: "Where in Middle-earth" },
     { href: "/quotes", label: "Quotes" },
+    { href: "/leaderboard", label: "Leaderboard" },
 ];
 
 function Logo() {

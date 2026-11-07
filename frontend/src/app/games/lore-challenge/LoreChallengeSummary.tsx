@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import Link from "next/link";
 import Button from "@/components/Button/Button";
+import PublishResult from "@/components/PublishResult/PublishResult";
 import type { LoreChallengeResult } from "@/lib/api/loreChallenge";
 import { categoryLabel, difficultyLabel, formatDuration } from "./labels";
 import styles from "./page.module.css";
@@ -78,6 +79,8 @@ export default function LoreChallengeSummary({
                     {error}
                 </p>
             )}
+
+            <PublishResult gameType="lore-challenge" gameId={result.matchId} />
 
             <div className={styles.actions}>
                 <Button

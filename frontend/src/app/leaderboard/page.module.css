@@ -1,0 +1,215 @@
+/* The scene (palette tokens, banner, title) comes from QuotesFrame. */
+
+.filters {
+    margin-bottom: var(--space-5);
+}
+
+.filterList {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.filter {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+    padding: 0 var(--space-4);
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-full);
+    background: color-mix(in srgb, var(--color-surface) 60%, transparent);
+    color: var(--color-foreground);
+    font-size: var(--text-sm);
+    text-decoration: none;
+}
+
+.filter:hover {
+    background: var(--color-overlay-hover);
+}
+
+.filter[aria-current="page"] {
+    border-color: var(--color-accent-text);
+    background: color-mix(in srgb, var(--color-accent-text) 16%, var(--color-surface));
+    color: var(--color-accent-text);
+}
+
+.filter:focus-visible,
+.retry:focus-visible {
+    outline: 2px solid var(--color-focus-ring);
+    outline-offset: 2px;
+}
+
+.loading,
+.empty {
+    margin: 0;
+    padding: var(--space-5);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: color-mix(in srgb, var(--color-surface) 70%, transparent);
+    color: var(--color-foreground-muted);
+}
+
+.error {
+    padding: var(--space-4);
+    border: 1px solid var(--color-error);
+    border-radius: var(--radius-lg);
+    background: var(--color-error-surface);
+    color: var(--color-error);
+}
+
+.error p {
+    margin: 0 0 var(--space-3);
+}
+
+.retry {
+    color: inherit;
+    text-underline-offset: 0.2em;
+}
+
+/* ---- Table: stacked cards on small screens, a real table from 40em ---- */
+
+.tableWrap {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: color-mix(in srgb, var(--color-surface) 78%, transparent);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    overflow: hidden;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    color: var(--color-foreground);
+}
+
+/* Read by screen readers (it names the table); not shown, the page title already says it. */
+.caption {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
+.table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+}
+
+.table tr {
+    display: grid;
+    grid-template-columns: 3rem minmax(0, 1fr) auto;
+    gap: var(--space-1) var(--space-3);
+    align-items: baseline;
+    padding: var(--space-3) var(--space-4);
+    border-top: 1px solid var(--color-border);
+}
+
+.table tbody tr:first-child {
+    border-top: 0;
+}
+
+.table td {
+    display: block;
+    min-width: 0;
+    font-size: var(--text-sm);
+    color: var(--color-foreground-muted);
+    overflow-wrap: anywhere;
+}
+
+.table td.rank {
+    grid-row: 1 / span 3;
+    align-self: center;
+    color: var(--color-accent-text);
+    font-family: var(--font-serif);
+    font-size: var(--text-2xl);
+}
+
+.table td.player {
+    grid-column: 2;
+    color: var(--color-foreground);
+    font-size: var(--text-lg);
+}
+
+.table td.numeric {
+    grid-column: 3;
+    grid-row: 1;
+    color: var(--color-foreground);
+    font-family: var(--font-serif);
+    font-size: var(--text-xl);
+    white-space: nowrap;
+    text-align: right;
+}
+
+.table td:nth-child(3),
+.table td:nth-child(4) {
+    grid-column: 2 / span 2;
+}
+
+.podium td.rank {
+    text-shadow: 0 0 1rem color-mix(in srgb, var(--color-accent-text) 55%, transparent);
+}
+
+@media (min-width: 40em) {
+    .table thead {
+        position: static;
+        width: auto;
+        height: auto;
+        overflow: visible;
+        clip-path: none;
+    }
+
+    .table tr {
+        display: table-row;
+        padding: 0;
+    }
+
+    .table th,
+    .table td {
+        display: table-cell;
+        padding: var(--space-3) var(--space-4);
+        text-align: left;
+        vertical-align: baseline;
+    }
+
+    .table th {
+        color: var(--color-foreground-muted);
+        font-size: var(--text-xs);
+        font-weight: var(--weight-regular);
+        letter-spacing: var(--tracking-wide);
+        text-transform: uppercase;
+    }
+
+    .table td.rank {
+        width: 4.5rem;
+        font-size: var(--text-xl);
+    }
+
+    .table td.player {
+        font-size: var(--text-base);
+    }
+
+    .table th.numeric,
+    .table td.numeric {
+        text-align: right;
+    }
+
+    .table td.numeric {
+        font-size: var(--text-lg);
+    }
+
+    .table td:nth-child(3),
+    .table td:nth-child(4) {
+        white-space: nowrap;
+    }
+}

@@ -117,6 +117,7 @@ describe("sitemap", () => {
         expect(entries.map((e) => e.url)).toEqual([
             SITE_URL,
             `${SITE_URL}/quotes`,
+            `${SITE_URL}/leaderboard`,
             `${SITE_URL}/games/who-said-it`,
             `${SITE_URL}/games/which-character`,
             `${SITE_URL}/games/lore-challenge`,

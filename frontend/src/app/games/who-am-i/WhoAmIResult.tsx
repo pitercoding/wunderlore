@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import Link from "next/link";
 import Button from "@/components/Button/Button";
+import PublishResult from "@/components/PublishResult/PublishResult";
 import type { WhoAmIResult as Result } from "@/lib/api/whoAmI";
 import { cluesUsedLabel, difficultyLabel } from "./labels";
 import styles from "./page.module.css";
@@ -88,6 +89,8 @@ export default function WhoAmIResult({
                     </li>
                 ))}
             </ol>
+
+            <PublishResult gameType="who-am-i" gameId={result.gameId} />
 
             {isStarting && (
                 <p role="status" className={styles.status}>

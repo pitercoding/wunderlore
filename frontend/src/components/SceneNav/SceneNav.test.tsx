@@ -84,12 +84,14 @@ describe("SceneNav compact menu", () => {
             "/games/who-am-i",
             "/games/where-in-middle-earth",
             "/quotes",
+            "/leaderboard",
             "/games/who-said-it",
             "/games/which-character",
             "/games/lore-challenge",
             "/games/who-am-i",
             "/games/where-in-middle-earth",
             "/quotes",
+            "/leaderboard",
         ]);
     });
 

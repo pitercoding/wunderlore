@@ -62,6 +62,7 @@ export const WHO_AM_I_IMAGE: ShareImage = {
 export const PUBLIC_PATHS = [
   "/",
   "/quotes",
+  "/leaderboard",
   "/games/who-said-it",
   "/games/which-character",
   "/games/lore-challenge",

@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import Link from "next/link";
 import Button from "@/components/Button/Button";
+import PublishResult from "@/components/PublishResult/PublishResult";
 import type { WhereInMiddleEarthResult as Result } from "@/lib/api/whereInMiddleEarth";
 import { ACCURACY_LABELS, difficultyLabel, formatDistance } from "./labels";
 import styles from "./page.module.css";
@@ -95,6 +96,8 @@ export default function WhereInMiddleEarthResult({
                     );
                 })}
             </ol>
+
+            <PublishResult gameType="where-in-middle-earth" gameId={result.gameId} />
 
             {isStarting && (
                 <p role="status" className={styles.status}>
