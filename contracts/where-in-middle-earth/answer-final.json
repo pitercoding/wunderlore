@@ -1,0 +1,32 @@
+{
+  "gameId": "3f2b8c1e-5a47-4d0e-9c36-7b1e2a9d4f60",
+  "roundNumber": 10,
+  "submitted": { "x": 120.0, "y": 560.0 },
+  "distance": 602.2,
+  "accuracy": "FAR",
+  "pointsAwarded": 0,
+  "score": 720,
+  "reveal": {
+    "locationName": "Mount Doom",
+    "regionName": "Mordor",
+    "period": "Third Age",
+    "explanation": "Mount Doom (Orodruin) stood alone on the Plateau of Gorgoroth in Mordor, about thirty miles west of Barad-dûr.",
+    "x": 722.0,
+    "y": 545.0
+  },
+  "gameFinished": true,
+  "result": {
+    "gameId": "3f2b8c1e-5a47-4d0e-9c36-7b1e2a9d4f60",
+    "difficulty": "EASY",
+    "totalRounds": 10,
+    "score": 720,
+    "maxScore": 1000,
+    "percentage": 72,
+    "closeHits": 9,
+    "averageDistance": 61.3,
+    "rounds": [
+      { "roundNumber": 1, "locationName": "Rivendell", "accuracy": "EXCELLENT", "distance": 6.0, "points": 100 },
+      { "roundNumber": 10, "locationName": "Mount Doom", "accuracy": "FAR", "distance": 602.2, "points": 0 }
+    ]
+  }
+}

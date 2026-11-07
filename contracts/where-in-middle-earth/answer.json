@@ -1,0 +1,19 @@
+{
+  "gameId": "3f2b8c1e-5a47-4d0e-9c36-7b1e2a9d4f60",
+  "roundNumber": 1,
+  "submitted": { "x": 380.5, "y": 230.0 },
+  "distance": 6.0,
+  "accuracy": "EXCELLENT",
+  "pointsAwarded": 100,
+  "score": 100,
+  "reveal": {
+    "locationName": "Rivendell",
+    "regionName": "Eriador",
+    "period": "Third Age",
+    "explanation": "Rivendell (Imladris) lay on the eastern edge of Eriador, in the foothills of the Misty Mountains, at the edge of a narrow gorge of the river Bruinen.",
+    "x": 385.0,
+    "y": 226.0
+  },
+  "gameFinished": false,
+  "result": null
+}

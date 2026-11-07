@@ -1,0 +1,442 @@
+{
+  "regions": [
+    { "id": "eriador", "name": "Eriador" },
+    { "id": "north", "name": "Angmar and the North" },
+    { "id": "misty-mountains", "name": "Misty Mountains" },
+    { "id": "wilderland", "name": "Wilderland" },
+    { "id": "great-river", "name": "Great River Lands" },
+    { "id": "rohan", "name": "Rohan and the Gap" },
+    { "id": "gondor", "name": "Gondor" },
+    { "id": "mordor", "name": "Mordor" },
+    { "id": "south", "name": "Umbar and the South" }
+  ],
+  "locations": [
+    {
+      "id": "hobbiton", "name": "Hobbiton", "difficulty": "EASY", "region": "eriador", "x": 176, "y": 226,
+      "period": "Third Age",
+      "description": "A hobbit village in the heart of the Shire, where Bag End stood.",
+      "explanation": "Hobbiton lay in the central part of the Shire, in the Westfarthing, on both sides of the Water and about a mile north-west of Bywater.",
+      "references": [
+        { "source": "Tolkien Gateway: Hobbiton", "url": "https://tolkiengateway.net/wiki/Hobbiton", "supports": "A village in the central regions of the Shire, within the Westfarthing; on both sides of the Water, about a mile north-west of Bywater." }
+      ]
+    },
+    {
+      "id": "bree", "name": "Bree", "difficulty": "EASY", "region": "eriador", "x": 262, "y": 236,
+      "period": "Third Age",
+      "description": "A village of Men and hobbits at the crossing of two great roads.",
+      "explanation": "Bree lay just east of the crossing of the East Road and the Greenway, about forty miles east of the Shire, east of the Old Forest and the Barrow-downs, west of Weathertop and south of Fornost.",
+      "references": [
+        { "source": "Tolkien Gateway: Bree", "url": "https://tolkiengateway.net/wiki/Bree", "supports": "Village east of the crossing of the East Road and the Greenway; Bree-land about forty miles east of the Shire, east of the Old Forest and Barrow-downs, west of Weathertop, south of Fornost Erain." }
+      ]
+    },
+    {
+      "id": "weathertop", "name": "Weathertop", "difficulty": "EASY", "region": "eriador", "x": 322, "y": 214,
+      "period": "Third Age",
+      "description": "A hill topped by the ruins of an ancient watchtower, also called Amon Sûl.",
+      "explanation": "Weathertop (Amon Sûl) was the southernmost top of the Weather Hills, which lay at the centre of Arnor near the East Road, east of Bree.",
+      "references": [
+        { "source": "Tolkien Gateway: Weathertop", "url": "https://tolkiengateway.net/wiki/Weathertop", "supports": "Southernmost top of the Weather Hills; the Weather Hills lay at the centre of Arnor, near the East Road." },
+        { "source": "Tolkien Gateway: Bree", "url": "https://tolkiengateway.net/wiki/Bree", "supports": "Bree-land lay west of Weathertop." }
+      ]
+    },
+    {
+      "id": "rivendell", "name": "Rivendell", "difficulty": "EASY", "region": "eriador", "x": 385, "y": 226,
+      "period": "Third Age",
+      "description": "Elrond's hidden refuge, the Last Homely House.",
+      "explanation": "Rivendell (Imladris) lay on the eastern edge of Eriador, in the foothills of the Misty Mountains, at the edge of a narrow gorge of the river Bruinen.",
+      "references": [
+        { "source": "Tolkien Gateway: Rivendell", "url": "https://tolkiengateway.net/wiki/Rivendell", "supports": "An Elven outpost in the Misty Mountains on the eastern edge of Eriador; at the edge of a narrow gorge of the Bruinen, hidden in the moorlands and foothills of the Misty Mountains." }
+      ]
+    },
+    {
+      "id": "moria", "name": "Moria", "difficulty": "EASY", "region": "misty-mountains", "x": 394, "y": 322,
+      "period": "Third Age",
+      "description": "The vast Dwarf-realm beneath the Misty Mountains, also called Khazad-dûm.",
+      "explanation": "Moria lay in the central parts of the Misty Mountains, tunnelled through them from the West-gate to the East-gate, which opened on Dimrill Dale on the eastern side of the range.",
+      "references": [
+        { "source": "Tolkien Gateway: Moria", "url": "https://tolkiengateway.net/wiki/Moria", "supports": "Lay in the central parts of the Misty Mountains and traversed them from east to west; West-gate and East-gate at least forty miles apart." },
+        { "source": "Tolkien Gateway: Dimrill Dale", "url": "https://tolkiengateway.net/wiki/Dimrill_Dale", "supports": "Dimrill Dale was a valley on the east side of the Misty Mountains, at the eastern end of the Redhorn Pass." }
+      ]
+    },
+    {
+      "id": "lothlorien", "name": "Lothlórien", "difficulty": "EASY", "region": "wilderland", "x": 452, "y": 358,
+      "period": "Third Age",
+      "description": "The golden Elven wood of the Galadhrim, with the only mallorn-trees east of the Sea.",
+      "explanation": "Lothlórien was the forest between the Misty Mountains and the Great River Anduin, below the Gladden; its city, Caras Galadhon, stood in the angle between the rivers Celebrant and Anduin.",
+      "references": [
+        { "source": "Tolkien Gateway: Lothlórien", "url": "https://tolkiengateway.net/wiki/Lothl%C3%B3rien", "supports": "The forest between the mountains and the Great River, above the Limlight and below the Gladden; the only mallorn-trees east of the sea." },
+        { "source": "Tolkien Gateway: Caras Galadhon", "url": "https://tolkiengateway.net/wiki/Caras_Galadhon", "supports": "Caras Galadhon was in the angle between the rivers Celebrant and Anduin." }
+      ]
+    },
+    {
+      "id": "isengard", "name": "Isengard", "difficulty": "EASY", "region": "rohan", "x": 385, "y": 436,
+      "period": "Third Age",
+      "description": "Saruman's fortress, ringed by a wall of stone around the tower of Orthanc.",
+      "explanation": "Isengard (Angrenost) lay in a valley at the southern tip of the Misty Mountains, near the Gap of Rohan.",
+      "references": [
+        { "source": "Tolkien Gateway: Isengard", "url": "https://tolkiengateway.net/wiki/Isengard", "supports": "A fortress in a valley at the southern end of the Misty Mountains near the Gap of Rohan; domain of Saruman." }
+      ]
+    },
+    {
+      "id": "helms-deep", "name": "Helm's Deep", "difficulty": "EASY", "region": "rohan", "x": 394, "y": 505,
+      "period": "Third Age",
+      "description": "A great gorge and fortress, a refuge of the Rohirrim.",
+      "explanation": "Helm's Deep was a gorge below the Thrihyrne, at the head of the Westfold Vale near the end of the northernmost arm of the White Mountains, about fifteen miles from the Fords of Isen.",
+      "references": [
+        { "source": "Tolkien Gateway: Helm's Deep", "url": "https://tolkiengateway.net/wiki/Helm%27s_Deep", "supports": "A gorge below the Thrihyrne at the head of the Westfold Vale, near the end of the northernmost arm of the White Mountains; about five leagues (15 miles) from the mouth of the Deeping-coomb to the Fords of Isen." }
+      ]
+    },
+    {
+      "id": "edoras", "name": "Edoras", "difficulty": "EASY", "region": "rohan", "x": 462, "y": 520,
+      "period": "Third Age",
+      "description": "The capital of Rohan, home of the golden hall Meduseld.",
+      "explanation": "Edoras was built on a hill in Harrowdale, a valley of the White Mountains under the Starkhorn; the river Snowbourn flowed past it on its way west to the Entwash.",
+      "references": [
+        { "source": "Tolkien Gateway: Edoras", "url": "https://tolkiengateway.net/wiki/Edoras", "supports": "Capital of Rohan with the Golden Hall of Meduseld; on a hill in Harrowdale, under the Starkhorn; the Snowbourn flowed past it west toward the Entwash." },
+        { "source": "Tolkien Gateway: Rohan", "url": "https://tolkiengateway.net/wiki/Rohan", "supports": "Edoras lay on the slopes of the White Mountains." }
+      ]
+    },
+    {
+      "id": "minas-tirith", "name": "Minas Tirith", "difficulty": "EASY", "region": "gondor", "x": 565, "y": 582,
+      "period": "Third Age",
+      "description": "The White City, capital of Gondor, once called Minas Anor.",
+      "explanation": "Minas Tirith (Minas Anor) lay south-west of Osgiliath, which stood about halfway between it and Minas Ithil; Cair Andros lay about fifty miles to its north.",
+      "references": [
+        { "source": "Tolkien Gateway: Minas Tirith", "url": "https://tolkiengateway.net/wiki/Minas_Tirith", "supports": "Minas Anor; capital of the South-kingdom from T.A. 1640." },
+        { "source": "Tolkien Gateway: Osgiliath", "url": "https://tolkiengateway.net/wiki/Osgiliath", "supports": "Osgiliath lay about halfway between Minas Anor to the south-west and Minas Ithil to the north-east." },
+        { "source": "Tolkien Gateway: Cair Andros", "url": "https://tolkiengateway.net/wiki/Cair_Andros", "supports": "Cair Andros lay about fifty miles north of Minas Tirith." }
+      ]
+    },
+    {
+      "id": "pelargir", "name": "Pelargir", "difficulty": "EASY", "region": "gondor", "x": 618, "y": 630,
+      "period": "Third Age",
+      "description": "The great harbour city of Gondor on the Anduin.",
+      "explanation": "Pelargir was a great city on the river Anduin and the main harbour of Gondor; the coast of the Bay of Belfalas retreated after the Downfall of Númenor, leaving it far inland.",
+      "references": [
+        { "source": "Tolkien Gateway: Pelargir", "url": "https://tolkiengateway.net/wiki/Pelargir", "supports": "A great city on the Anduin and the main harbour of Gondor; left far inland by the retreat of the coast along the Bay of Belfalas." }
+      ]
+    },
+    {
+      "id": "black-gate", "name": "The Black Gate", "difficulty": "EASY", "region": "mordor", "x": 672, "y": 440,
+      "period": "Third Age",
+      "description": "The Morannon, the main entrance into the land of Mordor.",
+      "explanation": "The Black Gate (Morannon) closed the pass of Cirith Gorgor, between the Ephel Dúath and the Ered Lithui, in the north-western corner of Mordor; the plain of the Dagorlad lay north of it.",
+      "references": [
+        { "source": "Tolkien Gateway: Morannon", "url": "https://tolkiengateway.net/wiki/Morannon", "supports": "The main entrance into Mordor; blocked the pass of Cirith Gorgor between the Ephel Dúath and the Ered Lithui in the north-western corner of Mordor; the Dagorlad lay further north." }
+      ]
+    },
+    {
+      "id": "mount-doom", "name": "Mount Doom", "difficulty": "EASY", "region": "mordor", "x": 722, "y": 545,
+      "period": "Third Age",
+      "description": "The volcano Orodruin, where the One Ring was forged and where it was unmade.",
+      "explanation": "Mount Doom (Orodruin) stood alone on the Plateau of Gorgoroth in Mordor, about thirty miles west of Barad-dûr.",
+      "references": [
+        { "source": "Tolkien Gateway: Mount Doom", "url": "https://tolkiengateway.net/wiki/Mount_Doom", "supports": "A volcano in Mordor that stood alone in the Plateau of Gorgoroth, connected to the Dark Tower by Sauron's Road." },
+        { "source": "Tolkien Gateway: Barad-dûr", "url": "https://tolkiengateway.net/wiki/Barad-d%C3%BBr", "supports": "Barad-dûr stood about 30 miles east of Mount Doom." }
+      ]
+    },
+    {
+      "id": "erebor", "name": "Erebor", "difficulty": "EASY", "region": "wilderland", "x": 668, "y": 158,
+      "period": "Third Age",
+      "description": "The Lonely Mountain, the Dwarf-kingdom where the dragon Smaug dwelt.",
+      "explanation": "Erebor, the Lonely Mountain, stood alone in the north-east of Rhovanion and was the source of the river Running; the valley of Dale lay at its southern foot.",
+      "references": [
+        { "source": "Tolkien Gateway: Lonely Mountain", "url": "https://tolkiengateway.net/wiki/Erebor", "supports": "A large, solitary mountain in the north-east of Rhovanion and the source of the river Running." },
+        { "source": "Tolkien Gateway: Dale", "url": "https://tolkiengateway.net/wiki/Dale", "supports": "The valley of Dale lay between the south-western and south-eastern arms of the Lonely Mountain." },
+        { "source": "Tolkien Gateway: Lake-town", "url": "https://tolkiengateway.net/wiki/Lake-town", "supports": "Smaug dwelt in the Lonely Mountain." }
+      ]
+    },
+    {
+      "id": "grey-havens", "name": "The Grey Havens", "difficulty": "EASY", "region": "eriador", "x": 97, "y": 214,
+      "period": "Third Age",
+      "description": "The Elven seaport from which ships sail into the West.",
+      "explanation": "The Grey Havens (Mithlond) were seaports on both sides of the end of the Gulf of Lune, near the mouth of the river Lhûn, in the far west of Eriador.",
+      "references": [
+        { "source": "Tolkien Gateway: Grey Havens", "url": "https://tolkiengateway.net/wiki/Grey_Havens", "supports": "Seaports on both sides of the end of the Gulf of Lune near the mouth of the Lhûn in western Eriador; ships sailed West from them." }
+      ]
+    },
+
+    {
+      "id": "amon-hen", "name": "Amon Hen", "difficulty": "MEDIUM", "region": "great-river", "x": 522, "y": 418,
+      "period": "Third Age",
+      "description": "The Hill of Sight, crowned by the ruined Seat of Seeing.",
+      "explanation": "Amon Hen rose beside the Anduin near Tol Brandir, with the lawn of Parth Galen at its eastern foot; the Fellowship broke up near the southern edge of the Emyn Muil.",
+      "references": [
+        { "source": "Tolkien Gateway: Amon Hen", "url": "https://tolkiengateway.net/wiki/Amon_Hen", "supports": "On its eastern side at the foot lay the lawn of Parth Galen and the Anduin that flowed past Tol Brandir; the Seat of Seeing was on the summit." },
+        { "source": "Tolkien Gateway: Emyn Muil", "url": "https://tolkiengateway.net/wiki/Emyn_Muil", "supports": "The Fellowship broke up near the southern boundary of the Emyn Muil." }
+      ]
+    },
+    {
+      "id": "fangorn-forest", "name": "Fangorn Forest", "difficulty": "MEDIUM", "region": "rohan", "x": 450, "y": 410,
+      "period": "Third Age",
+      "description": "The deep, dark forest of the Ents, where Treebeard lives.",
+      "explanation": "Fangorn Forest grew on the eastern flank of the southern Misty Mountains, north of Rohan, where it was known as the Entwood; the river Entwash flowed through it.",
+      "references": [
+        { "source": "Tolkien Gateway: Fangorn Forest", "url": "https://tolkiengateway.net/wiki/Fangorn_Forest", "supports": "A deep woodland beneath the southern Misty Mountains, on the eastern side of the range; known as the Entwood in Rohan; the Entwash flowed through it." },
+        { "source": "Tolkien Gateway: Fangorn (disambiguation)", "url": "https://tolkiengateway.net/wiki/Fangorn", "supports": "A large forest to the north of Rohan where Treebeard and the other Ents live." }
+      ]
+    },
+    {
+      "id": "dead-marshes", "name": "The Dead Marshes", "difficulty": "MEDIUM", "region": "great-river", "x": 620, "y": 420,
+      "period": "Third Age",
+      "description": "Reeking wetlands that Gollum guided Frodo and Sam across.",
+      "explanation": "The Dead Marshes lay north-west of the Dagorlad and south-east of the Emyn Muil, on the road from the hills toward the Black Gate.",
+      "references": [
+        { "source": "Tolkien Gateway: Dead Marshes", "url": "https://tolkiengateway.net/wiki/Dead_Marshes", "supports": "Reeking wetlands north-west of the Dagorlad and south-east of the Emyn Muil; Gollum revealed a hidden way across them after meeting Frodo and Sam in the Emyn Muil." }
+      ]
+    },
+    {
+      "id": "minas-morgul", "name": "Minas Morgul", "difficulty": "MEDIUM", "region": "gondor", "x": 648, "y": 545,
+      "period": "Third Age",
+      "description": "A pale, fell city that was once Gondor's Minas Ithil, the Tower of the Moon.",
+      "explanation": "Minas Morgul stood within the narrow Morgul Vale, guarding the pass between Ithilien and Mordor; the Morgul-road ran to it from Osgiliath, which lay to the south-west.",
+      "references": [
+        { "source": "Tolkien Gateway: Minas Morgul", "url": "https://tolkiengateway.net/wiki/Minas_Morgul", "supports": "Situated within the narrow Morgul Vale, guarding the pass between Ithilien and Mordor; the Morgul-road ran from Osgiliath." },
+        { "source": "Tolkien Gateway: Osgiliath", "url": "https://tolkiengateway.net/wiki/Osgiliath", "supports": "Osgiliath lay about halfway between Minas Anor to the south-west and Minas Ithil to the north-east; Minas Ithil was taken in 2002." }
+      ]
+    },
+    {
+      "id": "osgiliath", "name": "Osgiliath", "difficulty": "MEDIUM", "region": "gondor", "x": 602, "y": 572,
+      "period": "Third Age",
+      "description": "The ruined old capital of Gondor, divided by a great river.",
+      "explanation": "Osgiliath stood on both sides of the Anduin, about halfway between Minas Anor to the south-west and Minas Ithil to the north-east, north of the Emyn Arnen.",
+      "references": [
+        { "source": "Tolkien Gateway: Osgiliath", "url": "https://tolkiengateway.net/wiki/Osgiliath", "supports": "Stood on both sides of the Anduin, about halfway between Minas Anor (south-west) and Minas Ithil (north-east), north of Emyn Arnen." }
+      ]
+    },
+    {
+      "id": "cirith-ungol", "name": "Cirith Ungol", "difficulty": "MEDIUM", "region": "mordor", "x": 672, "y": 515,
+      "period": "Third Age",
+      "description": "A high, difficult pass into Mordor, watched by a tower and a giant spider.",
+      "explanation": "Cirith Ungol was a pass through the Ephel Dúath into Mordor, in a cleft on the north-east side of the Morgul Vale, above and north of the Morgul Pass.",
+      "references": [
+        { "source": "Tolkien Gateway: Cirith Ungol", "url": "https://tolkiengateway.net/wiki/Cirith_Ungol", "supports": "A pass through the Ephel Dúath into Mordor, in a cleft on the north-east side of the Morgul Vale, above and north of the Morgul Pass." },
+        { "source": "Tolkien Gateway: Mordor", "url": "https://tolkiengateway.net/wiki/Mordor", "supports": "Cirith Ungol was a higher, more difficult pass guarded by Shelob and the Tower of Cirith Ungol." }
+      ]
+    },
+    {
+      "id": "barad-dur", "name": "Barad-dûr", "difficulty": "MEDIUM", "region": "mordor", "x": 770, "y": 520,
+      "period": "Third Age",
+      "description": "Sauron's Dark Tower, his main fortress.",
+      "explanation": "Barad-dûr stood on a spur of the Ered Lithui in the northern part of the Plateau of Gorgoroth, about thirty miles east of Mount Doom and about a hundred miles south-east of the Black Gate.",
+      "references": [
+        { "source": "Tolkien Gateway: Barad-dûr", "url": "https://tolkiengateway.net/wiki/Barad-d%C3%BBr", "supports": "Built on the end of a long south-western spur of the Ered Lithui in the northern part of the Plateau of Gorgoroth; about 30 miles east of Mount Doom and about 100 miles south-east of the Black Gate." }
+      ]
+    },
+    {
+      "id": "dol-guldur", "name": "Dol Guldur", "difficulty": "MEDIUM", "region": "wilderland", "x": 506, "y": 325,
+      "period": "Third Age",
+      "description": "The hill-fortress where the Necromancer hid, once called Amon Lanc.",
+      "explanation": "Dol Guldur stood at the highest point of a highland in the south-west of Mirkwood, east of the Anduin and facing Lothlórien across the river.",
+      "references": [
+        { "source": "Tolkien Gateway: Dol Guldur", "url": "https://tolkiengateway.net/wiki/Dol_Guldur", "supports": "A stronghold of Sauron at the highest point of a highland in the south-west of Mirkwood; originally Amon Lanc; Lothlórien lay to the west." },
+        { "source": "Tolkien Gateway: Mirkwood", "url": "https://tolkiengateway.net/wiki/Mirkwood", "supports": "Mirkwood was a great forest east of the Anduin; Amon Lanc lay south and west of the Narrows of the Forest." }
+      ]
+    },
+    {
+      "id": "dale", "name": "Dale", "difficulty": "MEDIUM", "region": "wilderland", "x": 668, "y": 178,
+      "period": "Third Age",
+      "description": "The town of Men that grew up in the shadow of the Lonely Mountain.",
+      "explanation": "Dale lay in a valley between the south-western and south-eastern arms of the Lonely Mountain, within a loop of the river Running, which flowed on south to the Long Lake.",
+      "references": [
+        { "source": "Tolkien Gateway: Dale", "url": "https://tolkiengateway.net/wiki/Dale", "supports": "The valley lay between the south-western and south-eastern arms of the Lonely Mountain; the town was near its southern end within a loop of the river, which flowed south to the Long Lake." }
+      ]
+    },
+    {
+      "id": "lake-town", "name": "Lake-town", "difficulty": "MEDIUM", "region": "wilderland", "x": 662, "y": 222,
+      "period": "Third Age",
+      "description": "A wooden town built on pillars in a lake, also called Esgaroth.",
+      "explanation": "Lake-town stood on the west side of the Long Lake, a little north of the mouth of the Forest River, in a calm bay sheltered by a rock promontory. After Smaug's fall it was rebuilt a little to the north.",
+      "references": [
+        { "source": "Tolkien Gateway: Lake-town", "url": "https://tolkiengateway.net/wiki/Lake-town", "supports": "On the west side of the lake, a bit north of the mouth of the Forest River in a calm bay sheltered by a rock promontory; rebuilt to the north of its original location." }
+      ]
+    },
+    {
+      "id": "dunharrow", "name": "Dunharrow", "difficulty": "MEDIUM", "region": "rohan", "x": 492, "y": 556,
+      "period": "Third Age",
+      "description": "A mountain refuge of the Rohirrim beside the entrance to the Paths of the Dead.",
+      "explanation": "Dunharrow was a fortified refuge in the White Mountains south of Edoras, with the Írensaga to the north, the Starkhorn to the south and the Dwimorberg to the east.",
+      "references": [
+        { "source": "Tolkien Gateway: Dunharrow", "url": "https://tolkiengateway.net/wiki/Dunharrow", "supports": "A fortified refuge of the Rohirrim in the White Mountains south of Edoras, between the Írensaga (north), the Starkhorn (south) and the Dwimorberg (east); the entrance to the Paths of the Dead lay below the Dwimorberg." }
+      ]
+    },
+    {
+      "id": "barrow-downs", "name": "The Barrow-downs", "difficulty": "MEDIUM", "region": "eriador", "x": 238, "y": 284,
+      "period": "Third Age",
+      "description": "Treeless hills crowned with ancient burial mounds.",
+      "explanation": "The Barrow-downs were treeless hills east of the Shire, behind the Old Forest, and south-west of the village of Bree.",
+      "references": [
+        { "source": "Tolkien Gateway: Barrow-downs", "url": "https://tolkiengateway.net/wiki/Barrow-downs", "supports": "A series of treeless hills east of the Shire, behind the Old Forest, and south-west of Bree." }
+      ]
+    },
+    {
+      "id": "dol-amroth", "name": "Dol Amroth", "difficulty": "MEDIUM", "region": "gondor", "x": 472, "y": 654,
+      "period": "Third Age",
+      "description": "The seat of a princedom, on a headland above the sea.",
+      "explanation": "Dol Amroth was a stronghold on a promontory and peninsula in Gondor facing the Bay of Belfalas, seat of a hereditary princedom.",
+      "references": [
+        { "source": "Tolkien Gateway: Dol Amroth", "url": "https://tolkiengateway.net/wiki/Dol_Amroth", "supports": "A promontory ruled as a hereditary princedom from its stronghold on a peninsula in Gondor facing the Bay of Belfalas." }
+      ]
+    },
+    {
+      "id": "emyn-muil", "name": "Emyn Muil", "difficulty": "MEDIUM", "region": "great-river", "x": 560, "y": 376,
+      "period": "Third Age",
+      "description": "A maze of difficult rocky hills where Frodo and Sam met Gollum.",
+      "explanation": "The Emyn Muil were hills around the lake Nen Hithoel, north of the falls of Rauros, south of the Brown Lands and north of the Nindalf; the Anduin ran through them.",
+      "references": [
+        { "source": "Tolkien Gateway: Emyn Muil", "url": "https://tolkiengateway.net/wiki/Emyn_Muil", "supports": "A range of hills around the lake Nen Hithoel, north of the falls of Rauros; south of the Brown Lands and north of the Nindalf; the Anduin flowed through the hills." }
+      ]
+    },
+    {
+      "id": "iron-hills", "name": "The Iron Hills", "difficulty": "MEDIUM", "region": "wilderland", "x": 800, "y": 155,
+      "period": "Third Age",
+      "description": "A range of hills rich in iron and home to a Dwarf-realm.",
+      "explanation": "The Iron Hills were a range in the north-east of Wilderland, east of the Lonely Mountain; an old road ran east to them from Dale.",
+      "references": [
+        { "source": "Tolkien Gateway: Iron Hills", "url": "https://tolkiengateway.net/wiki/Iron_Hills", "supports": "A range of great hills in the north-east of Wilderland, rich in iron and home to a Dwarf-realm." },
+        { "source": "Tolkien Gateway: Dale", "url": "https://tolkiengateway.net/wiki/Dale", "supports": "An old road led from the valley of Dale to the east towards the Iron Hills." }
+      ]
+    },
+
+    {
+      "id": "fornost", "name": "Fornost", "difficulty": "HARD", "region": "eriador", "x": 265, "y": 150,
+      "period": "Third Age: capital of Arthedain until it was captured in T.A. 1974",
+      "description": "The second capital of Arnor and later the capital of Arthedain.",
+      "explanation": "Fornost Erain stood at the south end of the North Downs, about a hundred miles north of Bree, at the northern end of the North-South Road.",
+      "references": [
+        { "source": "Tolkien Gateway: Fornost Erain", "url": "https://tolkiengateway.net/wiki/Fornost", "supports": "Located at the south end of the North Downs, about 100 miles north of Bree, at the northern end of the North-South Road; captured by Angmar in T.A. 1974." }
+      ]
+    },
+    {
+      "id": "carn-dum", "name": "Carn Dûm", "difficulty": "HARD", "region": "north", "x": 320, "y": 62,
+      "period": "Third Age: seat of the king of Angmar until the realm fell in T.A. 1975",
+      "description": "The chief fortress of Angmar and seat of its king.",
+      "explanation": "Carn Dûm stood at the north-western end of the Mountains of Angmar, the north-western extension of the Misty Mountains.",
+      "references": [
+        { "source": "Tolkien Gateway: Carn Dûm", "url": "https://tolkiengateway.net/wiki/Carn_D%C3%BBm", "supports": "The chief fortress of Angmar and the seat of its king, at the north-western end of the Mountains of Angmar." },
+        { "source": "Tolkien Gateway: Mount Gundabad", "url": "https://tolkiengateway.net/wiki/Mount_Gundabad", "supports": "The Misty Mountains continued past Mount Gundabad in a north-westerly direction as the Mountains of Angmar; Angmar was destroyed in 1975." }
+      ]
+    },
+    {
+      "id": "annuminas", "name": "Annúminas", "difficulty": "HARD", "region": "eriador", "x": 215, "y": 118,
+      "period": "Third Age: an early capital of Arnor, later ruined",
+      "description": "The city of the Kings of Arnor before the capital moved to Fornost.",
+      "explanation": "Annúminas lay on the south-east shore of Lake Nenuial (Evendim), near the source of the river Baranduin, with the Hills of Evendim to its south and west.",
+      "references": [
+        { "source": "Tolkien Gateway: Annúminas", "url": "https://tolkiengateway.net/wiki/Ann%C3%BAminas", "supports": "On the south-east shore of Lake Nenuial, near the source of the Baranduin; the Hills of Evendim rose to the south and west; the capital later moved to Fornost Erain." }
+      ]
+    },
+    {
+      "id": "tharbad", "name": "Tharbad", "difficulty": "HARD", "region": "eriador", "x": 250, "y": 330,
+      "period": "Third Age: ruined and deserted after floods in T.A. 2912",
+      "description": "A ford and fortified town where the North-South Road crossed a great river.",
+      "explanation": "Tharbad stood on the southern border of Eriador, a few miles downstream from where the Hoarwell and the Glanduin join to form the Gwathló, which the North-South Road crossed there.",
+      "references": [
+        { "source": "Tolkien Gateway: Tharbad", "url": "https://tolkiengateway.net/wiki/Tharbad", "supports": "On the southern border of Eriador, a few miles downstream from the confluence of the Hoarwell and the Glanduin; the North-South Road crossed the Gwathló there; ruined and deserted in T.A. 2912." }
+      ]
+    },
+    {
+      "id": "ost-in-edhil", "name": "Ost-in-Edhil", "difficulty": "HARD", "region": "eriador", "x": 335, "y": 322,
+      "period": "Second Age: capital of Eregion until its fall in S.A. 1697",
+      "description": "The Elven capital of Eregion, where Celebrimbor ruled.",
+      "explanation": "Ost-in-Edhil was the capital of Eregion (Hollin), west of the Misty Mountains and near the West-gate of Moria, joined to it by a highroad. Its exact site is not fixed; this map places it west of Moria.",
+      "references": [
+        { "source": "Tolkien Gateway: Eregion", "url": "https://tolkiengateway.net/wiki/Eregion", "supports": "Eregion lay in Eriador west of the Misty Mountains near the West-gate of Moria; Ost-in-Edhil was its capital; a high road ran from Ost-in-Edhil to Khazad-dûm." },
+        { "source": "Tolkien Gateway: Ost-in-Edhil", "url": "https://tolkiengateway.net/wiki/Ost-in-Edhil", "supports": "The highroad connected Ost-in-Edhil with the west gate of Moria; its exact location is uncertain, possibly near the Sirannon many miles downstream from the West-gate." },
+        { "source": "Tolkien Gateway: Rivendell", "url": "https://tolkiengateway.net/wiki/Rivendell", "supports": "Elrond founded Rivendell in S.A. 1697 after the Fall of Eregion." }
+      ]
+    },
+    {
+      "id": "mount-gundabad", "name": "Mount Gundabad", "difficulty": "HARD", "region": "north", "x": 415, "y": 104,
+      "period": "Third Age",
+      "description": "A northern mountain revered by Dwarves but usually held by Orcs.",
+      "explanation": "Mount Gundabad stood beside the northern end of the Misty Mountains, where they met the Grey Mountains to the east and the Mountains of Angmar to the north-west.",
+      "references": [
+        { "source": "Tolkien Gateway: Mount Gundabad", "url": "https://tolkiengateway.net/wiki/Mount_Gundabad", "supports": "Appeared as the northern endpoint of the Misty Mountains and the western endpoint of the Grey Mountains; the Misty Mountains continued past it north-westwards as the Mountains of Angmar; usually occupied by Orcs." },
+        { "source": "Tolkien Gateway: Misty Mountains", "url": "https://tolkiengateway.net/wiki/Misty_Mountains", "supports": "In the far north the Misty Mountains met the Grey Mountains and the Mountains of Angmar, forming a T; Gundabad is the northernmost peak." }
+      ]
+    },
+    {
+      "id": "dimrill-dale", "name": "Dimrill Dale", "difficulty": "HARD", "region": "misty-mountains", "x": 426, "y": 322,
+      "period": "Third Age",
+      "description": "The valley below the East-gate of Moria, source of the Silverlode, with the lake Mirrormere.",
+      "explanation": "Dimrill Dale was a valley on the east side of the Misty Mountains, beneath the Redhorn, Silvertine and Cloudyhead; the Silverlode rose there and the Mirrormere lay at its south-east corner.",
+      "references": [
+        { "source": "Tolkien Gateway: Dimrill Dale", "url": "https://tolkiengateway.net/wiki/Dimrill_Dale", "supports": "A valley on the east side of the Misty Mountains beneath the Redhorn, Silvertine and Cloudyhead; source of the Silverlode, with the Mirrormere at its south-east corner." },
+        { "source": "Tolkien Gateway: Moria", "url": "https://tolkiengateway.net/wiki/Moria", "supports": "The Battle of Nanduhirion was fought in the valley beneath Moria's East-gate." }
+      ]
+    },
+    {
+      "id": "beorns-hall", "name": "Beorn's Hall", "difficulty": "HARD", "region": "wilderland", "x": 472, "y": 205,
+      "period": "Third Age",
+      "description": "The wooden house of Beorn, with its bee-hives and great garden.",
+      "explanation": "Beorn's Hall lay near the Carrock, east of the Great River of Wilderland and just west of Mirkwood.",
+      "references": [
+        { "source": "Tolkien Gateway: Beorn's Hall", "url": "https://tolkiengateway.net/wiki/Beorn%27s_Hall", "supports": "The Hall lay near the Carrock, east of the Great River of Wilderland, just west of Mirkwood." }
+      ]
+    },
+    {
+      "id": "fords-of-isen", "name": "The Fords of Isen", "difficulty": "HARD", "region": "rohan", "x": 360, "y": 482,
+      "period": "Third Age",
+      "description": "The crossings of the river Isen, the main western entrance to Rohan.",
+      "explanation": "The Fords of Isen lay a few miles north of the point where the Isen turns west towards the sea in the Gap of Rohan, south of Isengard, where the Misty Mountains and the White Mountains draw close.",
+      "references": [
+        { "source": "Tolkien Gateway: Fords of Isen", "url": "https://tolkiengateway.net/wiki/Fords_of_Isen", "supports": "A few miles north of where the Isen turned west toward the sea in the Gap of Rohan; the only place the river could be crossed south of Isengard; the main entrance to Rohan from Eriador." }
+      ]
+    },
+    {
+      "id": "cair-andros", "name": "Cair Andros", "difficulty": "HARD", "region": "gondor", "x": 568, "y": 520,
+      "period": "Third Age",
+      "description": "A long river-island in the Anduin, shaped like a ship.",
+      "explanation": "Cair Andros was a river-island in the Anduin a little over ten miles long, east of Anórien and about fifty miles north of Minas Tirith.",
+      "references": [
+        { "source": "Tolkien Gateway: Cair Andros", "url": "https://tolkiengateway.net/wiki/Cair_Andros", "supports": "A long, narrow river-island in the Anduin, a little over ten miles long, east of Anórien and about fifty miles north of Minas Tirith." }
+      ]
+    },
+    {
+      "id": "isenmouthe", "name": "The Isenmouthe", "difficulty": "HARD", "region": "mordor", "x": 694, "y": 472,
+      "period": "Third Age",
+      "description": "Carach Angren, the fenced iron pass in the north-west of Mordor.",
+      "explanation": "The Isenmouthe (Carach Angren) was a pass in the north-west of Mordor, where spurs of the Ephel Dúath and the Ered Lithui met, leaving a narrow way between the Plateau of Gorgoroth and the valley of Udûn to the north.",
+      "references": [
+        { "source": "Tolkien Gateway: Carach Angren", "url": "https://tolkiengateway.net/wiki/Isenmouthe", "supports": "A pass in the north-west of Mordor formed where spurs of the Ephel Dúath and the Ered Lithui met, leaving a narrow passage between the Plateau of Gorgoroth and the valley of Udûn to the north." }
+      ]
+    },
+    {
+      "id": "umbar", "name": "Umbar", "difficulty": "HARD", "region": "south", "x": 668, "y": 676,
+      "period": "Third Age",
+      "description": "The great haven of the Corsairs on the coast south of Gondor.",
+      "explanation": "Umbar lay on the coast south of Gondor, south of the mouth of the Anduin on the Bay of Belfalas, in a natural haven formed by a peninsula.",
+      "references": [
+        { "source": "Tolkien Gateway: Umbar", "url": "https://tolkiengateway.net/wiki/Umbar", "supports": "A realm on the coast south of Gondor, south of the mouth of the Anduin at the Bay of Belfalas, in a natural haven formed by a peninsula." }
+      ]
+    },
+    {
+      "id": "edhellond", "name": "Edhellond", "difficulty": "HARD", "region": "gondor", "x": 420, "y": 626,
+      "period": "Third Age: an ancient harbour, founded in the late First Age",
+      "description": "An ancient Elven harbour in southern Gondor.",
+      "explanation": "Edhellond lay in southern Gondor, south-west of where the Ringló joins the Morthond, near the point where their waters flowed into Cobas Haven.",
+      "references": [
+        { "source": "Tolkien Gateway: Edhellond", "url": "https://tolkiengateway.net/wiki/Edhellond", "supports": "An ancient harbour in southern Gondor, south-west of where the Ringló entered the Morthond, near where the combined waters flowed into Cobas Haven; many of the Galadhrim sailed from it in T.A. 1980." }
+      ]
+    },
+    {
+      "id": "henneth-annun", "name": "Henneth Annûn", "difficulty": "HARD", "region": "gondor", "x": 592, "y": 490,
+      "period": "Third Age",
+      "description": "Faramir's hidden refuge behind a curtain of water.",
+      "explanation": "Henneth Annûn was a hidden Gondorian outpost north-east of Cair Andros in North Ithilien, a cave behind a west-facing waterfall.",
+      "references": [
+        { "source": "Tolkien Gateway: Henneth Annûn", "url": "https://tolkiengateway.net/wiki/Henneth_Ann%C3%BBn", "supports": "A hidden Gondorian outpost north-east of Cair Andros in North Ithilien; a cave behind a west-facing waterfall." }
+      ]
+    },
+    {
+      "id": "old-forest", "name": "The Old Forest", "difficulty": "HARD", "region": "eriador", "x": 214, "y": 268,
+      "period": "Third Age",
+      "description": "A small, hostile forest, home of Old Man Willow.",
+      "explanation": "The Old Forest lay east of the Shire, bordered by the Brandywine on the west and the Barrow-downs on the east; the Withywindle ran roughly through its centre.",
+      "references": [
+        { "source": "Tolkien Gateway: Old Forest", "url": "https://tolkiengateway.net/wiki/Old_Forest", "supports": "A small forested area east of the Shire, bordered by the Barrow-downs in the east and the Brandywine in the west; the Withywindle lay roughly in its centre." }
+      ]
+    }
+  ]
+}
