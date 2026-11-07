@@ -125,6 +125,12 @@ public class WhoAmIGameRegistry {
         return outcome;
     }
 
+    // When the game was created, i.e. when it was played. Read by the ranking, which takes
+    // the score from result(); a finished game never changes, so the two reads agree.
+    public synchronized Instant createdAt(String gameId) {
+        return find(gameId).createdAt();
+    }
+
     public synchronized Result result(String gameId) {
         return find(gameId).result();
     }

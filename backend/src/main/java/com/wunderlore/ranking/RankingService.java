@@ -1,0 +1,114 @@
+package com.wunderlore.ranking;
+
+import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.dao.DataAccessException;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.TransactionException;
+
+import com.wunderlore.ranking.RankingException.Reason;
+
+// Publishes finished games and reads the leaderboard.
+//
+// The repository is optional: it exists only when wunderlore.persistence.enabled is true. Without
+// it, or when the database fails, publishing and reading answer UNAVAILABLE (503) and nothing
+// else in the backend is affected. A game counts as published only once the database confirmed
+// the insert, because the unique (game_type, game_id) constraint, not a prior check, decides who
+// wins when two requests race.
+@Service
+public class RankingService {
+
+    private static final Logger log = LoggerFactory.getLogger(RankingService.class);
+
+    // How many results the leaderboard shows.
+    public static final int TOP_LIMIT = 50;
+
+    static final int MAX_GAME_ID_LENGTH = 64;
+
+    public record Published(RankingEntry entry, boolean created) {
+    }
+
+    private final ObjectProvider<RankingEntryRepository> repositoryProvider;
+    private final FinishedGameLookup lookup;
+
+    public RankingService(ObjectProvider<RankingEntryRepository> repositoryProvider, FinishedGameLookup lookup) {
+        this.repositoryProvider = repositoryProvider;
+        this.lookup = lookup;
+    }
+
+    // Publishes the result of a finished game under a nickname. The score is read from the
+    // server-side state of the game; the caller only says which game and which nickname.
+    // Publishing a game that is already published changes nothing and returns the existing entry
+    // (created = false), with the nickname it was first published under.
+    public Published publish(String gameSlug, String gameId, String nickname) {
+        GameType type = GameType.fromSlug(gameSlug)
+                .orElseThrow(() -> new RankingException(Reason.INVALID_GAME));
+
+        if (gameId == null || gameId.isBlank() || gameId.length() > MAX_GAME_ID_LENGTH) {
+            throw new RankingException(Reason.INVALID_GAME_ID);
+        }
+
+        String normalized = NicknamePolicy.validate(nickname);
+        RankingEntryRepository repository = repository();
+        FinishedGame game = lookup.find(type, gameId);
+
+        try {
+            var existing = repository.findByGameTypeAndGameId(type, gameId);
+
+            if (existing.isPresent()) {
+                return new Published(existing.get(), false);
+            }
+
+            return new Published(
+                    repository.saveAndFlush(new RankingEntry(type, gameId, normalized, game)), true);
+        } catch (DataIntegrityViolationException exception) {
+            // Lost a race for the same game: the winner's entry is the published one.
+            try {
+                return repository.findByGameTypeAndGameId(type, gameId)
+                        .map(entry -> new Published(entry, false))
+                        .orElseThrow(() -> unavailable(exception));
+            } catch (DataAccessException | TransactionException again) {
+                throw unavailable(again);
+            }
+        } catch (DataAccessException | TransactionException exception) {
+            throw unavailable(exception);
+        }
+    }
+
+    // The best TOP_LIMIT results, of one game when gameSlug is given (null or blank: all games).
+    public List<RankingEntryRepository.Row> top(String gameSlug) {
+        GameType type = gameSlug == null || gameSlug.isBlank()
+                ? null
+                : GameType.fromSlug(gameSlug).orElseThrow(() -> new RankingException(Reason.INVALID_GAME));
+        RankingEntryRepository repository = repository();
+
+        try {
+            return type == null
+                    ? repository.findTop(TOP_LIMIT)
+                    : repository.findTopByGameType(type.name(), TOP_LIMIT);
+        } catch (DataAccessException | TransactionException exception) {
+            throw unavailable(exception);
+        }
+    }
+
+    private RankingEntryRepository repository() {
+        RankingEntryRepository repository = repositoryProvider.getIfAvailable();
+
+        if (repository == null) {
+            throw new RankingException(Reason.UNAVAILABLE);
+        }
+
+        return repository;
+    }
+
+    // Only the exception class is logged: driver messages can carry connection details.
+    private static RankingException unavailable(Exception exception) {
+        log.warn("Leaderboard database failure: {}", exception.getClass().getName());
+
+        return new RankingException(Reason.UNAVAILABLE, exception);
+    }
+}
