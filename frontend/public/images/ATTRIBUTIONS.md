@@ -33,6 +33,7 @@ with a green overlay on the page.
 | `which-character-hobbit-hole.avif` (2400×1600) | Which Character Are You? background | One of the platforms above; which one was not recorded | Not recorded | Not recorded | Not recorded | Unknown |
 | `lore-challenge-archive-library.avif` (2400×1638) | Lore Challenge background | One of the platforms above; which one was not recorded | Not recorded | Not recorded | Not recorded | Unknown |
 | `who-am-i-old-keys.avif` (2400×1600) | Who Am I? background | Unsplash (see the note below) | Not confirmed (see the note below) | Not recorded | Not recorded: the free-use terms of Unsplash applied when it was downloaded; no individual licence text was kept | Not confirmed |
+| `leaderboard-fire-dragon.avif` (2400×1600) | Leaderboard page background | Unsplash (see the note below) | Not confirmed (see the note below) | Not recorded | Not recorded: the free-use terms of Unsplash applied when it was downloaded; no individual licence text was kept | Not confirmed |
 
 Notes:
 
@@ -49,6 +50,7 @@ Notes:
   of the image was not consulted. Unsplash does not require a credit, but crediting the photographer is
   welcome; if the author is confirmed, add the credit here and to the site footer's credits page. This
   entry does not claim that any particular use is licensed.
+- `leaderboard-fire-dragon.avif` (photograph of a dragon sculpture breathing fire over a crowd at dusk) was converted from a file the project owner downloaded from Unsplash on 2026-11-07, named `marina-stroganova-TP7InDDpeRE-unsplash.jpg`. As with the entry above, the author name and image ID are recorded **as the file name reads, not as confirmed facts**: the owner's credit file (`atribuição.txt`) did not list this image when it was read, and the image page was not consulted.
 - `which-character-hobbit-hole.avif` depicts a hobbit-hole. A photo licence, where one exists, covers
   the picture itself and not necessarily any design shown in it; this was not investigated.
 

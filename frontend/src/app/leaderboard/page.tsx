@@ -22,7 +22,7 @@ interface LeaderboardPageProps {
 
 function LeaderboardFallback() {
     return (
-        <QuotesFrame title="Leaderboard">
+        <QuotesFrame scene="dragon" title="Leaderboard">
             <p className={styles.loading} role="status">
                 Loading the leaderboard...
             </p>

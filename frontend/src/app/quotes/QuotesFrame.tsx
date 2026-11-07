@@ -9,12 +9,18 @@ interface QuotesFrameProps {
     description?: string;
     // Brand-only navigation, for the failed-load state.
     compactNav?: boolean;
+    // Which banner to paint: the forest stream (Quotes) or the fire-breathing dragon (Leaderboard).
+    scene?: "forest" | "dragon";
     children?: ReactNode;
 }
 
 // Photograph: an old oak wood with a stream, cropped 2:1 and kept low so the
 // water stays in view (frontend/public/images/quotes-forest-stream.avif).
 const SCENE_IMAGE = "/images/quotes-forest-stream.avif";
+
+// Photograph: a dragon sculpture breathing fire over a crowd at dusk, for the Leaderboard
+// (frontend/public/images/leaderboard-fire-dragon.avif).
+const DRAGON_IMAGE = "/images/leaderboard-fire-dragon.avif";
 
 // x/y are positions in the scene, s the size in px, d the loop in seconds.
 const FIREFLIES = [
@@ -32,13 +38,16 @@ export default function QuotesFrame({
     title,
     description,
     compactNav = false,
+    scene = "forest",
     children,
 }: QuotesFrameProps) {
+    const dragon = scene === "dragon";
+
     return (
-        <div className={styles.page}>
+        <div className={`${styles.page} ${dragon ? styles.dragon : ""}`}>
             <div className={styles.scene} aria-hidden="true">
                 <Image
-                    src={SCENE_IMAGE}
+                    src={dragon ? DRAGON_IMAGE : SCENE_IMAGE}
                     alt=""
                     fill
                     priority

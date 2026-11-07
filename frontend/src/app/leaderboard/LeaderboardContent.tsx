@@ -123,7 +123,7 @@ export default async function LeaderboardContent({ searchParams }: LeaderboardCo
         console.error("Failed to load the leaderboard", error);
 
         return (
-            <QuotesFrame title="Leaderboard" description={DESCRIPTION}>
+            <QuotesFrame scene="dragon" title="Leaderboard" description={DESCRIPTION}>
                 <Filters active={active} />
                 <div role="alert" className={styles.error}>
                     <p>The leaderboard couldn&apos;t be loaded right now. Please try again.</p>
@@ -139,7 +139,7 @@ export default async function LeaderboardContent({ searchParams }: LeaderboardCo
     }
 
     return (
-        <QuotesFrame title="Leaderboard" description={DESCRIPTION}>
+        <QuotesFrame scene="dragon" title="Leaderboard" description={DESCRIPTION}>
             <Filters active={active} />
             <Results leaderboard={leaderboard} active={active} />
         </QuotesFrame>
