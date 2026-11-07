@@ -66,6 +66,7 @@ export const PUBLIC_PATHS = [
   "/games/which-character",
   "/games/lore-challenge",
   "/games/who-am-i",
+  "/games/where-in-middle-earth",
 ] as const;
 
 interface PageSeo {

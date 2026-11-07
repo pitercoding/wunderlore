@@ -65,4 +65,15 @@ describe("HomePage", () => {
             "/games/who-am-i",
         );
     });
+
+    it("links to the Where in Middle-earth game as the fifth game", () => {
+        render(<HomePage />);
+
+        expect(
+            screen.getByRole("link", { name: "Play Where in Middle-earth →" }),
+        ).toHaveAttribute("href", "/games/where-in-middle-earth");
+        expect(
+            screen.getAllByRole("link", { name: "Where in Middle-earth" })[0],
+        ).toHaveAttribute("href", "/games/where-in-middle-earth");
+    });
 });

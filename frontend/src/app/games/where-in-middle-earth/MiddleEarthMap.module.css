@@ -1,0 +1,510 @@
+/* The map is a lit sheet on the dark Enchanted Worlds page: aged parchment tinted green, a deep
+   green sea, ink in the dark of the forest. Its colors are its own and do not follow the OS theme. */
+.map {
+    --map-sea-top: #1f4340;
+    --map-sea-bottom: #12302d;
+    --map-wave: #6f9e92;
+    --map-shore: #8fb7a4;
+    --map-land: #d0c9a3;
+    --map-land-shade: #b9b48b;
+    --map-ink: #2c3a29;
+    --map-ink-soft: #55644a;
+    --map-water: #5f9a96;
+    --map-water-deep: #2c6460;
+    --map-forest: #5d7d46;
+    --map-forest-dark: #36522f;
+    --map-forest-floor: #a9b27d;
+    --map-mountain: #b7ad82;
+    --map-mountain-shade: #877d57;
+    --map-guess: #f2c14e;
+    --map-answer: #f4f1de;
+    --map-answer-fill: #2f7d46;
+    --map-halo: rgba(13, 22, 17, 0.92);
+
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    min-width: 0;
+}
+
+.srOnly {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* ---- Frame and scrolling ------------------------------------------- */
+
+.toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+}
+
+.zoomLabel {
+    margin: 0;
+    color: var(--scene-text-muted);
+    font-size: var(--text-xs);
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+}
+
+.zoomButtons {
+    display: flex;
+    gap: var(--space-2);
+}
+
+.zoomButton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-md);
+    background: color-mix(in srgb, var(--scene-surface) 80%, transparent);
+    color: var(--scene-text);
+    font-size: var(--text-xl);
+    line-height: 1;
+    cursor: pointer;
+    transition: var(--transition-colors);
+}
+
+.zoomButton:hover:not(:disabled) {
+    border-color: var(--scene-glow);
+    background: color-mix(in srgb, var(--scene-glow) 12%, var(--scene-surface));
+}
+
+.zoomButton:disabled {
+    opacity: var(--disabled-opacity);
+    cursor: not-allowed;
+}
+
+.zoomButton:focus-visible,
+.clear:focus-visible {
+    outline: var(--focus-ring-width) solid var(--color-focus-ring);
+    outline-offset: var(--focus-ring-offset);
+}
+
+/* The window onto the map. At 1x it shows all of it; zoomed in, the map is wider than the window
+   and scrolls inside it, never the page. */
+.viewport {
+    max-width: 100%;
+    overflow: auto;
+    border: 1px solid color-mix(in srgb, var(--scene-glow) 28%, transparent);
+    border-radius: var(--radius-lg);
+    background: var(--map-sea-bottom);
+    box-shadow: 0 1.25rem 2.5rem -1.25rem var(--scene-abyss);
+    overscroll-behavior: contain;
+}
+
+.viewport:focus-visible {
+    outline: var(--focus-ring-width) solid var(--color-focus-ring);
+    outline-offset: var(--focus-ring-offset);
+}
+
+/* Same shape as the viewBox, so the picture fills it with no empty bands. */
+.canvas {
+    position: relative;
+    aspect-ratio: 1000 / 700;
+}
+
+.svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+    cursor: crosshair;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+}
+
+.map[data-disabled] .svg {
+    cursor: default;
+}
+
+/* ---- Sea ----------------------------------------------------------- */
+
+.seaTop {
+    stop-color: var(--map-sea-top);
+}
+
+.seaBottom {
+    stop-color: var(--map-sea-bottom);
+}
+
+.waves path {
+    fill: none;
+    stroke: var(--map-wave);
+    stroke-width: 1.3;
+    stroke-linecap: round;
+    opacity: 0.35;
+}
+
+.shore {
+    fill: none;
+    stroke: var(--map-shore);
+    stroke-linejoin: round;
+}
+
+.shoreWide {
+    stroke-width: 20;
+    opacity: 0.1;
+}
+
+.shoreMid {
+    stroke-width: 12;
+    opacity: 0.14;
+}
+
+.shoreNear {
+    stroke-width: 6;
+    opacity: 0.2;
+}
+
+/* ---- Land ---------------------------------------------------------- */
+
+.land {
+    fill: var(--map-land);
+}
+
+.coast {
+    fill: none;
+    stroke: var(--map-ink);
+    stroke-width: 1.8;
+    stroke-linejoin: round;
+}
+
+.graticule line {
+    stroke: var(--map-ink-soft);
+    stroke-width: 0.6;
+    stroke-dasharray: 2 7;
+    opacity: 0.32;
+}
+
+.foothills path {
+    fill: none;
+    stroke: var(--map-land-shade);
+    stroke-width: 22;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    opacity: 0.55;
+}
+
+.lakes ellipse {
+    fill: var(--map-water);
+    stroke: var(--map-ink);
+    stroke-width: 1.2;
+}
+
+.rivers path {
+    fill: none;
+    stroke: var(--map-water-deep);
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.forestFloor {
+    fill: var(--map-forest-floor);
+    opacity: 0.55;
+}
+
+.tree {
+    fill: var(--map-forest);
+    stroke: var(--map-forest-dark);
+    stroke-width: 0.7;
+    stroke-linejoin: round;
+}
+
+.peak {
+    fill: var(--map-mountain);
+    stroke: var(--map-ink);
+    stroke-width: 0.9;
+    stroke-linejoin: round;
+}
+
+.peakShade {
+    fill: var(--map-mountain-shade);
+    opacity: 0.55;
+}
+
+/* ---- Lettering: large regions, seas, ranges and one river only ---- */
+
+.labels text {
+    font-family: var(--font-serif);
+    pointer-events: none;
+    paint-order: stroke;
+    stroke-linejoin: round;
+}
+
+.label_region {
+    fill: var(--map-ink);
+    stroke: var(--map-land);
+    stroke-width: 3.5;
+    font-size: 21px;
+    font-weight: 600;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    opacity: 0.8;
+}
+
+.label_range {
+    fill: var(--map-ink);
+    stroke: var(--map-land);
+    stroke-width: 3;
+    font-size: 13px;
+    font-style: italic;
+    letter-spacing: 0.14em;
+    opacity: 0.85;
+}
+
+.label_river {
+    fill: var(--map-water-deep);
+    stroke: var(--map-land);
+    stroke-width: 3;
+    font-size: 12px;
+    font-style: italic;
+    letter-spacing: 0.12em;
+}
+
+.label_sea {
+    fill: #bcd6cd;
+    stroke: var(--map-sea-bottom);
+    stroke-width: 3;
+    font-size: 17px;
+    font-style: italic;
+    letter-spacing: 0.3em;
+    opacity: 0.72;
+}
+
+/* ---- Compass and frame --------------------------------------------- */
+
+.compass {
+    pointer-events: none;
+}
+
+.compassRing {
+    fill: none;
+    stroke: #d9d3ae;
+    stroke-width: 0.9;
+    opacity: 0.75;
+}
+
+.compassNorth {
+    fill: #e8e2bf;
+    stroke: #12302d;
+    stroke-width: 0.8;
+    stroke-linejoin: round;
+}
+
+.compassPoint {
+    fill: #bcb68f;
+    stroke: #12302d;
+    stroke-width: 0.8;
+    stroke-linejoin: round;
+}
+
+.compassMinor {
+    fill: #8f8a69;
+    stroke: #12302d;
+    stroke-width: 0.6;
+    stroke-linejoin: round;
+}
+
+.compassLetter {
+    fill: none;
+    stroke: #e8e2bf;
+    stroke-width: 2.2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.frameOuter {
+    fill: none;
+    stroke: var(--map-ink);
+    stroke-width: 3;
+    pointer-events: none;
+}
+
+.frameInner {
+    fill: none;
+    stroke: var(--map-ink);
+    stroke-width: 0.9;
+    pointer-events: none;
+}
+
+/* ---- Feedback in the picture --------------------------------------- */
+
+.zone {
+    fill: color-mix(in srgb, var(--map-answer-fill) 22%, transparent);
+    stroke: var(--map-answer-fill);
+    stroke-width: 1.6;
+    stroke-dasharray: 4 3;
+}
+
+.lineHalo {
+    stroke: var(--map-halo);
+    stroke-width: 6;
+    stroke-linecap: round;
+}
+
+/* Dashed, so the distance reads as a measured line and not only as a colour. */
+.line {
+    stroke: var(--map-guess);
+    stroke-width: 2.5;
+    stroke-dasharray: 7 6;
+    stroke-linecap: round;
+}
+
+/* ---- Markers: elements over the picture, at a fixed readable size -- */
+
+.markers {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+
+.marker {
+    position: absolute;
+    width: 1.75rem;
+    height: 1.75rem;
+    transform: translate(-50%, -50%);
+}
+
+/* The marker waiting for confirmation: a ring with a cross-hair, in the guess color. */
+.pending,
+.guess {
+    border: 3px solid var(--map-guess);
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--map-guess) 25%, transparent);
+    box-shadow: 0 0 0 2px var(--map-halo), 0 0 0.75rem var(--map-guess);
+}
+
+.pending::before,
+.pending::after,
+.guess::before,
+.guess::after {
+    content: "";
+    position: absolute;
+    background: var(--map-halo);
+}
+
+.pending::before,
+.guess::before {
+    top: 50%;
+    right: -0.35rem;
+    left: -0.35rem;
+    height: 2px;
+    transform: translateY(-50%);
+}
+
+.pending::after,
+.guess::after {
+    top: -0.35rem;
+    bottom: -0.35rem;
+    left: 50%;
+    width: 2px;
+    transform: translateX(-50%);
+}
+
+.pending {
+    animation: pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    50% {
+        box-shadow: 0 0 0 2px var(--map-halo), 0 0 1.25rem var(--map-guess);
+        transform: translate(-50%, -50%) scale(1.12);
+    }
+}
+
+/* The real place: a diamond with a check mark, so it differs from the guess by shape. */
+.answer {
+    width: 1.5rem;
+    height: 1.5rem;
+}
+
+.diamond {
+    position: absolute;
+    inset: 0;
+    border: 3px solid var(--map-answer);
+    background: var(--map-answer-fill);
+    box-shadow: 0 0 0 2px var(--map-halo), 0 0 0.9rem var(--map-answer-fill);
+    transform: rotate(45deg);
+}
+
+.diamond::after {
+    content: "✓" / "";
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform: rotate(-45deg);
+    color: var(--map-answer);
+    font-size: 0.95rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.chip {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-top: 0.45rem;
+    padding: 0.1rem 0.5rem;
+    border-radius: var(--radius-full);
+    background: var(--map-halo);
+    color: var(--map-guess);
+    font-family: var(--font-sans);
+    font-size: 0.75rem;
+    font-weight: var(--weight-semibold);
+    line-height: 1.5;
+    white-space: nowrap;
+    transform: translateX(-50%);
+}
+
+.chipAnswer {
+    color: var(--map-answer);
+    margin-top: 0.6rem;
+}
+
+/* ---- Help and clear ------------------------------------------------ */
+
+.help {
+    margin: 0;
+    color: var(--scene-text-muted);
+    font-size: var(--text-sm);
+    line-height: var(--leading-normal);
+}
+
+.clear {
+    align-self: flex-start;
+    min-height: 2.75rem;
+    padding: 0 var(--space-4);
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-md);
+    background: transparent;
+    color: var(--scene-text);
+    font-size: var(--text-sm);
+    cursor: pointer;
+    transition: var(--transition-colors);
+}
+
+.clear:hover {
+    border-color: var(--scene-glow);
+    background: color-mix(in srgb, var(--scene-glow) 10%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .pending {
+        animation: none;
+    }
+}

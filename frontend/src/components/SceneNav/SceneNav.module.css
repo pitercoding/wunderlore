@@ -130,7 +130,7 @@
     background: var(--color-overlay-hover);
 }
 
-@media (min-width: 40em) {
+@media (min-width: 60em) {
     .capsule:not(.compact) {
         display: grid;
         grid-template-columns: 1fr auto 1fr;

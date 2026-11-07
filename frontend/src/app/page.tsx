@@ -146,6 +146,9 @@ export default function HomePage() {
               <Link href="/games/who-am-i" className={styles.navLink}>
                 Who Am I?
               </Link>
+              <Link href="/games/where-in-middle-earth" className={styles.navLink}>
+                Where in Middle-earth
+              </Link>
               <Link href="/quotes" className={styles.navLink}>
                 Quotes
               </Link>
@@ -169,6 +172,9 @@ export default function HomePage() {
                 </Link>
                 <Link href="/games/who-am-i" className={styles.menuLink}>
                   Who Am I?
+                </Link>
+                <Link href="/games/where-in-middle-earth" className={styles.menuLink}>
+                  Where in Middle-earth
                 </Link>
                 <Link href="/quotes" className={styles.menuLink}>
                   Quotes
@@ -267,6 +273,20 @@ export default function HomePage() {
                 <p className={styles.itemText}>
                   Five clues, one character. The fewer clues you need, the
                   more you score.
+                </p>
+              </li>
+
+              <li className={styles.item}>
+                <p className={styles.kicker}>
+                  <span className={styles.glyph} aria-hidden="true">&#9873;</span>
+                  Map game
+                </p>
+                <Link href="/games/where-in-middle-earth" className={styles.itemLink}>
+                  Play Where in Middle-earth →
+                </Link>
+                <p className={styles.itemText}>
+                  Ten places, one map. Click where each one lies; the closer
+                  you are, the more you score.
                 </p>
               </li>
 

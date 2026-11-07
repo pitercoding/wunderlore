@@ -15,6 +15,7 @@ import { metadata as whoSaidItMetadata } from "@/app/games/who-said-it/page";
 import { metadata as whichCharacterMetadata } from "@/app/games/which-character/page";
 import { metadata as loreChallengeMetadata } from "@/app/games/lore-challenge/page";
 import { metadata as whoAmIMetadata } from "@/app/games/who-am-i/page";
+import { metadata as whereInMiddleEarthMetadata } from "@/app/games/where-in-middle-earth/page";
 import robots from "@/app/robots";
 import sitemap from "@/app/sitemap";
 import {
@@ -33,6 +34,11 @@ const pages = [
     { name: "which-character", metadata: whichCharacterMetadata, path: "/games/which-character" },
     { name: "lore-challenge", metadata: loreChallengeMetadata, path: "/games/lore-challenge" },
     { name: "who-am-i", metadata: whoAmIMetadata, path: "/games/who-am-i" },
+    {
+      name: "where-in-middle-earth",
+      metadata: whereInMiddleEarthMetadata,
+      path: "/games/where-in-middle-earth",
+    },
 ];
 
 describe("root metadata", () => {
@@ -115,6 +121,7 @@ describe("sitemap", () => {
             `${SITE_URL}/games/which-character`,
             `${SITE_URL}/games/lore-challenge`,
             `${SITE_URL}/games/who-am-i`,
+            `${SITE_URL}/games/where-in-middle-earth`,
         ]);
         expect(entries).toHaveLength(PUBLIC_PATHS.length);
         expect(entries.every((e) => e.lastModified === undefined)).toBe(true);

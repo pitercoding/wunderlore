@@ -583,7 +583,7 @@
     }
 }
 
-@media (min-width: 40em) {
+@media (min-width: 60em) {
     .capsule {
         display: grid;
         grid-template-columns: 1fr auto 1fr;

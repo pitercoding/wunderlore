@@ -64,6 +64,8 @@ describe("SceneNav compact menu", () => {
         await user.tab();
         expect(screen.getAllByRole("link", { name: "Who Am I?" })[1]).toHaveFocus();
         await user.tab();
+        expect(screen.getAllByRole("link", { name: "Where in Middle-earth" })[1]).toHaveFocus();
+        await user.tab();
         expect(screen.getAllByRole("link", { name: "Quotes" })[1]).toHaveFocus();
     });
 
@@ -80,11 +82,13 @@ describe("SceneNav compact menu", () => {
             "/games/which-character",
             "/games/lore-challenge",
             "/games/who-am-i",
+            "/games/where-in-middle-earth",
             "/quotes",
             "/games/who-said-it",
             "/games/which-character",
             "/games/lore-challenge",
             "/games/who-am-i",
+            "/games/where-in-middle-earth",
             "/quotes",
         ]);
     });
