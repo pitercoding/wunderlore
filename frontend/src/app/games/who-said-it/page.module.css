@@ -238,3 +238,185 @@
         padding-block: var(--space-3) var(--space-6);
     }
 }
+
+/* ---- Competitive match -------------------------------------------- */
+
+.progress {
+    margin: 0 0 var(--space-2);
+    color: var(--scene-text-muted);
+    font-size: var(--text-sm);
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+}
+
+.progressTrack {
+    height: 0.25rem;
+    margin-bottom: var(--space-4);
+    border-radius: var(--radius-full);
+    background: color-mix(in srgb, var(--scene-text) 14%, transparent);
+    overflow: hidden;
+}
+
+.progressFill {
+    height: 100%;
+    background: var(--scene-glow);
+    transition: width var(--duration-fast) var(--ease-standard);
+}
+
+/* The answer being sent: visible without relying on colour alone (the border is thicker). */
+.option.selected {
+    border-color: var(--scene-glow);
+    border-width: 2px;
+    background: color-mix(in srgb, var(--scene-glow) 14%, var(--scene-surface));
+}
+
+.verdict {
+    margin: var(--space-3) 0 0;
+    color: color-mix(in srgb, var(--scene-glow-soft) 30%, var(--scene-text));
+    font-size: clamp(1.75rem, 1.2rem + 2.6vw, 2.75rem);
+    font-weight: var(--weight-regular);
+    line-height: 1.15;
+}
+
+.verdict:focus-visible {
+    outline: var(--focus-ring-width) solid var(--color-focus-ring);
+    outline-offset: var(--focus-ring-offset);
+}
+
+.totalScore {
+    margin: var(--space-3) 0 var(--space-5);
+}
+
+.totalScoreValue {
+    color: var(--scene-glow);
+    font-family: var(--font-serif);
+    font-size: clamp(2.75rem, 2rem + 4vw, 4.25rem);
+    line-height: 1;
+}
+
+.totalScoreMax {
+    color: var(--scene-text-muted);
+    font-size: var(--text-lg);
+}
+
+.stats {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-2);
+    margin: 0 0 var(--space-5);
+}
+
+.stat {
+    padding: var(--space-3);
+    border: 1px solid var(--scene-border);
+    border-radius: var(--radius-lg);
+    background: color-mix(in srgb, var(--scene-surface) 70%, transparent);
+}
+
+.stat dt {
+    color: var(--scene-text-muted);
+    font-size: var(--text-xs);
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+}
+
+.stat dd {
+    margin: var(--space-1) 0 0;
+    color: var(--scene-text);
+    font-family: var(--font-serif);
+    font-size: var(--text-xl);
+}
+
+.sectionTitle {
+    margin: 0 0 var(--space-3);
+    color: var(--scene-text-muted);
+    font-size: var(--text-sm);
+    font-weight: var(--weight-regular);
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+}
+
+.summary {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    margin: 0 0 var(--space-4);
+    padding: 0;
+    list-style: none;
+}
+
+.summaryRow {
+    display: grid;
+    grid-template-columns: 1.75rem minmax(0, 1fr) auto;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-3) var(--space-4);
+    border: 1px solid var(--scene-border);
+    border-radius: var(--radius-md);
+    background: color-mix(in srgb, var(--scene-surface) 70%, transparent);
+}
+
+.summaryNumber {
+    color: var(--scene-text-muted);
+    font-family: var(--font-serif);
+    font-size: var(--text-lg);
+}
+
+.summaryBody {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.summaryQuote {
+    color: var(--scene-text);
+    overflow-wrap: anywhere;
+}
+
+.summaryDetail {
+    color: var(--scene-text-muted);
+    font-size: var(--text-sm);
+    overflow-wrap: anywhere;
+}
+
+.summaryRight,
+.summaryWrong {
+    font-size: var(--text-sm);
+    white-space: nowrap;
+}
+
+.summaryRight {
+    color: var(--color-success);
+}
+
+.summaryWrong {
+    color: var(--color-error);
+}
+
+.matchActions {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    margin-top: var(--space-5);
+}
+
+.modes {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+
+.modeHint {
+    margin: 0;
+    color: var(--scene-text-muted);
+    font-size: var(--text-sm);
+}
+
+@media (min-width: 36em) {
+    .matchActions,
+    .modes {
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+}

@@ -4,15 +4,21 @@ import { useRef, useState } from "react";
 import Button from "@/components/Button/Button";
 import ColdStartHint from "@/components/ColdStartHint/ColdStartHint";
 import type { WhoSaidItRound } from "@/lib/api/whoSaidIt";
+import type { WhoSaidItMatchQuestion } from "@/lib/api/whoSaidItMatch";
 import { createWhoSaidItRound } from "./actions";
+import { startWhoSaidItMatch } from "./matchActions";
 import WhoSaidItContent from "./WhoSaidItContent";
 import WhoSaidItFrame from "./WhoSaidItFrame";
+import WhoSaidItMatch from "./WhoSaidItMatch";
 import styles from "./page.module.css";
 
-// Owns the scene and whether a round exists. The first state has no round and has
-// asked the backend for nothing; a round is created only by the player's own click.
+// Owns the scene and whether a round or a match exists. The first state has neither and has
+// asked the backend for nothing; they are created only by the player's own click. A round is the
+// original single-quote game; a match is the competitive one: ten quotes scored by the backend,
+// whose result can be published to the leaderboard.
 export default function WhoSaidItGame() {
     const [round, setRound] = useState<WhoSaidItRound | null>(null);
+    const [match, setMatch] = useState<WhoSaidItMatchQuestion | null>(null);
     const [isCreating, setIsCreating] = useState(false);
     const [creationError, setCreationError] = useState<string | null>(null);
 
@@ -43,6 +49,57 @@ export default function WhoSaidItGame() {
             inFlight.current = false;
             setIsCreating(false);
         }
+    }
+
+    async function handleNewMatch() {
+        if (inFlight.current) {
+            return;
+        }
+
+        inFlight.current = true;
+        setIsCreating(true);
+        setCreationError(null);
+
+        try {
+            const response = await startWhoSaidItMatch();
+
+            if (!response.ok) {
+                setCreationError(response.message);
+                return;
+            }
+
+            setMatch(response.question);
+        } catch {
+            setCreationError("Something went wrong. Please try again.");
+        } finally {
+            inFlight.current = false;
+            setIsCreating(false);
+        }
+    }
+
+    function backToIntro() {
+        setMatch(null);
+        setRound(null);
+        setCreationError(null);
+    }
+
+    if (match) {
+        return (
+            <WhoSaidItFrame
+                title="Ranked match"
+                description="Ten quotes. Four speakers each. Your score goes to the backend, not the browser."
+            >
+                <WhoSaidItMatch
+                    // A new match replaces the whole component, so its state starts clean.
+                    key={match.matchId}
+                    initial={match}
+                    onNewMatch={handleNewMatch}
+                    isCreating={isCreating}
+                    creationError={creationError}
+                    onExit={backToIntro}
+                />
+            </WhoSaidItFrame>
+        );
     }
 
     if (round) {
@@ -88,15 +145,31 @@ export default function WhoSaidItGame() {
                     </p>
                 )}
 
-                <Button
-                    size="lg"
-                    stretch="mobile"
-                    className={styles.play}
-                    onClick={handleNewRound}
-                    disabled={isCreating}
-                >
-                    {isCreating ? "Loading..." : creationError ? "Try again" : "Play"}
-                </Button>
+                <div className={styles.modes}>
+                    <Button
+                        size="lg"
+                        stretch="mobile"
+                        className={styles.play}
+                        onClick={handleNewRound}
+                        disabled={isCreating}
+                    >
+                        {isCreating ? "Loading..." : creationError ? "Try again" : "Play"}
+                    </Button>
+                    <Button
+                        size="lg"
+                        variant="secondary"
+                        stretch="mobile"
+                        className={styles.play}
+                        onClick={handleNewMatch}
+                        disabled={isCreating}
+                    >
+                        Start ranked match
+                    </Button>
+                </div>
+                <p className={styles.modeHint}>
+                    A ranked match is ten quotes, scored out of 100, and can be published to
+                    the leaderboard.
+                </p>
             </section>
         </WhoSaidItFrame>
     );
