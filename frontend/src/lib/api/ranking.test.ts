@@ -44,6 +44,28 @@ describe("fetchLeaderboard", () => {
         expect(fetchMock.mock.calls[0][0]).toBe("http://api.test/api/ranking");
     });
 
+    it("is the only ranking call cached, for 30 seconds", async () => {
+        const { fetchLeaderboard, LEADERBOARD_REVALIDATE_SECONDS } = await loadModules();
+
+        fetchMock.mockResolvedValue(jsonResponse({ game: null, entries: [] }));
+
+        await fetchLeaderboard();
+
+        expect(LEADERBOARD_REVALIDATE_SECONDS).toBe(30);
+        expect(fetchMock.mock.calls[0][1]).toMatchObject({
+            cache: "force-cache",
+            next: { revalidate: 30 },
+        });
+    });
+
+    it("never serves a 503 as leaderboard data", async () => {
+        const { fetchLeaderboard, ApiError } = await loadModules();
+
+        fetchMock.mockResolvedValue(jsonResponse({ game: null, entries: [] }, { status: 503 }));
+
+        await expect(fetchLeaderboard()).rejects.toBeInstanceOf(ApiError);
+    });
+
     it("sends the game filter", async () => {
         const { fetchLeaderboard } = await loadModules();
 
@@ -98,6 +120,8 @@ describe("postRankingEntry", () => {
 
         expect(url).toBe("http://api.test/api/ranking/entries");
         expect(init?.method).toBe("POST");
+        expect(init?.cache).toBe("no-store");
+        expect(init).not.toHaveProperty("next");
         expect(JSON.parse(String(init?.body))).toEqual({
             gameType: "who-said-it",
             gameId: "game-1",

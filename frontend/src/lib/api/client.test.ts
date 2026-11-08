@@ -136,6 +136,43 @@ describe("apiFetch", () => {
         });
     });
 
+    it("caches a GET only when revalidateSeconds is given", async () => {
+        const { apiFetch } = await loadClient("http://api.test");
+        fetchMock.mockResolvedValue(jsonResponse({}));
+
+        await apiFetch("/api/ranking", acceptAny, undefined, { revalidateSeconds: 30 });
+
+        expect(fetchMock).toHaveBeenCalledWith(expect.any(String), {
+            headers: { Accept: "application/json" },
+            cache: "force-cache",
+            next: { revalidate: 30 },
+            signal: expect.any(AbortSignal),
+        });
+    });
+
+    it.each([
+        ["a POST", { method: "POST" }, 30],
+        ["a DELETE", { method: "DELETE" }, 30],
+        ["zero seconds", undefined, 0],
+        ["a negative number of seconds", undefined, -5],
+    ])("refuses to cache %s", async (_label, init, seconds) => {
+        const { apiFetch } = await loadClient("http://api.test");
+
+        await expect(
+            apiFetch("/api/x", acceptAny, init, { revalidateSeconds: seconds }),
+        ).rejects.toThrow("Only a GET can be cached");
+        expect(fetchMock).not.toHaveBeenCalled();
+    });
+
+    it("does not cache an error response", async () => {
+        const { apiFetch, ApiError } = await loadClient("http://api.test");
+        fetchMock.mockResolvedValue(jsonResponse({}, { status: 503 }));
+
+        await expect(
+            apiFetch("/api/ranking", acceptAny, undefined, { revalidateSeconds: 30 }),
+        ).rejects.toBeInstanceOf(ApiError);
+    });
+
     it("resolves with the parsed JSON body on success", async () => {
         const { apiFetch } = await loadClient("http://api.test");
         const body = { roundId: "r1", quote: "Hello", options: [] };

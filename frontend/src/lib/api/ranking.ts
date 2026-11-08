@@ -86,8 +86,14 @@ export async function postRankingEntry(
     );
 }
 
+// How long the public leaderboard read may be served from Next.js's cache. A result published
+// just now can take up to this long to appear; the publish itself is never cached.
+export const LEADERBOARD_REVALIDATE_SECONDS = 30;
+
 export async function fetchLeaderboard(game?: RankingGame): Promise<Leaderboard> {
     const query = game ? `?game=${encodeURIComponent(game)}` : "";
 
-    return apiFetch(`/api/ranking${query}`, isLeaderboard);
+    return apiFetch(`/api/ranking${query}`, isLeaderboard, undefined, {
+        revalidateSeconds: LEADERBOARD_REVALIDATE_SECONDS,
+    });
 }

@@ -12,6 +12,10 @@ export const COLD_START_TIMEOUT_MS = 130_000;
 export interface ApiFetchOptions {
     // Overrides API_TIMEOUT_MS for this call.
     timeoutMs?: number;
+    // Opts a GET into Next.js's server-side fetch cache for this many seconds. Without it nothing
+    // is cached (cache: "no-store"). Only 200 responses are stored; errors never are. Meant for
+    // public reads that are the same for everyone; refused for any other method.
+    revalidateSeconds?: number;
 }
 
 // Longer waits are treated as unknown rather than shown to the user.
@@ -79,10 +83,16 @@ export async function apiFetch<T>(
     path: string,
     isValid: PayloadGuard<T>,
     init?: RequestInit,
-    { timeoutMs = API_TIMEOUT_MS }: ApiFetchOptions = {},
+    { timeoutMs = API_TIMEOUT_MS, revalidateSeconds }: ApiFetchOptions = {},
 ): Promise<T> {
     if (!API_URL) {
         throw new Error("API_URL is not configured");
+    }
+
+    const method = (init?.method ?? "GET").toUpperCase();
+
+    if (revalidateSeconds !== undefined && (method !== "GET" || !(revalidateSeconds > 0))) {
+        throw new Error("Only a GET can be cached, for a positive number of seconds");
     }
 
     // One controller aborts the request either when the timeout fires or when
@@ -112,7 +122,9 @@ export async function apiFetch<T>(
                     Accept: "application/json",
                     ...init?.headers,
                 },
-                cache: "no-store",
+                ...(revalidateSeconds === undefined
+                    ? { cache: "no-store" as const }
+                    : { cache: "force-cache" as const, next: { revalidate: revalidateSeconds } }),
                 signal: controller.signal,
             },
         );
