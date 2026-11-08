@@ -16,6 +16,9 @@ export interface ApiFetchOptions {
     // is cached (cache: "no-store"). Only 200 responses are stored; errors never are. Meant for
     // public reads that are the same for everyone; refused for any other method.
     revalidateSeconds?: number;
+    // Cache tags for the stored response, so a Server Action can expire it on demand. Only
+    // meaningful together with revalidateSeconds.
+    tags?: string[];
 }
 
 // Longer waits are treated as unknown rather than shown to the user.
@@ -83,7 +86,7 @@ export async function apiFetch<T>(
     path: string,
     isValid: PayloadGuard<T>,
     init?: RequestInit,
-    { timeoutMs = API_TIMEOUT_MS, revalidateSeconds }: ApiFetchOptions = {},
+    { timeoutMs = API_TIMEOUT_MS, revalidateSeconds, tags }: ApiFetchOptions = {},
 ): Promise<T> {
     if (!API_URL) {
         throw new Error("API_URL is not configured");
@@ -124,7 +127,10 @@ export async function apiFetch<T>(
                 },
                 ...(revalidateSeconds === undefined
                     ? { cache: "no-store" as const }
-                    : { cache: "force-cache" as const, next: { revalidate: revalidateSeconds } }),
+                    : {
+                          cache: "force-cache" as const,
+                          next: { revalidate: revalidateSeconds, ...(tags ? { tags } : {}) },
+                      }),
                 signal: controller.signal,
             },
         );

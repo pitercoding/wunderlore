@@ -1,7 +1,8 @@
 "use server";
 
+import { updateTag } from "next/cache";
 import { ApiError } from "@/lib/api/client";
-import { postRankingEntry, type PublishedEntry } from "@/lib/api/ranking";
+import { LEADERBOARD_CACHE_TAG, postRankingEntry, type PublishedEntry } from "@/lib/api/ranking";
 import { formatWait } from "@/lib/api/unavailable";
 import { isRankingGame } from "@/lib/ranking/games";
 import { normalizeNickname, validateNickname } from "@/lib/ranking/nickname";
@@ -21,6 +22,17 @@ export type PublishResponse =
 
 function failure(kind: PublishFailureKind, message: string): PublishResponse {
     return { ok: false, kind, message };
+}
+
+// Called only after the backend confirmed the publish (a new entry or an already published game),
+// so the leaderboard the player opens next is read fresh and includes the result. A failure here
+// must not turn a confirmed publish into an error: the cache then just expires on its own.
+function expireLeaderboardCache(): void {
+    try {
+        updateTag(LEADERBOARD_CACHE_TAG);
+    } catch (error: unknown) {
+        console.error("Failed to expire the leaderboard cache", error);
+    }
 }
 
 // A Server Action is a public endpoint: its arguments come from the client and are checked here
@@ -45,7 +57,11 @@ export async function publishToLeaderboard(
     }
 
     try {
-        return { ok: true, entry: await postRankingEntry(gameType, gameId, normalizeNickname(nickname)) };
+        const entry = await postRankingEntry(gameType, gameId, normalizeNickname(nickname));
+
+        expireLeaderboardCache();
+
+        return { ok: true, entry };
     } catch (error: unknown) {
         if (error instanceof ApiError) {
             if (error.status === 400) {

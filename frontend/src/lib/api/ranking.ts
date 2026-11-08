@@ -86,14 +86,20 @@ export async function postRankingEntry(
     );
 }
 
-// How long the public leaderboard read may be served from Next.js's cache. A result published
-// just now can take up to this long to appear; the publish itself is never cached.
+// How long the public leaderboard read may be served from Next.js's cache. Publishing a result
+// expires LEADERBOARD_CACHE_TAG at once, so the player sees it right away; for results published
+// by others (or after a restart of the cache) it can take up to this long to appear. The
+// publish itself is never cached.
 export const LEADERBOARD_REVALIDATE_SECONDS = 30;
+
+// Every leaderboard read (all games and each filter) carries this tag; publishing expires it.
+export const LEADERBOARD_CACHE_TAG = "leaderboard";
 
 export async function fetchLeaderboard(game?: RankingGame): Promise<Leaderboard> {
     const query = game ? `?game=${encodeURIComponent(game)}` : "";
 
     return apiFetch(`/api/ranking${query}`, isLeaderboard, undefined, {
         revalidateSeconds: LEADERBOARD_REVALIDATE_SECONDS,
+        tags: [LEADERBOARD_CACHE_TAG],
     });
 }

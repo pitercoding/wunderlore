@@ -1,11 +1,18 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { ApiError } from "@/lib/api/client";
-import { postRankingEntry } from "@/lib/api/ranking";
+import { LEADERBOARD_CACHE_TAG, postRankingEntry } from "@/lib/api/ranking";
+import { updateTag } from "next/cache";
 import { publishToLeaderboard } from "./actions";
 
-vi.mock("@/lib/api/ranking", () => ({ postRankingEntry: vi.fn() }));
+// Only the network call is replaced: the cache tag stays the real one the read uses.
+vi.mock("@/lib/api/ranking", async (importOriginal) => ({
+    ...(await importOriginal<typeof import("@/lib/api/ranking")>()),
+    postRankingEntry: vi.fn(),
+}));
+vi.mock("next/cache", () => ({ updateTag: vi.fn() }));
 
 const postMock = vi.mocked(postRankingEntry);
+const updateTagMock = vi.mocked(updateTag);
 
 const GAME_ID = "3f2b8c1e-5a47-4d0e-9c36-7b1e2a9d4f60";
 
@@ -20,6 +27,86 @@ const entry = {
 afterEach(() => {
     vi.resetAllMocks();
     vi.restoreAllMocks();
+});
+
+describe("publishToLeaderboard cache invalidation", () => {
+    it("expires the leaderboard tag after a new publication", async () => {
+        postMock.mockResolvedValue(entry);
+
+        await publishToLeaderboard("who-said-it", GAME_ID, "Frodo");
+
+        expect(updateTagMock).toHaveBeenCalledTimes(1);
+        expect(updateTagMock).toHaveBeenCalledWith(LEADERBOARD_CACHE_TAG);
+    });
+
+    it("also expires it when the game had already been published", async () => {
+        postMock.mockResolvedValue({ ...entry, alreadyPublished: true });
+
+        await expect(publishToLeaderboard("who-said-it", GAME_ID, "Frodo")).resolves.toMatchObject({
+            ok: true,
+        });
+        expect(updateTagMock).toHaveBeenCalledWith(LEADERBOARD_CACHE_TAG);
+    });
+
+    it("expires it only after the backend answered", async () => {
+        const order: string[] = [];
+
+        postMock.mockImplementation(async () => {
+            order.push("backend");
+            return entry;
+        });
+        updateTagMock.mockImplementation(() => {
+            order.push("expire");
+        });
+
+        await publishToLeaderboard("who-said-it", GAME_ID, "Frodo");
+
+        expect(order).toEqual(["backend", "expire"]);
+    });
+
+    it.each([400, 404, 409, 429, 503, 500])("does not expire it when the backend answers %i", async (status) => {
+        vi.spyOn(console, "error").mockImplementation(() => {});
+        postMock.mockRejectedValue(new ApiError("x", status));
+
+        await publishToLeaderboard("who-said-it", GAME_ID, "Frodo");
+
+        expect(updateTagMock).not.toHaveBeenCalled();
+    });
+
+    it("does not expire it when the request fails without a response", async () => {
+        vi.spyOn(console, "error").mockImplementation(() => {});
+        postMock.mockRejectedValue(new Error("network"));
+
+        expect(await publishToLeaderboard("who-said-it", GAME_ID, "Frodo")).toMatchObject({
+            ok: false,
+        });
+        expect(updateTagMock).not.toHaveBeenCalled();
+    });
+
+    it.each([
+        ["an invalid nickname", "who-said-it", GAME_ID, "ab"],
+        ["a reserved nickname", "who-said-it", GAME_ID, "Admin"],
+        ["a non-string nickname", "who-said-it", GAME_ID, 42],
+        ["a malformed game id", "who-said-it", "not-a-uuid", "Frodo"],
+    ])("does not expire it for %s", async (_name, game, id, nickname) => {
+        await publishToLeaderboard(game, id, nickname);
+
+        expect(postMock).not.toHaveBeenCalled();
+        expect(updateTagMock).not.toHaveBeenCalled();
+    });
+
+    it("still reports a confirmed publish when expiring the cache throws", async () => {
+        vi.spyOn(console, "error").mockImplementation(() => {});
+        postMock.mockResolvedValue(entry);
+        updateTagMock.mockImplementation(() => {
+            throw new Error("not in a server action");
+        });
+
+        expect(await publishToLeaderboard("who-said-it", GAME_ID, "Frodo")).toEqual({
+            ok: true,
+            entry,
+        });
+    });
 });
 
 describe("publishToLeaderboard", () => {

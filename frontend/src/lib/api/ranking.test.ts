@@ -58,6 +58,22 @@ describe("fetchLeaderboard", () => {
         });
     });
 
+    it.each([undefined, "who-said-it" as const])(
+        "tags every leaderboard read (game: %s) with the tag a publish expires",
+        async (game) => {
+            const { fetchLeaderboard, LEADERBOARD_CACHE_TAG } = await loadModules();
+
+            fetchMock.mockResolvedValue(jsonResponse({ game: game ?? null, entries: [] }));
+
+            await fetchLeaderboard(game);
+
+            expect(LEADERBOARD_CACHE_TAG).toBe("leaderboard");
+            expect(fetchMock.mock.calls[0][1]).toMatchObject({
+                next: { revalidate: 30, tags: [LEADERBOARD_CACHE_TAG] },
+            });
+        },
+    );
+
     it("never serves a 503 as leaderboard data", async () => {
         const { fetchLeaderboard, ApiError } = await loadModules();
 

@@ -136,6 +136,24 @@ describe("apiFetch", () => {
         });
     });
 
+    it("passes cache tags on a cached GET and never on an uncached one", async () => {
+        const { apiFetch } = await loadClient("http://api.test");
+        fetchMock.mockImplementation(async () => jsonResponse({}));
+
+        await apiFetch("/api/ranking", acceptAny, undefined, {
+            revalidateSeconds: 30,
+            tags: ["leaderboard"],
+        });
+        await apiFetch("/api/x", acceptAny, undefined, { tags: ["leaderboard"] });
+
+        expect(fetchMock.mock.calls[0][1]).toMatchObject({
+            cache: "force-cache",
+            next: { revalidate: 30, tags: ["leaderboard"] },
+        });
+        expect(fetchMock.mock.calls[1][1]).toMatchObject({ cache: "no-store" });
+        expect(fetchMock.mock.calls[1][1]).not.toHaveProperty("next");
+    });
+
     it("caches a GET only when revalidateSeconds is given", async () => {
         const { apiFetch } = await loadClient("http://api.test");
         fetchMock.mockResolvedValue(jsonResponse({}));
