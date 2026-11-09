@@ -4,17 +4,29 @@
     margin-bottom: var(--space-5);
 }
 
+/* One row that scrolls sideways on small screens, so the filters don't push the ranking down.
+   The padding (undone by the negative margin) keeps the focus ring from being clipped. */
 .filterList {
     display: flex;
-    flex-wrap: wrap;
     gap: var(--space-2);
-    margin: 0;
-    padding: 0;
+    margin: calc(-1 * var(--space-1));
+    padding: var(--space-1);
     list-style: none;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x proximity;
+    scroll-padding-inline: var(--space-1);
+    scrollbar-width: thin;
+}
+
+.filterList li {
+    flex: none;
+    scroll-snap-align: start;
 }
 
 .filter {
     display: inline-flex;
+    white-space: nowrap;
     align-items: center;
     min-height: 2.75rem;
     padding: 0 var(--space-4);
@@ -52,7 +64,11 @@
     color: var(--color-foreground-muted);
 }
 
+/* Same dark error palette the game scenes use; the light theme's would show a pink box here. */
 .error {
+    --color-error: #f39a8d;
+    --color-error-surface: color-mix(in srgb, #f39a8d 13%, var(--scene-surface));
+
     padding: var(--space-4);
     border: 1px solid var(--color-error);
     border-radius: var(--radius-lg);
@@ -69,7 +85,7 @@
     text-underline-offset: 0.2em;
 }
 
-/* ---- Table: stacked cards on small screens, a real table from 40em ---- */
+/* ---- Table: stacked cards on small screens, a real table from 48em ---- */
 
 .tableWrap {
     border: 1px solid var(--color-border);
@@ -160,7 +176,16 @@
     text-shadow: 0 0 1rem color-mix(in srgb, var(--color-accent-text) 55%, transparent);
 }
 
-@media (min-width: 40em) {
+/* From 48em the filters fit on one row again, so they wrap instead of scrolling. */
+@media (min-width: 48em) {
+    .filterList {
+        flex-wrap: wrap;
+        margin: 0;
+        padding: 0;
+        overflow-x: visible;
+        scroll-snap-type: none;
+    }
+
     .table thead {
         position: static;
         width: auto;
