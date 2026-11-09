@@ -357,6 +357,27 @@ class WhoSaidItServiceTest {
         }
 
         @Test
+        void shouldNotApplyTheCompetitiveCurationToTheSingleRoundGame() {
+                stubSinglePage(
+                                List.of(quote("5cd96e05de30eff6ebccea09", "What are you doing?", "sam"),
+                                                quote("5cd96e05de30eff6ebccea5c", "What are you doing?", "gollum"),
+                                                quote("5cd96e05de30eff6ebcceb61",
+                                                                "I will not leave my daughter hereto die.", "aragorn"),
+                                                quote("5cd96e05de30eff6ebccedf3",
+                                                                "Build me an army worthy of Mordor.", "gandalf")),
+                                List.of(FRODO, SAM, GANDALF, ARAGORN, GOLLUM));
+
+                Set<String> seen = new java.util.HashSet<>();
+
+                for (long seed = 1; seed <= 80; seed++) {
+                        seen.add(newService(new Random(seed * 7919L)).generateRound().quote());
+                }
+
+                assertThat(seen).containsExactlyInAnyOrder("What are you doing?",
+                                "I will not leave my daughter hereto die.", "Build me an army worthy of Mordor.");
+        }
+
+        @Test
         void shouldKeepVeryShortQuotes() {
                 stubSinglePage(
                                 List.of(quote("s1", "No!", "gollum"), quote("s2", "Pippin!", "sam"),

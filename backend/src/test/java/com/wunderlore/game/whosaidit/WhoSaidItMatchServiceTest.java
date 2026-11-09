@@ -59,7 +59,7 @@ class WhoSaidItMatchServiceTest {
         List<ExternalQuote> list = new ArrayList<>();
 
         for (int i = 0; i < count; i++) {
-            list.add(new ExternalQuote("q" + i, "Dialog number " + i, "movie", "char-" + (i % characterCount), "q" + i));
+            list.add(new ExternalQuote("q" + i, "Dialog line number " + i, "movie", "char-" + (i % characterCount), "q" + i));
         }
 
         return list;
@@ -103,13 +103,13 @@ class WhoSaidItMatchServiceTest {
 
         // Answering with the first option of each question never has to be right; what matters is
         // that the correct character is offered, so picking the character who really said each
-        // quote must always be possible: Dialog number i is by char-(i % 12).
+        // quote must always be possible: Dialog line number i is by char-(i % 12).
         for (long seed = 1; seed <= 20; seed++) {
             WhoSaidItMatch match = service(seed).createMatch();
 
             for (int n = 1; n <= 10; n++) {
                 WhoSaidItMatch.QuestionView view = match.currentQuestion();
-                int index = Integer.parseInt(view.quote().substring("Dialog number ".length()));
+                int index = Integer.parseInt(view.quote().substring("Dialog line number ".length()));
                 String correct = "char-" + (index % 12);
 
                 assertThat(view.options()).extracting(WhoSaidItRound.CharacterOption::id).contains(correct);
@@ -125,13 +125,13 @@ class WhoSaidItMatchServiceTest {
         List<ExternalQuote> list = new ArrayList<>();
 
         for (int i = 0; i < 9; i++) {
-            list.add(new ExternalQuote("q" + i, "Dialog " + i, "movie", "char-" + i, "q" + i));
+            list.add(new ExternalQuote("q" + i, "Dialog line number " + i, "movie", "char-" + i, "q" + i));
         }
 
         // Repeats of an existing dialog (any case) and quotes by unknown characters do not count.
-        list.add(new ExternalQuote("dup1", "Dialog 0", "movie", "char-1", "dup1"));
-        list.add(new ExternalQuote("dup2", "  dialog 3 ", "movie", "char-2", "dup2"));
-        list.add(new ExternalQuote("ghost", "Dialog ghost", "movie", "unknown", "ghost"));
+        list.add(new ExternalQuote("dup1", "Dialog line number 0", "movie", "char-1", "dup1"));
+        list.add(new ExternalQuote("dup2", "  dialog line number 3 ", "movie", "char-2", "dup2"));
+        list.add(new ExternalQuote("ghost", "Dialog line number ghost", "movie", "unknown", "ghost"));
         list.add(new ExternalQuote("blank", "   ", "movie", "char-1", "blank"));
         stub(list, characters(9));
 
@@ -290,19 +290,48 @@ class WhoSaidItMatchServiceTest {
     }
 
     @Test
-    void shouldKeepVeryShortQuotes() {
-        List<ExternalQuote> list = new ArrayList<>(quotes(7, 12));
+    void shouldNotUseVeryShortQuotesInTheCompetitiveMode() {
+        List<ExternalQuote> list = new ArrayList<>(quotes(10, 12));
 
         list.add(new ExternalQuote("s1", "No!", "movie", "char-1", "s1"));
         list.add(new ExternalQuote("s2", "Pippin!", "movie", "char-2", "s2"));
         list.add(new ExternalQuote("s3", "Gimli?", "movie", "char-3", "s3"));
         stub(list, characters(12));
 
-        // Exactly ten quotes exist, so every match must contain all three short ones.
-        Set<String> seen = new HashSet<>(views(service(1).createMatch()).stream()
-                .map(WhoSaidItMatch.QuestionView::quote).toList());
+        // Exactly ten quotes have three words or more, so every match is made of those ten.
+        for (long seed = 1; seed <= 20; seed++) {
+            Set<String> seen = new HashSet<>(views(service(seed).createMatch()).stream()
+                    .map(WhoSaidItMatch.QuestionView::quote).toList());
 
-        assertThat(seen).contains("No!", "Pippin!", "Gimli?");
+            assertThat(seen).hasSize(10).doesNotContain("No!", "Pippin!", "Gimli?");
+        }
+    }
+
+    @Test
+    void shouldApplyTheCompetitiveCurationWhenBuildingMatches() {
+        List<ExternalQuote> list = new ArrayList<>(quotes(10, 12));
+
+        // Real audit records: a text shared by two characters, a glued line, the Sauron line that
+        // belongs to a Saruman scene, and two quotes that must stay.
+        list.add(new ExternalQuote("5cd96e05de30eff6ebccea09", "What are you doing?", "movie", "char-1", "a"));
+        list.add(new ExternalQuote("5cd96e05de30eff6ebccea5c", "What are you doing?", "movie", "char-2", "b"));
+        list.add(new ExternalQuote("5cd96e05de30eff6ebcceb61",
+                "I will not leave my daughter hereto die.", "movie", "char-3", "c"));
+        list.add(new ExternalQuote("5cd96e05de30eff6ebccedf3",
+                "Build me an army worthy of Mordor.", "movie", "char-4", "d"));
+        list.add(new ExternalQuote("5cd96e05de30eff6ebccf0ed", "I see you!", "movie", "char-5", "e"));
+        list.add(new ExternalQuote("5cd96e05de30eff6ebccee15", "Merin le telim.", "movie", "char-6", "f"));
+        stub(list, characters(12));
+
+        Set<String> seen = new HashSet<>();
+
+        for (long seed = 1; seed <= 80; seed++) {
+            views(service(seed).createMatch()).forEach(view -> seen.add(view.quote()));
+        }
+
+        assertThat(seen).doesNotContain("What are you doing?", "I will not leave my daughter hereto die.",
+                "Build me an army worthy of Mordor.");
+        assertThat(seen).contains("I see you!", "Merin le telim.");
     }
 
     @Test
@@ -311,6 +340,11 @@ class WhoSaidItMatchServiceTest {
 
         list.add(new ExternalQuote(BARROW_WIGHT_QUOTE_ID, "Barrow song", "movie", "char-1", "b"));
         list.add(new ExternalQuote("g1", "Generic dialog", "movie", GENERIC_MINOR_CHARACTER, "g1"));
+        // The competitive curation (short and glued quotes) does not reach the catalog either. The catalog
+        // already drops repeated texts on its own, so a colliding pair is not part of this check.
+        list.add(new ExternalQuote("5cd96e05de30eff6ebcceb61", "I will not leave my daughter hereto die.", "movie", "char-1", "ed"));
+        list.add(new ExternalQuote("5cd96e05de30eff6ebccec1c", "Sam, no!", "movie", "char-2", "sh"));
+        list.add(new ExternalQuote("5cd96e05de30eff6ebccea09", "What are you doing?", "movie", "char-3", "c1"));
         stub(list, withExcludedCharacters(characters(5)));
 
         LoreDataService lore = new LoreDataService(
@@ -318,7 +352,8 @@ class WhoSaidItMatchServiceTest {
 
         // The game-only exclusions do not reach the lore data the catalog is built from.
         assertThat(lore.getData().catalogQuotes()).extracting(q -> q.id())
-                .contains(BARROW_WIGHT_QUOTE_ID, "g1");
+                .contains(BARROW_WIGHT_QUOTE_ID, "g1", "5cd96e05de30eff6ebcceb61", "5cd96e05de30eff6ebccec1c",
+                        "5cd96e05de30eff6ebccea09");
         assertThat(lore.getData().charactersById()).containsKeys(EXCLUDED_IDS.toArray(String[]::new));
     }
 
@@ -326,7 +361,7 @@ class WhoSaidItMatchServiceTest {
         List<ExternalQuote> list = new ArrayList<>();
 
         for (int i = 0; i < count; i++) {
-            list.add(new ExternalQuote("g" + i, "Generic dialog " + i, "movie", GENERIC_MINOR_CHARACTER, "g" + i));
+            list.add(new ExternalQuote("g" + i, "Generic dialog line " + i, "movie", GENERIC_MINOR_CHARACTER, "g" + i));
         }
 
         return list;
@@ -344,7 +379,7 @@ class WhoSaidItMatchServiceTest {
 
             for (int n = 1; n <= 10; n++) {
                 WhoSaidItMatch.QuestionView view = match.currentQuestion();
-                int index = Integer.parseInt(view.quote().substring("Dialog number ".length()));
+                int index = Integer.parseInt(view.quote().substring("Dialog line number ".length()));
 
                 assertThat(view.quote()).doesNotStartWith("Generic dialog");
                 assertThat(view.options()).extracting(WhoSaidItRound.CharacterOption::id)

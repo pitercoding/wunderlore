@@ -88,7 +88,7 @@ class RankingPostgresIntegrationTest {
         List<ExternalCharacter> characters = new ArrayList<>();
 
         for (int i = 0; i < 30; i++) {
-            quotes.add(new ExternalQuote("q" + i, "Dialog number " + i, "movie", "char-" + (i % 12), "q" + i));
+            quotes.add(new ExternalQuote("q" + i, "Dialog line number " + i, "movie", "char-" + (i % 12), "q" + i));
         }
 
         for (int i = 0; i < 12; i++) {

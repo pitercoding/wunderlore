@@ -32,13 +32,14 @@ public class WhoSaidItMatchService {
         this.clock = clock;
     }
 
-    // Ten quotes with different dialogs (and different quote ids), each by a known character, in
-    // random order. Quotes are never edited. Throws WhoSaidItInsufficientDataException rather
-    // than building a shorter match or inventing data.
+    // Ten quotes with different dialogs (and different quote ids), each by a known character and
+    // chosen among the curated competitive quotes, in random order. Quotes are never edited.
+    // Throws WhoSaidItInsufficientDataException rather than building a shorter match or inventing data.
     public WhoSaidItMatch createMatch() {
         LoreData data = loreDataService.getData();
 
-        List<LoreQuote> pool = new ArrayList<>(WhoSaidItExclusions.playableQuotes(data));
+        List<LoreQuote> pool = new ArrayList<>(
+                WhoSaidItCompetitiveCuration.eligibleQuotes(WhoSaidItExclusions.playableQuotes(data)));
 
         shuffle(pool);
 
