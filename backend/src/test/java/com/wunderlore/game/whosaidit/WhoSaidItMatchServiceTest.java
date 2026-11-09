@@ -167,6 +167,93 @@ class WhoSaidItMatchServiceTest {
                 .isInstanceOf(WhoSaidItInsufficientDataException.class);
     }
 
+    private static final String GENERIC_MINOR_CHARACTER = "5cdbe49b7ed9587226e794a0";
+    private static final Set<String> EXCLUDED_IDS = Set.of(
+            GENERIC_MINOR_CHARACTER, "5cdbe47d7ed9587226e7949f", "5cdbdecb6dc0baeae48cfa43");
+
+    // The three unidentifiable records, as The One API returns them.
+    private static List<ExternalCharacter> withExcludedCharacters(List<ExternalCharacter> base) {
+        List<ExternalCharacter> list = new ArrayList<>(base);
+
+        list.add(new ExternalCharacter(GENERIC_MINOR_CHARACTER, "MINOR_CHARACTER"));
+        list.add(new ExternalCharacter("5cdbe47d7ed9587226e7949f", "MINOR_CHARACTER "));
+        list.add(new ExternalCharacter("5cdbdecb6dc0baeae48cfa43", "Seers"));
+
+        return list;
+    }
+
+    private static List<ExternalQuote> genericQuotes(int count) {
+        List<ExternalQuote> list = new ArrayList<>();
+
+        for (int i = 0; i < count; i++) {
+            list.add(new ExternalQuote("g" + i, "Generic dialog " + i, "movie", GENERIC_MINOR_CHARACTER, "g" + i));
+        }
+
+        return list;
+    }
+
+    @Test
+    void shouldNeverUseTheGenericMinorCharacterAsTheCorrectAnswerOrAnyExcludedIdAsAnOption() {
+        List<ExternalQuote> list = new ArrayList<>(genericQuotes(60));
+
+        list.addAll(quotes(20, 12));
+        stub(list, withExcludedCharacters(characters(12)));
+
+        for (long seed = 1; seed <= 30; seed++) {
+            WhoSaidItMatch match = service(seed).createMatch();
+
+            for (int n = 1; n <= 10; n++) {
+                WhoSaidItMatch.QuestionView view = match.currentQuestion();
+                int index = Integer.parseInt(view.quote().substring("Dialog number ".length()));
+
+                assertThat(view.quote()).doesNotStartWith("Generic dialog");
+                assertThat(view.options()).extracting(WhoSaidItRound.CharacterOption::id)
+                        .doesNotContainAnyElementsOf(EXCLUDED_IDS);
+
+                match.answer(n, "char-" + (index % 12));
+            }
+
+            assertThat(match.result().score()).isEqualTo(100);
+        }
+    }
+
+    @Test
+    void shouldStillBuildTenQuestionsWithFourDistinctOptionsWhenExcludedRecordsArePresent() {
+        List<ExternalQuote> list = new ArrayList<>(genericQuotes(40));
+
+        list.addAll(quotes(25, 12));
+        stub(list, withExcludedCharacters(characters(12)));
+
+        List<WhoSaidItMatch.QuestionView> views = views(service(7).createMatch());
+
+        assertThat(views).hasSize(10);
+
+        for (WhoSaidItMatch.QuestionView view : views) {
+            assertThat(view.options()).hasSize(4);
+            assertThat(view.options()).extracting(WhoSaidItRound.CharacterOption::id).doesNotHaveDuplicates();
+        }
+    }
+
+    @Test
+    void shouldNotBuildAMatchWhenFewerThanTenQuotesRemainAfterTheExclusion() {
+        List<ExternalQuote> list = new ArrayList<>(genericQuotes(50));
+
+        list.addAll(quotes(9, 9));
+        stub(list, withExcludedCharacters(characters(9)));
+
+        assertThatThrownBy(() -> service(1).createMatch())
+                .isInstanceOf(WhoSaidItInsufficientDataException.class);
+    }
+
+    @Test
+    void shouldNotUseExcludedRecordsToFillTheFourOptions() {
+        // Three identifiable characters plus the excluded records: still only three real ones.
+        stub(quotes(20, 3), withExcludedCharacters(characters(3)));
+
+        assertThatThrownBy(() -> service(1).createMatch())
+                .isInstanceOf(WhoSaidItInsufficientDataException.class);
+    }
+
     @Test
     void shouldVaryTheSelectionBetweenMatches() {
         stub(quotes(60, 12), characters(12));

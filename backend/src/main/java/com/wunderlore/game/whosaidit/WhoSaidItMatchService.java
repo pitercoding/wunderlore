@@ -22,6 +22,14 @@ public class WhoSaidItMatchService {
 
     private static final int WRONG_OPTIONS = WhoSaidItMatch.OPTIONS_PER_QUESTION - 1;
 
+    // Upstream records that do not identify a character: both MINOR_CHARACTER entries (the generic
+    // one owns 117 quotes) and Seers. They are never a correct answer and never an option. Matched by
+    // exact id only; the lore data and the other game modes are left as they are.
+    private static final Set<String> EXCLUDED_CHARACTER_IDS = Set.of(
+            "5cdbe49b7ed9587226e794a0",
+            "5cdbe47d7ed9587226e7949f",
+            "5cdbdecb6dc0baeae48cfa43");
+
     private final LoreDataService loreDataService;
     private final RandomGenerator random;
     private final Clock clock;
@@ -42,7 +50,9 @@ public class WhoSaidItMatchService {
 
         shuffle(pool);
 
-        List<LoreCharacter> characters = new ArrayList<>(data.charactersById().values());
+        List<LoreCharacter> characters = data.charactersById().values().stream()
+                .filter(character -> !EXCLUDED_CHARACTER_IDS.contains(character.id()))
+                .toList();
         Set<String> dialogs = new HashSet<>();
         Set<String> quoteIds = new HashSet<>();
         List<WhoSaidItMatch.Question> questions = new ArrayList<>();
@@ -54,7 +64,8 @@ public class WhoSaidItMatchService {
 
             LoreCharacter correct = data.charactersById().get(quote.characterId());
 
-            if (correct == null || quote.dialog() == null || quote.dialog().isBlank()) {
+            if (correct == null || EXCLUDED_CHARACTER_IDS.contains(correct.id())
+                    || quote.dialog() == null || quote.dialog().isBlank()) {
                 continue;
             }
 
