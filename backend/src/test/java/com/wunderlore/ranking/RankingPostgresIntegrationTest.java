@@ -292,8 +292,12 @@ class RankingPostgresIntegrationTest {
 
         String body = leaderboard(null);
 
-        assertThat((List<String>) JsonPath.read(body, "$.entries[*].nickname")).containsExactly("Better", "Worse");
-        assertThat((List<Integer>) JsonPath.read(body, "$.entries[*].position")).containsExactly(1, 2);
+        assertThat(jsonList(body, "$.entries[*].nickname")).containsExactly("Better", "Worse");
+        assertThat(jsonList(body, "$.entries[*].position")).containsExactly(1, 2);
+    }
+
+    private static <T> List<T> jsonList(String json, String path) {
+        return JsonPath.read(json, path);
     }
 
     @Test
@@ -304,14 +308,13 @@ class RankingPostgresIntegrationTest {
 
         String filtered = leaderboard("who-said-it");
 
-        assertThat((List<String>) JsonPath.read(filtered, "$.entries[*].nickname")).containsExactly("Second", "Third");
-        assertThat((List<Integer>) JsonPath.read(filtered, "$.entries[*].position")).containsExactly(1, 2);
-        assertThat((List<String>) JsonPath.read(filtered, "$.entries[*].gameType"))
-                .containsOnly("who-said-it");
+        assertThat(jsonList(filtered, "$.entries[*].nickname")).containsExactly("Second", "Third");
+        assertThat(jsonList(filtered, "$.entries[*].position")).containsExactly(1, 2);
+        assertThat(jsonList(filtered, "$.entries[*].gameType")).containsOnly("who-said-it");
         assertThat((String) JsonPath.read(filtered, "$.game")).isEqualTo("who-said-it");
 
         // Global positions are unaffected.
-        assertThat((List<Integer>) JsonPath.read(leaderboard(null), "$.entries[*].position")).containsExactly(1, 2, 3);
+        assertThat(jsonList(leaderboard(null), "$.entries[*].position")).containsExactly(1, 2, 3);
     }
 
     @Test
