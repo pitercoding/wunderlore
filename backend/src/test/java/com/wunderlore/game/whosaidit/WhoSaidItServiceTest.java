@@ -282,7 +282,8 @@ class WhoSaidItServiceTest {
 
         private static final java.util.List<String> EXCLUDED_CHARACTER_IDS = java.util.List.of(
                         "5cd99d4bde30eff6ebccfc96", "5cd99d4bde30eff6ebccfe10", "5cdbe47d7ed9587226e7949f",
-                        "5cdbe49b7ed9587226e794a0", "5cdbdecb6dc0baeae48cfa43");
+                        "5cdbe49b7ed9587226e794a0", "5cdbdecb6dc0baeae48cfa43",
+                        "5cdbdecb6dc0baeae48cfac2", "5cdbdecb6dc0baeae48cfa8d");
 
         private static List<ExternalCharacter> withExcludedCharacters(List<ExternalCharacter> base) {
                 java.util.List<ExternalCharacter> list = new java.util.ArrayList<>(base);
@@ -322,6 +323,7 @@ class WhoSaidItServiceTest {
                                 List.of(
                                                 quote("5cd96e05de30eff6ebccedde", "Barrow song", "gollum"),
                                                 quote("5cd96e05de30eff6ebccec49", "Corrupted line", "aragorn"),
+                                                quote("5cd96e05de30eff6ebcceead", "Password line (", "gandalf"),
                                                 quote("q3", "My precious.", "gollum"),
                                                 quote("q4", "I am no man.", "aragorn")),
                                 List.of(FRODO, SAM, GANDALF, ARAGORN, GOLLUM));
@@ -335,6 +337,23 @@ class WhoSaidItServiceTest {
                 }
 
                 assertThat(seen).containsExactlyInAnyOrder("My precious.", "I am no man.");
+        }
+
+        @Test
+        void shouldKeepALegitimateEowynQuote() {
+                ExternalCharacter eowyn = new ExternalCharacter("5cdbdecb6dc0baeae48cfa59", "Éowyn");
+
+                stubSinglePage(
+                                List.of(quote("5cd96e05de30eff6ebccec24", "I'm sorry. Please, eat.", eowyn.id()),
+                                                quote("5cd96e05de30eff6ebcceead", "Password line (", "gandalf")),
+                                withExcludedCharacters(List.of(FRODO, SAM, ARAGORN, GOLLUM, eowyn)));
+
+                for (long seed = 1; seed <= 20; seed++) {
+                        WhoSaidItRound round = newService(new Random(seed)).generateRound();
+
+                        assertThat(round.quote()).isEqualTo("I'm sorry. Please, eat.");
+                        assertThat(round.correctCharacterId()).isEqualTo(eowyn.id());
+                }
         }
 
         @Test
@@ -357,6 +376,7 @@ class WhoSaidItServiceTest {
         void shouldFailWhenOnlyExcludedQuotesRemain() {
                 stubSinglePage(
                                 List.of(quote("5cd96e05de30eff6ebccedde", "Barrow song", "gollum"),
+                                                quote("5cd96e05de30eff6ebcceead", "Password line (", "gandalf"),
                                                 quote("g", "Generic", "5cdbe49b7ed9587226e794a0")),
                                 withExcludedCharacters(List.of(FRODO, SAM, GANDALF, ARAGORN, GOLLUM)));
 

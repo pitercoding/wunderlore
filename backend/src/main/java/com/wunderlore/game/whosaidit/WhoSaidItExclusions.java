@@ -13,20 +13,23 @@ import com.wunderlore.lore.LoreQuote;
 final class WhoSaidItExclusions {
 
     // Records that are not individual characters: two wiki user pages, both MINOR_CHARACTER
-    // entries (the second owns 117 quotes) and Seers. They are never a correct answer, an option
-    // or a speaker.
+    // entries (the second owns 117 quotes), Seers, the "Letter 211" document label and the
+    // generic "Men" category. They are never a correct answer, an option or a speaker.
     static final Set<String> CHARACTER_IDS = Set.of(
             "5cd99d4bde30eff6ebccfc96",  // User:Deathshriek
             "5cd99d4bde30eff6ebccfe10",  // User:Technobliterator/Showcase
             "5cdbe47d7ed9587226e7949f",  // MINOR_CHARACTER
             "5cdbe49b7ed9587226e794a0",  // MINOR_CHARACTER (generic)
-            "5cdbdecb6dc0baeae48cfa43"); // Seers
+            "5cdbdecb6dc0baeae48cfa43",  // Seers
+            "5cdbdecb6dc0baeae48cfac2",  // Letter 211
+            "5cdbdecb6dc0baeae48cfa8d"); // Men
 
-    // Two quotes with confirmed upstream problems: the Barrow-wight's song filed under Gollum and
-    // a corrupted line filed under Aragorn. Only these quotes go; the characters stay.
+    // Quotes with confirmed upstream problems: the Barrow-wight's song filed under Gollum, a
+    // corrupted line filed under Aragorn and the password line cut off at a dangling "(". Only these quotes go; the characters stay.
     static final Set<String> QUOTE_IDS = Set.of(
             "5cd96e05de30eff6ebccedde",
-            "5cd96e05de30eff6ebccec49");
+            "5cd96e05de30eff6ebccec49",
+            "5cd96e05de30eff6ebcceead");
 
     private WhoSaidItExclusions() {
     }

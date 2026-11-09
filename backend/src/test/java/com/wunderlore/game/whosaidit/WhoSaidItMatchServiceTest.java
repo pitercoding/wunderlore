@@ -170,10 +170,12 @@ class WhoSaidItMatchServiceTest {
     private static final String GENERIC_MINOR_CHARACTER = "5cdbe49b7ed9587226e794a0";
     private static final Set<String> EXCLUDED_IDS = Set.of(
             GENERIC_MINOR_CHARACTER, "5cdbe47d7ed9587226e7949f", "5cdbdecb6dc0baeae48cfa43",
-            "5cd99d4bde30eff6ebccfc96", "5cd99d4bde30eff6ebccfe10");
+            "5cd99d4bde30eff6ebccfc96", "5cd99d4bde30eff6ebccfe10",
+            "5cdbdecb6dc0baeae48cfac2", "5cdbdecb6dc0baeae48cfa8d");
 
     private static final String BARROW_WIGHT_QUOTE_ID = "5cd96e05de30eff6ebccedde";
     private static final String CORRUPTED_QUOTE_ID = "5cd96e05de30eff6ebccec49";
+    private static final String DANGLING_PAREN_QUOTE_ID = "5cd96e05de30eff6ebcceead";
 
     // The five records that are not characters, as The One API returns them.
     private static List<ExternalCharacter> withExcludedCharacters(List<ExternalCharacter> base) {
@@ -184,6 +186,8 @@ class WhoSaidItMatchServiceTest {
         list.add(new ExternalCharacter("5cdbdecb6dc0baeae48cfa43", "Seers"));
         list.add(new ExternalCharacter("5cd99d4bde30eff6ebccfc96", "User:Deathshriek"));
         list.add(new ExternalCharacter("5cd99d4bde30eff6ebccfe10", "User:Technobliterator/Showcase"));
+        list.add(new ExternalCharacter("5cdbdecb6dc0baeae48cfac2", "Letter 211"));
+        list.add(new ExternalCharacter("5cdbdecb6dc0baeae48cfa8d", "Men"));
 
         return list;
     }
@@ -217,18 +221,22 @@ class WhoSaidItMatchServiceTest {
     }
 
     @Test
-    void shouldDropOnlyTheTwoExcludedQuotesAndKeepGollumAndAragorn() {
+    void shouldDropOnlyTheExcludedQuotesAndKeepGollumAndAragorn() {
         List<ExternalCharacter> chars = new ArrayList<>(characters(12));
 
         chars.add(new ExternalCharacter("gollum", "Gollum"));
         chars.add(new ExternalCharacter("aragorn", "Aragorn"));
+        chars.add(new ExternalCharacter("5cdbdecb6dc0baeae48cfa59", "Éowyn"));
 
         List<ExternalQuote> list = new ArrayList<>(quotes(12, 12));
 
         list.add(new ExternalQuote(BARROW_WIGHT_QUOTE_ID, "Barrow song", "movie", "gollum", "b"));
         list.add(new ExternalQuote(CORRUPTED_QUOTE_ID, "Corrupted line", "movie", "aragorn", "c"));
+        list.add(new ExternalQuote(DANGLING_PAREN_QUOTE_ID, "Password line (", "movie", "gollum", "d"));
         list.add(new ExternalQuote("legit-gollum", "Legit Gollum line", "movie", "gollum", "lg"));
         list.add(new ExternalQuote("legit-aragorn", "Legit Aragorn line", "movie", "aragorn", "la"));
+        list.add(new ExternalQuote("5cd96e05de30eff6ebccec24", "I'm sorry. Please, eat.", "movie",
+                "5cdbdecb6dc0baeae48cfa59", "le"));
         stub(list, chars);
 
         Set<String> seen = new HashSet<>();
@@ -246,9 +254,39 @@ class WhoSaidItMatchServiceTest {
             }
         }
 
-        assertThat(seen).doesNotContain("Barrow song", "Corrupted line");
-        assertThat(seen).contains("Legit Gollum line", "Legit Aragorn line");
-        assertThat(optionIds).contains("gollum", "aragorn");
+        assertThat(seen).doesNotContain("Barrow song", "Corrupted line", "Password line (");
+        assertThat(seen).contains("Legit Gollum line", "Legit Aragorn line", "I'm sorry. Please, eat.");
+        assertThat(optionIds).contains("gollum", "aragorn", "5cdbdecb6dc0baeae48cfa59");
+    }
+
+    @Test
+    void shouldKeepHomonymsOfExcludedRecordsThatHaveDifferentIds() {
+        List<ExternalCharacter> chars = new ArrayList<>(characters(8));
+
+        chars.add(new ExternalCharacter("homonym-men", "Men"));
+        chars.add(new ExternalCharacter("homonym-letter", "Letter 211"));
+
+        List<ExternalQuote> list = new ArrayList<>(quotes(20, 8));
+
+        list.add(new ExternalQuote("hm", "Homonym Men line", "movie", "homonym-men", "hm"));
+        list.add(new ExternalQuote("hl", "Homonym Letter line", "movie", "homonym-letter", "hl"));
+        stub(list, withExcludedCharacters(chars));
+
+        Set<String> optionIds = new HashSet<>();
+
+        for (long seed = 1; seed <= 60; seed++) {
+            WhoSaidItMatch match = service(seed).createMatch();
+
+            for (int q = 1; q <= 10; q++) {
+                WhoSaidItMatch.QuestionView view = match.currentQuestion();
+
+                view.options().forEach(option -> optionIds.add(option.id()));
+                match.answer(q, view.options().get(0).id());
+            }
+        }
+
+        assertThat(optionIds).contains("homonym-men", "homonym-letter");
+        assertThat(optionIds).doesNotContainAnyElementsOf(EXCLUDED_IDS);
     }
 
     @Test
