@@ -58,6 +58,44 @@ describe("fetchLeaderboard", () => {
         });
     });
 
+    it("waits for a sleeping backend: the read times out at the cold-start limit, not at 15 seconds", async () => {
+        vi.useFakeTimers();
+
+        try {
+            const { fetchLeaderboard, ApiTimeoutError, API_TIMEOUT_MS, COLD_START_TIMEOUT_MS } =
+                await loadModules();
+
+            fetchMock.mockImplementation(
+                (_url, init) =>
+                    new Promise((_resolve, reject) => {
+                        init?.signal?.addEventListener("abort", () => reject(init.signal?.reason));
+                    }),
+            );
+
+            const outcome = fetchLeaderboard().then(
+                () => "resolved",
+                (error: unknown) => error,
+            );
+
+            await vi.advanceTimersByTimeAsync(API_TIMEOUT_MS + 1_000);
+            // Still waiting after the default timeout...
+            let settled = false;
+            void outcome.then(() => {
+                settled = true;
+            });
+            await Promise.resolve();
+            expect(settled).toBe(false);
+
+            // ...and aborted only at the cold-start limit.
+            await vi.advanceTimersByTimeAsync(COLD_START_TIMEOUT_MS);
+            const error = await outcome;
+            expect(error).toBeInstanceOf(ApiTimeoutError);
+            expect((error as InstanceType<typeof ApiTimeoutError>).timeoutMs).toBe(130_000);
+        } finally {
+            vi.useRealTimers();
+        }
+    });
+
     it.each([undefined, "who-said-it" as const])(
         "tags every leaderboard read (game: %s) with the tag a publish expires",
         async (game) => {
@@ -124,6 +162,34 @@ describe("postRankingEntry", () => {
         playedAt: "2026-03-01T10:15:30Z",
         alreadyPublished: false,
     };
+
+    it("keeps the default 15-second timeout", async () => {
+        vi.useFakeTimers();
+
+        try {
+            const { postRankingEntry, ApiTimeoutError, API_TIMEOUT_MS } = await loadModules();
+
+            fetchMock.mockImplementation(
+                (_url, init) =>
+                    new Promise((_resolve, reject) => {
+                        init?.signal?.addEventListener("abort", () => reject(init.signal?.reason));
+                    }),
+            );
+
+            const outcome = postRankingEntry("who-said-it", "game-1", "Frodo").then(
+                () => "resolved",
+                (error: unknown) => error,
+            );
+
+            await vi.advanceTimersByTimeAsync(API_TIMEOUT_MS);
+
+            const error = await outcome;
+            expect(error).toBeInstanceOf(ApiTimeoutError);
+            expect((error as InstanceType<typeof ApiTimeoutError>).timeoutMs).toBe(15_000);
+        } finally {
+            vi.useRealTimers();
+        }
+    });
 
     it("sends only the game, its id and the nickname", async () => {
         const { postRankingEntry } = await loadModules();

@@ -1,4 +1,4 @@
-import { apiFetch } from "@/lib/api/client";
+import { apiFetch, COLD_START_TIMEOUT_MS } from "@/lib/api/client";
 import { isNonBlankString, isRecord } from "@/lib/api/guards";
 import { isRankingGame, type RankingGame } from "@/lib/ranking/games";
 
@@ -101,5 +101,8 @@ export async function fetchLeaderboard(game?: RankingGame): Promise<Leaderboard>
     return apiFetch(`/api/ranking${query}`, isLeaderboard, undefined, {
         revalidateSeconds: LEADERBOARD_REVALIDATE_SECONDS,
         tags: [LEADERBOARD_CACHE_TAG],
+        // The leaderboard is often the first page a visitor opens, so it may reach a sleeping
+        // backend (see ColdStartHint on the page): wait as long as the game start-up calls do.
+        timeoutMs: COLD_START_TIMEOUT_MS,
     });
 }
