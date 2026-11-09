@@ -280,6 +280,90 @@ class WhoSaidItServiceTest {
                 verify(theOneApiClient, times(2)).getCharacters(1, PAGE_SIZE);
         }
 
+        private static final java.util.List<String> EXCLUDED_CHARACTER_IDS = java.util.List.of(
+                        "5cd99d4bde30eff6ebccfc96", "5cd99d4bde30eff6ebccfe10", "5cdbe47d7ed9587226e7949f",
+                        "5cdbe49b7ed9587226e794a0", "5cdbdecb6dc0baeae48cfa43");
+
+        private static List<ExternalCharacter> withExcludedCharacters(List<ExternalCharacter> base) {
+                java.util.List<ExternalCharacter> list = new java.util.ArrayList<>(base);
+
+                for (String id : EXCLUDED_CHARACTER_IDS) {
+                        list.add(new ExternalCharacter(id, "Excluded " + id));
+                }
+
+                return list;
+        }
+
+        @Test
+        void shouldNeverUseAnExcludedCharacterAsAnswerOrOption() {
+                java.util.List<ExternalQuote> quotes = new java.util.ArrayList<>(List.of(
+                                quote("q1", "Po-tay-toes!", "sam"),
+                                quote("q2", "My precious.", "gollum"),
+                                quote("q3", "I am no man.", "aragorn")));
+
+                for (String id : EXCLUDED_CHARACTER_IDS) {
+                        quotes.add(quote("ex-" + id, "Excluded owner " + id, id));
+                }
+
+                stubSinglePage(quotes, withExcludedCharacters(List.of(FRODO, SAM, GANDALF, ARAGORN, GOLLUM)));
+
+                for (long seed = 1; seed <= 60; seed++) {
+                        WhoSaidItRound round = newService(new Random(seed)).generateRound();
+
+                        assertThat(round.quote()).doesNotStartWith("Excluded owner");
+                        assertThat(round.correctCharacterId()).isNotIn(EXCLUDED_CHARACTER_IDS);
+                        assertThat(optionIds(round)).doesNotContainAnyElementsOf(EXCLUDED_CHARACTER_IDS);
+                }
+        }
+
+        @Test
+        void shouldNeverUseTheTwoExcludedQuotesButKeepGollumAndAragornQuotes() {
+                stubSinglePage(
+                                List.of(
+                                                quote("5cd96e05de30eff6ebccedde", "Barrow song", "gollum"),
+                                                quote("5cd96e05de30eff6ebccec49", "Corrupted line", "aragorn"),
+                                                quote("q3", "My precious.", "gollum"),
+                                                quote("q4", "I am no man.", "aragorn")),
+                                List.of(FRODO, SAM, GANDALF, ARAGORN, GOLLUM));
+
+                Set<String> seen = new java.util.HashSet<>();
+
+                // Well-spread seeds: java.util.Random with consecutive small seeds gives the same
+                // first nextInt(2) every time, which would hide one of the two eligible quotes.
+                for (long seed = 1; seed <= 60; seed++) {
+                        seen.add(newService(new Random(seed * 7919L)).generateRound().quote());
+                }
+
+                assertThat(seen).containsExactlyInAnyOrder("My precious.", "I am no man.");
+        }
+
+        @Test
+        void shouldKeepVeryShortQuotes() {
+                stubSinglePage(
+                                List.of(quote("s1", "No!", "gollum"), quote("s2", "Pippin!", "sam"),
+                                                quote("s3", "Gimli?", "aragorn")),
+                                List.of(FRODO, SAM, GANDALF, ARAGORN, GOLLUM));
+
+                Set<String> seen = new java.util.HashSet<>();
+
+                for (long seed = 1; seed <= 60; seed++) {
+                        seen.add(newService(new Random(seed)).generateRound().quote());
+                }
+
+                assertThat(seen).containsExactlyInAnyOrder("No!", "Pippin!", "Gimli?");
+        }
+
+        @Test
+        void shouldFailWhenOnlyExcludedQuotesRemain() {
+                stubSinglePage(
+                                List.of(quote("5cd96e05de30eff6ebccedde", "Barrow song", "gollum"),
+                                                quote("g", "Generic", "5cdbe49b7ed9587226e794a0")),
+                                withExcludedCharacters(List.of(FRODO, SAM, GANDALF, ARAGORN, GOLLUM)));
+
+                assertThatThrownBy(() -> newService(new Random(1)).generateRound())
+                                .isInstanceOf(WhoSaidItInsufficientDataException.class);
+        }
+
         private WhoSaidItService newService(RandomGenerator random) {
                 // No failure cooldown, so retries are not delayed; the cooldown is covered in LoreDataServiceTest.
                 LoreDataService loreDataService = new LoreDataService(

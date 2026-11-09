@@ -29,7 +29,7 @@ public class WhoSaidItService {
     public WhoSaidItRound generateRound() {
         LoreData loreData = loreDataService.getData();
 
-        List<LoreQuote> quotes = loreData.attributedQuotes();
+        List<LoreQuote> quotes = WhoSaidItExclusions.playableQuotes(loreData);
 
         if (quotes.isEmpty()) {
             throw new WhoSaidItInsufficientDataException(
@@ -42,7 +42,7 @@ public class WhoSaidItService {
 
         List<LoreCharacter> wrongCharacters = new ArrayList<>();
 
-        for (LoreCharacter character : loreData.charactersById().values()) {
+        for (LoreCharacter character : WhoSaidItExclusions.playableCharacters(loreData)) {
 
             if (character.id().equals(correctCharacter.id())) {
                 continue;

@@ -169,17 +169,119 @@ class WhoSaidItMatchServiceTest {
 
     private static final String GENERIC_MINOR_CHARACTER = "5cdbe49b7ed9587226e794a0";
     private static final Set<String> EXCLUDED_IDS = Set.of(
-            GENERIC_MINOR_CHARACTER, "5cdbe47d7ed9587226e7949f", "5cdbdecb6dc0baeae48cfa43");
+            GENERIC_MINOR_CHARACTER, "5cdbe47d7ed9587226e7949f", "5cdbdecb6dc0baeae48cfa43",
+            "5cd99d4bde30eff6ebccfc96", "5cd99d4bde30eff6ebccfe10");
 
-    // The three unidentifiable records, as The One API returns them.
+    private static final String BARROW_WIGHT_QUOTE_ID = "5cd96e05de30eff6ebccedde";
+    private static final String CORRUPTED_QUOTE_ID = "5cd96e05de30eff6ebccec49";
+
+    // The five records that are not characters, as The One API returns them.
     private static List<ExternalCharacter> withExcludedCharacters(List<ExternalCharacter> base) {
         List<ExternalCharacter> list = new ArrayList<>(base);
 
         list.add(new ExternalCharacter(GENERIC_MINOR_CHARACTER, "MINOR_CHARACTER"));
         list.add(new ExternalCharacter("5cdbe47d7ed9587226e7949f", "MINOR_CHARACTER "));
         list.add(new ExternalCharacter("5cdbdecb6dc0baeae48cfa43", "Seers"));
+        list.add(new ExternalCharacter("5cd99d4bde30eff6ebccfc96", "User:Deathshriek"));
+        list.add(new ExternalCharacter("5cd99d4bde30eff6ebccfe10", "User:Technobliterator/Showcase"));
 
         return list;
+    }
+
+    @Test
+    void shouldNeverUseAnyExcludedRecordAsAnOptionOrAnswerEvenWhenTheyOwnQuotes() {
+        List<ExternalQuote> list = new ArrayList<>(quotes(20, 12));
+        int n = 0;
+
+        // Quotes filed under each excluded record, as if the upstream had some.
+        for (String id : EXCLUDED_IDS) {
+            list.add(new ExternalQuote("x" + n, "Excluded owner dialog " + n, "movie", id, "x" + n));
+            n++;
+        }
+
+        stub(list, withExcludedCharacters(characters(12)));
+
+        for (long seed = 1; seed <= 40; seed++) {
+            WhoSaidItMatch match = service(seed).createMatch();
+
+            for (int q = 1; q <= 10; q++) {
+                WhoSaidItMatch.QuestionView view = match.currentQuestion();
+
+                assertThat(view.quote()).doesNotStartWith("Excluded owner");
+                assertThat(view.options()).extracting(WhoSaidItRound.CharacterOption::id)
+                        .doesNotContainAnyElementsOf(EXCLUDED_IDS);
+
+                match.answer(q, view.options().get(0).id());
+            }
+        }
+    }
+
+    @Test
+    void shouldDropOnlyTheTwoExcludedQuotesAndKeepGollumAndAragorn() {
+        List<ExternalCharacter> chars = new ArrayList<>(characters(12));
+
+        chars.add(new ExternalCharacter("gollum", "Gollum"));
+        chars.add(new ExternalCharacter("aragorn", "Aragorn"));
+
+        List<ExternalQuote> list = new ArrayList<>(quotes(12, 12));
+
+        list.add(new ExternalQuote(BARROW_WIGHT_QUOTE_ID, "Barrow song", "movie", "gollum", "b"));
+        list.add(new ExternalQuote(CORRUPTED_QUOTE_ID, "Corrupted line", "movie", "aragorn", "c"));
+        list.add(new ExternalQuote("legit-gollum", "Legit Gollum line", "movie", "gollum", "lg"));
+        list.add(new ExternalQuote("legit-aragorn", "Legit Aragorn line", "movie", "aragorn", "la"));
+        stub(list, chars);
+
+        Set<String> seen = new HashSet<>();
+        Set<String> optionIds = new HashSet<>();
+
+        for (long seed = 1; seed <= 60; seed++) {
+            WhoSaidItMatch match = service(seed).createMatch();
+
+            for (int q = 1; q <= 10; q++) {
+                WhoSaidItMatch.QuestionView view = match.currentQuestion();
+
+                seen.add(view.quote());
+                view.options().forEach(option -> optionIds.add(option.id()));
+                match.answer(q, view.options().get(0).id());
+            }
+        }
+
+        assertThat(seen).doesNotContain("Barrow song", "Corrupted line");
+        assertThat(seen).contains("Legit Gollum line", "Legit Aragorn line");
+        assertThat(optionIds).contains("gollum", "aragorn");
+    }
+
+    @Test
+    void shouldKeepVeryShortQuotes() {
+        List<ExternalQuote> list = new ArrayList<>(quotes(7, 12));
+
+        list.add(new ExternalQuote("s1", "No!", "movie", "char-1", "s1"));
+        list.add(new ExternalQuote("s2", "Pippin!", "movie", "char-2", "s2"));
+        list.add(new ExternalQuote("s3", "Gimli?", "movie", "char-3", "s3"));
+        stub(list, characters(12));
+
+        // Exactly ten quotes exist, so every match must contain all three short ones.
+        Set<String> seen = new HashSet<>(views(service(1).createMatch()).stream()
+                .map(WhoSaidItMatch.QuestionView::quote).toList());
+
+        assertThat(seen).contains("No!", "Pippin!", "Gimli?");
+    }
+
+    @Test
+    void shouldLeaveThePublicCatalogUnchanged() {
+        List<ExternalQuote> list = new ArrayList<>(quotes(5, 5));
+
+        list.add(new ExternalQuote(BARROW_WIGHT_QUOTE_ID, "Barrow song", "movie", "char-1", "b"));
+        list.add(new ExternalQuote("g1", "Generic dialog", "movie", GENERIC_MINOR_CHARACTER, "g1"));
+        stub(list, withExcludedCharacters(characters(5)));
+
+        LoreDataService lore = new LoreDataService(
+                theOneApiClient, Clock.systemUTC(), Duration.ZERO, 100, Duration.ofSeconds(30));
+
+        // The game-only exclusions do not reach the lore data the catalog is built from.
+        assertThat(lore.getData().catalogQuotes()).extracting(q -> q.id())
+                .contains(BARROW_WIGHT_QUOTE_ID, "g1");
+        assertThat(lore.getData().charactersById()).containsKeys(EXCLUDED_IDS.toArray(String[]::new));
     }
 
     private static List<ExternalQuote> genericQuotes(int count) {
