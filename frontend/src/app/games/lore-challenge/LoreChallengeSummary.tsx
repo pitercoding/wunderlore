@@ -5,6 +5,7 @@ import Link from "next/link";
 import Button from "@/components/Button/Button";
 import PublishResult from "@/components/PublishResult/PublishResult";
 import type { LoreChallengeResult } from "@/lib/api/loreChallenge";
+import { divisionFromDifficulty } from "@/lib/ranking/games";
 import { categoryLabel, difficultyLabel, formatDuration } from "./labels";
 import styles from "./page.module.css";
 
@@ -80,7 +81,11 @@ export default function LoreChallengeSummary({
                 </p>
             )}
 
-            <PublishResult gameType="lore-challenge" gameId={result.matchId} />
+            <PublishResult
+                gameType="lore-challenge"
+                gameId={result.matchId}
+                division={divisionFromDifficulty(result.difficulty)}
+            />
 
             <div className={styles.actions}>
                 <Button

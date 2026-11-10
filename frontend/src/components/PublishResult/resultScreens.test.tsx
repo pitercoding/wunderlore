@@ -137,10 +137,10 @@ describe.each(screens)("$name result screen", ({ game, id, ui }) => {
         await user.click(screen.getByRole("button", { name: "Publish" }));
 
         expect(publishMock).toHaveBeenCalledWith(game, id, "Frodo");
-        expect(await screen.findByText(/Published as Frodo/)).toBeInTheDocument();
+        expect(await screen.findByText(/Published in .* · Easy as Frodo/)).toBeInTheDocument();
         expect(screen.getByRole("link", { name: /leaderboard/i })).toHaveAttribute(
             "href",
-            `/leaderboard?game=${game}`,
+            `/leaderboard?game=${game}&division=easy`,
         );
     });
 

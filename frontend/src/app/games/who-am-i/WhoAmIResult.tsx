@@ -5,6 +5,7 @@ import Link from "next/link";
 import Button from "@/components/Button/Button";
 import PublishResult from "@/components/PublishResult/PublishResult";
 import type { WhoAmIResult as Result } from "@/lib/api/whoAmI";
+import { divisionFromDifficulty } from "@/lib/ranking/games";
 import { cluesUsedLabel, difficultyLabel } from "./labels";
 import styles from "./page.module.css";
 
@@ -90,7 +91,11 @@ export default function WhoAmIResult({
                 ))}
             </ol>
 
-            <PublishResult gameType="who-am-i" gameId={result.gameId} />
+            <PublishResult
+                gameType="who-am-i"
+                gameId={result.gameId}
+                division={divisionFromDifficulty(result.difficulty)}
+            />
 
             {isStarting && (
                 <p role="status" className={styles.status}>

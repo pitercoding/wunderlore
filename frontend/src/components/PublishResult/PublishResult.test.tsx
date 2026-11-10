@@ -33,7 +33,7 @@ async function openForm(user: ReturnType<typeof userEvent.setup>) {
 
 describe("PublishResult", () => {
     it("is optional: it only offers, and asks for nothing until clicked", () => {
-        render(<PublishResult gameType="who-said-it" gameId={GAME_ID} />);
+        render(<PublishResult gameType="who-said-it" gameId={GAME_ID} division="standard" />);
 
         expect(screen.getByRole("heading", { name: "Leaderboard" })).toBeInTheDocument();
         expect(screen.getByRole("button", { name: "Publish to leaderboard" })).toBeInTheDocument();
@@ -44,7 +44,7 @@ describe("PublishResult", () => {
     it("opens a labelled form with the rules and can be cancelled", async () => {
         const user = userEvent.setup();
 
-        render(<PublishResult gameType="who-am-i" gameId={GAME_ID} />);
+        render(<PublishResult gameType="who-am-i" gameId={GAME_ID} division="hard" />);
         await openForm(user);
 
         const input = screen.getByLabelText("Nickname");
@@ -61,7 +61,7 @@ describe("PublishResult", () => {
 
         const user = userEvent.setup();
 
-        render(<PublishResult gameType="who-said-it" gameId={GAME_ID} />);
+        render(<PublishResult gameType="who-said-it" gameId={GAME_ID} division="standard" />);
         await openForm(user);
 
         const input = screen.getByLabelText("Nickname");
@@ -77,7 +77,7 @@ describe("PublishResult", () => {
     it("starts empty when nothing was saved", async () => {
         const user = userEvent.setup();
 
-        render(<PublishResult gameType="who-said-it" gameId={GAME_ID} />);
+        render(<PublishResult gameType="who-said-it" gameId={GAME_ID} division="standard" />);
         await openForm(user);
 
         expect(screen.getByLabelText("Nickname")).toHaveValue("");
@@ -94,18 +94,18 @@ describe("PublishResult", () => {
 
         const user = userEvent.setup();
 
-        render(<PublishResult gameType="who-said-it" gameId={GAME_ID} />);
+        render(<PublishResult gameType="who-said-it" gameId={GAME_ID} division="standard" />);
         await openForm(user);
         await user.type(screen.getByLabelText("Nickname"), "Frodo");
         await user.click(screen.getByRole("button", { name: "Publish" }));
 
-        expect(await screen.findByRole("status")).toHaveTextContent("Published as Frodo");
+        expect(await screen.findByRole("status")).toHaveTextContent("Published in Who Said It? · Standard as Frodo");
     });
 
     it("validates before sending and does not call the backend", async () => {
         const user = userEvent.setup();
 
-        render(<PublishResult gameType="who-said-it" gameId={GAME_ID} />);
+        render(<PublishResult gameType="who-said-it" gameId={GAME_ID} division="standard" />);
         await openForm(user);
         await user.type(screen.getByLabelText("Nickname"), "ab");
         await user.click(screen.getByRole("button", { name: "Publish" }));
@@ -118,7 +118,7 @@ describe("PublishResult", () => {
     it("rejects a reserved nickname locally", async () => {
         const user = userEvent.setup();
 
-        render(<PublishResult gameType="who-said-it" gameId={GAME_ID} />);
+        render(<PublishResult gameType="who-said-it" gameId={GAME_ID} division="standard" />);
         await openForm(user);
         await user.type(screen.getByLabelText("Nickname"), "Admin");
         await user.click(screen.getByRole("button", { name: "Publish" }));
@@ -132,16 +132,18 @@ describe("PublishResult", () => {
 
         const user = userEvent.setup();
 
-        render(<PublishResult gameType="who-said-it" gameId={GAME_ID} />);
+        render(<PublishResult gameType="who-said-it" gameId={GAME_ID} division="standard" />);
         await openForm(user);
         await user.type(screen.getByLabelText("Nickname"), "Frodo");
         await user.click(screen.getByRole("button", { name: "Publish" }));
 
-        expect(await screen.findByRole("status")).toHaveTextContent("Published as Frodo with 70.00%.");
+        expect(await screen.findByRole("status")).toHaveTextContent(
+            "Published in Who Said It? · Standard as Frodo with 70.00%.",
+        );
         expect(window.localStorage.getItem("wunderlore:nickname")).toBe("Frodo");
-        expect(screen.getByRole("link", { name: /Who Said It\? leaderboard/ })).toHaveAttribute(
+        expect(screen.getByRole("link", { name: /Who Said It\? · Standard leaderboard/ })).toHaveAttribute(
             "href",
-            "/leaderboard?game=who-said-it",
+            "/leaderboard?game=who-said-it&division=standard",
         );
         expect(screen.queryByLabelText("Nickname")).not.toBeInTheDocument();
     });
@@ -151,13 +153,13 @@ describe("PublishResult", () => {
 
         const user = userEvent.setup();
 
-        render(<PublishResult gameType="who-said-it" gameId={GAME_ID} />);
+        render(<PublishResult gameType="who-said-it" gameId={GAME_ID} division="standard" />);
         await openForm(user);
         await user.type(screen.getByLabelText("Nickname"), "Other");
         await user.click(screen.getByRole("button", { name: "Publish" }));
 
         expect(await screen.findByRole("status")).toHaveTextContent(
-            "This result was already published as Frodo.",
+            "This result was already published in Who Said It? · Standard as Frodo.",
         );
     });
 
@@ -172,18 +174,18 @@ describe("PublishResult", () => {
 
         const user = userEvent.setup();
 
-        render(<PublishResult gameType="who-said-it" gameId={GAME_ID} />);
+        render(<PublishResult gameType="who-said-it" gameId={GAME_ID} division="standard" />);
         await openForm(user);
         await user.type(screen.getByLabelText("Nickname"), "Frodo");
         await user.click(screen.getByRole("button", { name: "Publish" }));
 
         expect(await screen.findByRole("alert")).toHaveTextContent("was not published");
-        expect(screen.queryByText(/Published as/)).not.toBeInTheDocument();
+        expect(screen.queryByText(/Published in/)).not.toBeInTheDocument();
         expect(window.localStorage.getItem("wunderlore:nickname")).toBeNull();
 
         await user.click(screen.getByRole("button", { name: "Try again" }));
 
-        expect(await screen.findByRole("status")).toHaveTextContent("Published as Frodo");
+        expect(await screen.findByRole("status")).toHaveTextContent("Published in Who Said It? · Standard as Frodo");
         expect(publishMock).toHaveBeenCalledTimes(2);
     });
 
@@ -192,7 +194,7 @@ describe("PublishResult", () => {
 
         const user = userEvent.setup();
 
-        render(<PublishResult gameType="who-said-it" gameId={GAME_ID} />);
+        render(<PublishResult gameType="who-said-it" gameId={GAME_ID} division="standard" />);
         await openForm(user);
         await user.type(screen.getByLabelText("Nickname"), "Frodo");
         await user.click(screen.getByRole("button", { name: "Publish" }));
@@ -209,7 +211,7 @@ describe("PublishResult", () => {
 
         const user = userEvent.setup();
 
-        render(<PublishResult gameType="who-said-it" gameId={GAME_ID} />);
+        render(<PublishResult gameType="who-said-it" gameId={GAME_ID} division="standard" />);
         await openForm(user);
         await user.type(screen.getByLabelText("Nickname"), "Frodo");
         await user.click(screen.getByRole("button", { name: "Publish" }));
@@ -227,7 +229,7 @@ describe("PublishResult", () => {
 
         const user = userEvent.setup();
 
-        render(<PublishResult gameType="who-said-it" gameId={GAME_ID} />);
+        render(<PublishResult gameType="who-said-it" gameId={GAME_ID} division="standard" />);
         await openForm(user);
         await user.type(screen.getByLabelText("Nickname"), "Frodo");
         await user.click(screen.getByRole("button", { name: "Publish" }));
@@ -244,7 +246,7 @@ describe("PublishResult", () => {
 
         const user = userEvent.setup();
 
-        render(<PublishResult gameType="who-said-it" gameId={GAME_ID} />);
+        render(<PublishResult gameType="who-said-it" gameId={GAME_ID} division="standard" />);
         await openForm(user);
         await user.type(screen.getByLabelText("Nickname"), "Frodo{Enter}");
         await user.keyboard("{Enter}");
@@ -254,6 +256,47 @@ describe("PublishResult", () => {
         expect(screen.getByRole("status")).toHaveTextContent("Publishing...");
 
         resolve({ ok: true, entry });
-        expect(await screen.findByText(/Published as Frodo/)).toBeInTheDocument();
+        expect(await screen.findByText(/Published in .* as Frodo/)).toBeInTheDocument();
+    });
+
+    it("names the game and division in the offer and never calls it global", () => {
+        render(<PublishResult gameType="where-in-middle-earth" gameId={GAME_ID} division="medium" />);
+
+        expect(screen.getByText(/Where in Middle-earth · Medium leaderboard/)).toBeInTheDocument();
+        expect(screen.queryByText(/global/i)).not.toBeInTheDocument();
+    });
+
+    it("reports where a Who Am I? result was published and links to that division", async () => {
+        publishMock.mockResolvedValue({ ok: true, entry: { ...entry, gameType: "who-am-i" } });
+
+        const user = userEvent.setup();
+
+        render(<PublishResult gameType="who-am-i" gameId={GAME_ID} division="hard" />);
+        await openForm(user);
+        await user.type(screen.getByLabelText("Nickname"), "Frodo");
+        await user.click(screen.getByRole("button", { name: "Publish" }));
+
+        expect(await screen.findByRole("status")).toHaveTextContent(
+            "Published in Who Am I? · Hard as Frodo with 70.00%.",
+        );
+        expect(screen.getByRole("link", { name: /Who Am I\? · Hard leaderboard/ })).toHaveAttribute(
+            "href",
+            "/leaderboard?game=who-am-i&division=hard",
+        );
+        expect(screen.queryByText(/global/i)).not.toBeInTheDocument();
+    });
+
+    it("sends only the game, its id and the nickname: the division is never sent", async () => {
+        publishMock.mockResolvedValue({ ok: true, entry });
+
+        const user = userEvent.setup();
+
+        render(<PublishResult gameType="lore-challenge" gameId={GAME_ID} division="hard" />);
+        await openForm(user);
+        await user.type(screen.getByLabelText("Nickname"), "Frodo");
+        await user.click(screen.getByRole("button", { name: "Publish" }));
+
+        expect(publishMock).toHaveBeenCalledTimes(1);
+        expect(publishMock.mock.calls[0]).toEqual(["lore-challenge", GAME_ID, "Frodo"]);
     });
 });

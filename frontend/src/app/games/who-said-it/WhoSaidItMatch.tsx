@@ -320,7 +320,7 @@ function MatchResult({
                 ))}
             </ol>
 
-            <PublishResult gameType="who-said-it" gameId={result.matchId} />
+            <PublishResult gameType="who-said-it" gameId={result.matchId} division="standard" />
 
             {isCreating && (
                 <p role="status" className={styles.status}>

@@ -5,7 +5,13 @@ import Link from "next/link";
 import Button from "@/components/Button/Button";
 import { publishToLeaderboard } from "@/app/leaderboard/actions";
 import type { PublishedEntry } from "@/lib/api/ranking";
-import { gameLabel, type RankingGame } from "@/lib/ranking/games";
+import {
+    divisionLabel,
+    gameLabel,
+    rankingHref,
+    type RankingDivision,
+    type RankingGame,
+} from "@/lib/ranking/games";
 import {
     NICKNAME_MAX_LENGTH,
     NICKNAME_RULES,
@@ -19,6 +25,9 @@ interface PublishResultProps {
     // The id of the finished game, as the backend issued it. The score is never sent: the backend
     // reads it from the game it kept.
     gameId: string;
+    // The division this game competes in, shown to the player (Easy, Medium, Hard, or Standard for
+    // Who Said It?). It is never sent: the backend decides it from the game it kept.
+    division: RankingDivision;
 }
 
 type Phase =
@@ -26,10 +35,10 @@ type Phase =
     | { name: "editing" }
     | { name: "published"; entry: PublishedEntry };
 
-// Offers to publish a finished game to the global leaderboard. Optional: ignoring it changes
+// Offers to publish a finished game to the leaderboard of its game and division. Optional: ignoring it changes
 // nothing. The same block serves the four games' result screens. A game is shown as published
 // only once the backend confirmed it, and a failure leaves the form in place to try again.
-export default function PublishResult({ gameType, gameId }: PublishResultProps) {
+export default function PublishResult({ gameType, gameId, division }: PublishResultProps) {
     const saved = useSavedNickname();
     // null: the player has not typed, so the saved nickname (if any) is the suggestion.
     const [draft, setDraft] = useState<string | null>(null);
@@ -45,7 +54,7 @@ export default function PublishResult({ gameType, gameId }: PublishResultProps) 
     const errorId = useId();
 
     const nickname = draft ?? saved;
-    const label = gameLabel(gameType);
+    const label = `${gameLabel(gameType)} · ${divisionLabel(division)}`;
 
     async function handleSubmit(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();
@@ -103,10 +112,10 @@ export default function PublishResult({ gameType, gameId }: PublishResultProps) 
                 </h3>
                 <p role="status" className={styles.success}>
                     {entry.alreadyPublished
-                        ? `This result was already published as ${entry.nickname}.`
-                        : `Published as ${entry.nickname} with ${entry.percentage.toFixed(2)}%.`}
+                        ? `This result was already published in ${label} as ${entry.nickname}.`
+                        : `Published in ${label} as ${entry.nickname} with ${entry.percentage.toFixed(2)}%.`}
                 </p>
-                <Link href={`/leaderboard?game=${gameType}`} className={styles.link}>
+                <Link href={rankingHref(gameType, division)} className={styles.link}>
                     View the {label} leaderboard
                 </Link>
             </section>
@@ -122,7 +131,7 @@ export default function PublishResult({ gameType, gameId }: PublishResultProps) 
             {phase.name === "idle" ? (
                 <>
                     <p className={styles.text}>
-                        Publish this result to the global leaderboard under a nickname. It&apos;s
+                        Publish this result to the {label} leaderboard under a nickname. It&apos;s
                         optional.
                     </p>
                     <Button

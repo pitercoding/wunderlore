@@ -29,27 +29,74 @@ afterEach(() => {
 const entry = {
     position: 1,
     nickname: "Frodo",
-    gameType: "who-said-it",
+    gameType: "lore-challenge",
+    division: "easy",
     percentage: 93.5,
     playedAt: "2026-03-01T10:15:30Z",
 };
 
+const board = { game: "lore-challenge", division: "easy", entries: [entry] };
+
+const OVERVIEW_PAIRS = [
+    ["lore-challenge", "easy"],
+    ["lore-challenge", "medium"],
+    ["lore-challenge", "hard"],
+    ["who-am-i", "easy"],
+    ["who-am-i", "medium"],
+    ["who-am-i", "hard"],
+    ["where-in-middle-earth", "easy"],
+    ["where-in-middle-earth", "medium"],
+    ["where-in-middle-earth", "hard"],
+    ["who-said-it", "standard"],
+] as const;
+
+function overviewBody(overrides: Record<string, unknown> = {}) {
+    return {
+        groups: OVERVIEW_PAIRS.map(([game, division]) => ({ game, division, entries: [] })),
+        ...overrides,
+    };
+}
+
 describe("fetchLeaderboard", () => {
-    it("requests the global ranking without a filter", async () => {
+    it("requests one division of one game", async () => {
         const { fetchLeaderboard } = await loadModules();
 
-        fetchMock.mockResolvedValue(jsonResponse({ game: null, entries: [entry] }));
+        fetchMock.mockResolvedValue(jsonResponse(board));
 
-        await expect(fetchLeaderboard()).resolves.toEqual({ game: null, entries: [entry] });
-        expect(fetchMock.mock.calls[0][0]).toBe("http://api.test/api/ranking");
+        await expect(fetchLeaderboard("lore-challenge", "easy")).resolves.toEqual(board);
+        expect(fetchMock.mock.calls[0][0]).toBe(
+            "http://api.test/api/ranking?game=lore-challenge&division=easy",
+        );
     });
 
-    it("is the only ranking call cached, for 30 seconds", async () => {
+    it.each(OVERVIEW_PAIRS)("sends %s and %s as the filters", async (game, division) => {
+        const { fetchLeaderboard } = await loadModules();
+
+        fetchMock.mockResolvedValue(jsonResponse({ game, division, entries: [] }));
+
+        await fetchLeaderboard(game, division);
+        expect(fetchMock.mock.calls[0][0]).toBe(
+            `http://api.test/api/ranking?game=${game}&division=${division}`,
+        );
+    });
+
+    it.each([
+        ["who-said-it", "easy"],
+        ["lore-challenge", "standard"],
+        ["who-am-i", "standard"],
+    ] as const)("never sends the invalid pair %s / %s", async (game, division) => {
+        const { fetchLeaderboard } = await loadModules();
+
+        await expect(fetchLeaderboard(game, division)).rejects.toThrow();
+        expect(fetchMock).not.toHaveBeenCalled();
+    });
+
+    it("is cached for 30 seconds", async () => {
         const { fetchLeaderboard, LEADERBOARD_REVALIDATE_SECONDS } = await loadModules();
 
-        fetchMock.mockResolvedValue(jsonResponse({ game: null, entries: [] }));
+        fetchMock.mockResolvedValue(jsonResponse(board));
 
-        await fetchLeaderboard();
+        await fetchLeaderboard("lore-challenge", "easy");
 
         expect(LEADERBOARD_REVALIDATE_SECONDS).toBe(30);
         expect(fetchMock.mock.calls[0][1]).toMatchObject({
@@ -72,7 +119,7 @@ describe("fetchLeaderboard", () => {
                     }),
             );
 
-            const outcome = fetchLeaderboard().then(
+            const outcome = fetchLeaderboard("lore-challenge", "easy").then(
                 () => "resolved",
                 (error: unknown) => error,
             );
@@ -96,53 +143,61 @@ describe("fetchLeaderboard", () => {
         }
     });
 
-    it.each([undefined, "who-said-it" as const])(
-        "tags every leaderboard read (game: %s) with the tag a publish expires",
-        async (game) => {
-            const { fetchLeaderboard, LEADERBOARD_CACHE_TAG } = await loadModules();
+    it("tags every division read with the tag a publish expires", async () => {
+        const { fetchLeaderboard, LEADERBOARD_CACHE_TAG } = await loadModules();
 
-            fetchMock.mockResolvedValue(jsonResponse({ game: game ?? null, entries: [] }));
+        fetchMock.mockResolvedValue(jsonResponse({ game: "who-said-it", division: "standard", entries: [] }));
 
-            await fetchLeaderboard(game);
+        await fetchLeaderboard("who-said-it", "standard");
 
-            expect(LEADERBOARD_CACHE_TAG).toBe("leaderboard");
-            expect(fetchMock.mock.calls[0][1]).toMatchObject({
-                next: { revalidate: 30, tags: [LEADERBOARD_CACHE_TAG] },
-            });
-        },
-    );
+        expect(LEADERBOARD_CACHE_TAG).toBe("leaderboard");
+        expect(fetchMock.mock.calls[0][1]).toMatchObject({
+            next: { revalidate: 30, tags: [LEADERBOARD_CACHE_TAG] },
+        });
+    });
 
     it("never serves a 503 as leaderboard data", async () => {
         const { fetchLeaderboard, ApiError } = await loadModules();
 
-        fetchMock.mockResolvedValue(jsonResponse({ game: null, entries: [] }, { status: 503 }));
+        fetchMock.mockResolvedValue(jsonResponse(board, { status: 503 }));
 
-        await expect(fetchLeaderboard()).rejects.toBeInstanceOf(ApiError);
+        await expect(fetchLeaderboard("lore-challenge", "easy")).rejects.toBeInstanceOf(ApiError);
     });
 
-    it("sends the game filter", async () => {
+    it("keeps the entries as the backend sent them: positions, ties and order", async () => {
         const { fetchLeaderboard } = await loadModules();
+        const entries = [
+            { ...entry, position: 1, nickname: "Aria", percentage: 90 },
+            { ...entry, position: 2, nickname: "Bo", percentage: 80 },
+            { ...entry, position: 2, nickname: "Cy", percentage: 80 },
+            { ...entry, position: 4, nickname: "Di", percentage: 70 },
+        ];
 
-        fetchMock.mockResolvedValue(jsonResponse({ game: "who-am-i", entries: [] }));
+        fetchMock.mockResolvedValue(jsonResponse({ ...board, entries }));
 
-        await fetchLeaderboard("who-am-i");
-        expect(fetchMock.mock.calls[0][0]).toBe("http://api.test/api/ranking?game=who-am-i");
+        await expect(fetchLeaderboard("lore-challenge", "easy")).resolves.toEqual({ ...board, entries });
     });
 
     it.each([
-        ["an unknown game", { game: "nope", entries: [] }],
-        ["a missing entries list", { game: null }],
-        ["a position of 0", { game: null, entries: [{ ...entry, position: 0 }] }],
-        ["a percentage above 100", { game: null, entries: [{ ...entry, percentage: 101 }] }],
-        ["an unknown game in an entry", { game: null, entries: [{ ...entry, gameType: "x" }] }],
-        ["an invalid date", { game: null, entries: [{ ...entry, playedAt: "yesterday" }] }],
-        ["a blank nickname", { game: null, entries: [{ ...entry, nickname: " " }] }],
+        ["an unknown game", { ...board, game: "nope" }],
+        ["an unknown division", { ...board, division: "expert" }],
+        ["a division that game does not have", { game: "who-said-it", division: "easy", entries: [] }],
+        ["a missing division", { game: "lore-challenge", entries: [] }],
+        ["a null game (the old global ranking)", { game: null, entries: [] }],
+        ["a missing entries list", { game: "lore-challenge", division: "easy" }],
+        ["a position of 0", { ...board, entries: [{ ...entry, position: 0 }] }],
+        ["a percentage above 100", { ...board, entries: [{ ...entry, percentage: 101 }] }],
+        ["an entry of another game", { ...board, entries: [{ ...entry, gameType: "who-am-i" }] }],
+        ["an entry of another division", { ...board, entries: [{ ...entry, division: "hard" }] }],
+        ["an entry without a division", { ...board, entries: [{ ...entry, division: undefined }] }],
+        ["an invalid date", { ...board, entries: [{ ...entry, playedAt: "yesterday" }] }],
+        ["a blank nickname", { ...board, entries: [{ ...entry, nickname: " " }] }],
     ])("rejects a payload with %s", async (_name, payload) => {
         const { fetchLeaderboard, ApiResponseError } = await loadModules();
 
         fetchMock.mockResolvedValue(jsonResponse(payload));
 
-        await expect(fetchLeaderboard()).rejects.toBeInstanceOf(ApiResponseError);
+        await expect(fetchLeaderboard("lore-challenge", "easy")).rejects.toBeInstanceOf(ApiResponseError);
     });
 
     it("fails with ApiError on a 503", async () => {
@@ -150,7 +205,94 @@ describe("fetchLeaderboard", () => {
 
         fetchMock.mockResolvedValue(new Response(null, { status: 503 }));
 
-        await expect(fetchLeaderboard()).rejects.toBeInstanceOf(ApiError);
+        await expect(fetchLeaderboard("lore-challenge", "easy")).rejects.toBeInstanceOf(ApiError);
+    });
+});
+
+describe("fetchLeaderboardOverview", () => {
+    it("requests the overview, with the same cache tag and lifetime as every ranking read", async () => {
+        const { fetchLeaderboardOverview, LEADERBOARD_CACHE_TAG } = await loadModules();
+
+        fetchMock.mockResolvedValue(jsonResponse(overviewBody()));
+
+        const overview = await fetchLeaderboardOverview();
+
+        expect(fetchMock.mock.calls[0][0]).toBe("http://api.test/api/ranking/overview");
+        expect(fetchMock.mock.calls[0][1]).toMatchObject({
+            cache: "force-cache",
+            next: { revalidate: 30, tags: [LEADERBOARD_CACHE_TAG] },
+        });
+        expect(overview.groups).toHaveLength(10);
+    });
+
+    it("keeps the groups and their entries as the backend sent them, empty ones included", async () => {
+        const { fetchLeaderboardOverview } = await loadModules();
+        const groups = OVERVIEW_PAIRS.map(([game, division]) => ({
+            game,
+            division,
+            entries:
+                game === "who-am-i" && division === "hard"
+                    ? [
+                          { ...entry, gameType: "who-am-i", division: "hard", position: 1, nickname: "A" },
+                          { ...entry, gameType: "who-am-i", division: "hard", position: 1, nickname: "B" },
+                          { ...entry, gameType: "who-am-i", division: "hard", position: 1, nickname: "C" },
+                          { ...entry, gameType: "who-am-i", division: "hard", position: 1, nickname: "D" },
+                      ]
+                    : [],
+        }));
+
+        fetchMock.mockResolvedValue(jsonResponse({ groups }));
+
+        await expect(fetchLeaderboardOverview()).resolves.toEqual({ groups });
+    });
+
+    it.each([
+        ["no groups list", {}],
+        ["nine groups", { groups: overviewBody().groups.slice(1) }],
+        ["eleven groups", { groups: [...overviewBody().groups, overviewBody().groups[0]] }],
+        [
+            "a repeated group in place of another",
+            { groups: [...overviewBody().groups.slice(1), overviewBody().groups[1]] },
+        ],
+        [
+            "an invalid pair",
+            {
+                groups: overviewBody().groups.map((group, index) =>
+                    index === 9 ? { ...group, division: "easy" } : group,
+                ),
+            },
+        ],
+        [
+            "an unknown game (Which Character)",
+            {
+                groups: overviewBody().groups.map((group, index) =>
+                    index === 0 ? { ...group, game: "which-character" } : group,
+                ),
+            },
+        ],
+        [
+            "an entry under the wrong division",
+            {
+                groups: overviewBody().groups.map((group, index) =>
+                    index === 0 ? { ...group, entries: [{ ...entry, division: "hard" }] } : group,
+                ),
+            },
+        ],
+        ["a group without entries", { groups: overviewBody().groups.map(({ game, division }) => ({ game, division })) }],
+    ])("rejects a payload with %s", async (_name, payload) => {
+        const { fetchLeaderboardOverview, ApiResponseError } = await loadModules();
+
+        fetchMock.mockResolvedValue(jsonResponse(payload));
+
+        await expect(fetchLeaderboardOverview()).rejects.toBeInstanceOf(ApiResponseError);
+    });
+
+    it("never serves a 503 as data", async () => {
+        const { fetchLeaderboardOverview, ApiError } = await loadModules();
+
+        fetchMock.mockResolvedValue(new Response(null, { status: 503 }));
+
+        await expect(fetchLeaderboardOverview()).rejects.toBeInstanceOf(ApiError);
     });
 });
 

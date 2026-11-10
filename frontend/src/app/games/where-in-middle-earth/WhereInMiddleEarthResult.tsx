@@ -5,6 +5,7 @@ import Link from "next/link";
 import Button from "@/components/Button/Button";
 import PublishResult from "@/components/PublishResult/PublishResult";
 import type { WhereInMiddleEarthResult as Result } from "@/lib/api/whereInMiddleEarth";
+import { divisionFromDifficulty } from "@/lib/ranking/games";
 import { ACCURACY_LABELS, difficultyLabel, formatDistance } from "./labels";
 import styles from "./page.module.css";
 
@@ -97,7 +98,11 @@ export default function WhereInMiddleEarthResult({
                 })}
             </ol>
 
-            <PublishResult gameType="where-in-middle-earth" gameId={result.gameId} />
+            <PublishResult
+                gameType="where-in-middle-earth"
+                gameId={result.gameId}
+                division={divisionFromDifficulty(result.difficulty)}
+            />
 
             {isStarting && (
                 <p role="status" className={styles.status}>
