@@ -1,6 +1,9 @@
 package com.wunderlore.ranking;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,9 +30,16 @@ public class RankingService {
     // How many results the leaderboard shows.
     public static final int TOP_LIMIT = 50;
 
+    // The overview shows the places up to this one in every division; a tie keeps every player.
+    public static final int OVERVIEW_POSITIONS = 3;
+
     static final int MAX_GAME_ID_LENGTH = 64;
 
     public record Published(RankingEntry entry, boolean created) {
+    }
+
+    // One division of one game in the overview, with its first places (empty when nobody played).
+    public record OverviewGroup(GameType game, RankingDivision division, List<RankingEntryRepository.Row> entries) {
     }
 
     private final ObjectProvider<RankingEntryRepository> repositoryProvider;
@@ -95,6 +105,42 @@ public class RankingService {
         } catch (DataAccessException | TransactionException exception) {
             throw unavailable(exception);
         }
+    }
+
+    // The first places of every division of every game, one group per valid (game, division) pair,
+    // in a fixed order: the games as GameType declares them, and for each its divisions as
+    // RankingDivision.of lists them. Divisions nobody has played are present with no entries. The
+    // groups are never combined: there is no ranking across games or divisions. One database
+    // query serves all of them.
+    public List<OverviewGroup> overview() {
+        RankingEntryRepository repository = repository();
+        List<RankingEntryRepository.Row> rows;
+
+        try {
+            rows = repository.findOverview(OVERVIEW_POSITIONS);
+        } catch (DataAccessException | TransactionException exception) {
+            throw unavailable(exception);
+        }
+
+        Map<String, List<RankingEntryRepository.Row>> byDivision = new HashMap<>();
+
+        for (RankingEntryRepository.Row row : rows) {
+            byDivision.computeIfAbsent(row.getGameType() + "/" + row.getDivision(), key -> new ArrayList<>())
+                    .add(row);
+        }
+
+        List<OverviewGroup> groups = new ArrayList<>();
+
+        for (GameType game : GameType.values()) {
+            for (RankingDivision division : RankingDivision.of(game)) {
+                groups.add(new OverviewGroup(
+                        game,
+                        division,
+                        byDivision.getOrDefault(game.name() + "/" + division.name(), List.of())));
+            }
+        }
+
+        return List.copyOf(groups);
     }
 
     private RankingEntryRepository repository() {

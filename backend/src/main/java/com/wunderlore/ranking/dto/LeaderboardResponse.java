@@ -21,20 +21,22 @@ public record LeaderboardResponse(String game, String division, List<Entry> entr
                         String division,
                         BigDecimal percentage,
                         Instant playedAt) {
+
+                public static Entry from(RankingEntryRepository.Row row) {
+                        return new Entry(
+                                        row.getPosition(),
+                                        row.getNickname(),
+                                        GameType.valueOf(row.getGameType()).slug(),
+                                        RankingDivision.valueOf(row.getDivision()).slug(),
+                                        row.getPercentage(),
+                                        row.getPlayedAt());
+                }
         }
 
         public static LeaderboardResponse from(String game, String division, List<RankingEntryRepository.Row> rows) {
                 return new LeaderboardResponse(
                                 game,
                                 division,
-                                rows.stream()
-                                                .map(row -> new Entry(
-                                                                row.getPosition(),
-                                                                row.getNickname(),
-                                                                GameType.valueOf(row.getGameType()).slug(),
-                                                                RankingDivision.valueOf(row.getDivision()).slug(),
-                                                                row.getPercentage(),
-                                                                row.getPlayedAt()))
-                                                .toList());
+                                rows.stream().map(Entry::from).toList());
         }
 }

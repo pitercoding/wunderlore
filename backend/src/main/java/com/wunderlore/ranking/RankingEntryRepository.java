@@ -58,4 +58,26 @@ public interface RankingEntryRepository extends JpaRepository<RankingEntry, UUID
             """, nativeQuery = true)
     List<Row> findTopByGameTypeAndDivision(
             @Param("gameType") String gameType, @Param("division") String division, @Param("limit") int limit);
+
+    // The first places of every division of every game, in one query: RANK() is computed per
+    // (game_type, division) over all its rows, by the percentage alone, and every row whose
+    // position is at most :positions is kept. A tie at the cut is therefore kept whole (four
+    // players tied for first all appear, and the next one is fifth). Rows without a division
+    // (published before V2) are left out. Within a division the rows come in display order:
+    // percentage, then the earlier game, then id; the groups themselves are ordered by the service.
+    @Query(value = """
+            SELECT t.position AS position,
+                   t.nickname AS nickname,
+                   t.game_type AS gameType,
+                   t.division AS division,
+                   t.percentage AS percentage,
+                   t.played_at AS playedAt
+            FROM (SELECT id, nickname, game_type, division, percentage, played_at,
+                         RANK() OVER (PARTITION BY game_type, division ORDER BY percentage DESC) AS position
+                  FROM ranking_entries
+                  WHERE division IS NOT NULL) t
+            WHERE t.position <= :positions
+            ORDER BY t.game_type, t.division, t.percentage DESC, t.played_at ASC, t.id ASC
+            """, nativeQuery = true)
+    List<Row> findOverview(@Param("positions") int positions);
 }

@@ -225,4 +225,53 @@ class RankingControllerTest {
         mockMvc.perform(get("/api/ranking").param("game", "lore-challenge").param("division", "easy"))
                 .andExpect(status().isServiceUnavailable());
     }
+
+    private static RankingEntryRepository.Row row(long position, String nickname, GameType game,
+            RankingDivision division, String percentage) {
+        return new RankingEntryRepository.Row() {
+            public long getPosition() { return position; }
+            public String getNickname() { return nickname; }
+            public String getGameType() { return game.name(); }
+            public String getDivision() { return division.name(); }
+            public BigDecimal getPercentage() { return new BigDecimal(percentage); }
+            public Instant getPlayedAt() { return PLAYED_AT; }
+        };
+    }
+
+    @Test
+    void shouldAnswerTheOverviewWithOneGroupPerGameAndDivision() throws Exception {
+        when(service.overview()).thenReturn(List.of(
+                new RankingService.OverviewGroup(GameType.LORE_CHALLENGE, RankingDivision.EASY,
+                        List.of(row(1, "Aria", GameType.LORE_CHALLENGE, RankingDivision.EASY, "95.000000"))),
+                new RankingService.OverviewGroup(GameType.LORE_CHALLENGE, RankingDivision.MEDIUM, List.of()),
+                new RankingService.OverviewGroup(GameType.WHO_SAID_IT, RankingDivision.STANDARD, List.of())));
+
+        mockMvc.perform(get("/api/ranking/overview"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.groups", hasSize(3)))
+                .andExpect(jsonPath("$.groups[0].game").value("lore-challenge"))
+                .andExpect(jsonPath("$.groups[0].division").value("easy"))
+                .andExpect(jsonPath("$.groups[0].entries", hasSize(1)))
+                .andExpect(jsonPath("$.groups[0].entries[0].position").value(1))
+                .andExpect(jsonPath("$.groups[0].entries[0].nickname").value("Aria"))
+                .andExpect(jsonPath("$.groups[0].entries[0].gameType").value("lore-challenge"))
+                .andExpect(jsonPath("$.groups[0].entries[0].division").value("easy"))
+                .andExpect(jsonPath("$.groups[0].entries[0].percentage").value(95.0))
+                .andExpect(jsonPath("$.groups[0].entries[0].playedAt").value("2026-03-01T10:15:30Z"))
+                .andExpect(jsonPath("$.groups[1].game").value("lore-challenge"))
+                .andExpect(jsonPath("$.groups[1].division").value("medium"))
+                .andExpect(jsonPath("$.groups[1].entries", hasSize(0)))
+                .andExpect(jsonPath("$.groups[2].game").value("who-said-it"))
+                .andExpect(jsonPath("$.groups[2].division").value("standard"))
+                .andExpect(jsonPath("$.groups[2].entries", hasSize(0)));
+    }
+
+    @Test
+    void shouldAnswer503ForTheOverviewWhenTheLeaderboardIsUnavailable() throws Exception {
+        when(service.overview()).thenThrow(new RankingException(Reason.UNAVAILABLE));
+
+        mockMvc.perform(get("/api/ranking/overview"))
+                .andExpect(status().isServiceUnavailable())
+                .andExpect(jsonPath("$.detail").value(Reason.UNAVAILABLE.detail()));
+    }
 }

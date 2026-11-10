@@ -43,6 +43,7 @@ class RankingDisabledIntegrationTest {
                 .andExpect(jsonPath("$.detail").value("The leaderboard is unavailable right now"));
         mockMvc.perform(get("/api/ranking").param("game", "who-am-i").param("division", "easy"))
                 .andExpect(status().isServiceUnavailable());
+        mockMvc.perform(get("/api/ranking/overview")).andExpect(status().isServiceUnavailable());
     }
 
     @Test

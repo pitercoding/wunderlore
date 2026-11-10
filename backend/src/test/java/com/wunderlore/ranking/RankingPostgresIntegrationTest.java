@@ -579,4 +579,157 @@ class RankingPostgresIntegrationTest {
                 "ranking_entries_global_order_idx", "ranking_entries_game_order_idx",
                 "ranking_entries_division_order_idx", "ranking_entries_game_unique");
     }
+
+    private String overview() throws Exception {
+        return mockMvc.perform(get("/api/ranking/overview"))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+    }
+
+    private static List<Object> overviewField(String body, String game, String division, String field) {
+        return JsonPath.read(body, "$.groups[?(@.game=='" + game + "' && @.division=='" + division
+                + "')].entries[*]." + field);
+    }
+
+    @Test
+    void shouldListEveryValidDivisionInAStableOrderWhenNobodyHasPlayed() throws Exception {
+        String body = overview();
+
+        List<String> games = JsonPath.read(body, "$.groups[*].game");
+        List<String> divisions = JsonPath.read(body, "$.groups[*].division");
+
+        assertThat(games).containsExactly(
+                "lore-challenge", "lore-challenge", "lore-challenge",
+                "who-am-i", "who-am-i", "who-am-i",
+                "where-in-middle-earth", "where-in-middle-earth", "where-in-middle-earth",
+                "who-said-it");
+        assertThat(divisions).containsExactly(
+                "easy", "medium", "hard", "easy", "medium", "hard", "easy", "medium", "hard", "standard");
+        assertThat(games).doesNotContain("which-character");
+
+        List<List<Object>> entries = JsonPath.read(body, "$.groups[*].entries");
+
+        assertThat(entries).hasSize(10).allSatisfy(list -> assertThat(list).isEmpty());
+    }
+
+    @Test
+    void shouldKeepTheResultsOfDifferentGamesAndDivisionsApart() throws Exception {
+        insert(GameType.LORE_CHALLENGE, RankingDivision.EASY, "a", "LoreEasy", 100, 100, "2026-01-01T00:00:00Z");
+        insert(GameType.LORE_CHALLENGE, RankingDivision.HARD, "b", "LoreHard", 90, 100, "2026-01-01T00:00:00Z");
+        insert(GameType.WHO_AM_I, RankingDivision.EASY, "c", "WhoAmIEasy", 800, 1000, "2026-01-01T00:00:00Z");
+        insert(GameType.WHERE_IN_MIDDLE_EARTH, RankingDivision.MEDIUM, "d", "WhereMedium", 500, 1000,
+                "2026-01-01T00:00:00Z");
+        insert(GameType.WHO_SAID_IT, RankingDivision.STANDARD, "e", "Quoter", 70, 100, "2026-01-01T00:00:00Z");
+
+        String body = overview();
+
+        assertThat(overviewField(body, "lore-challenge", "easy", "nickname")).containsExactly("LoreEasy");
+        assertThat(overviewField(body, "lore-challenge", "hard", "nickname")).containsExactly("LoreHard");
+        assertThat(overviewField(body, "who-am-i", "easy", "nickname")).containsExactly("WhoAmIEasy");
+        assertThat(overviewField(body, "where-in-middle-earth", "medium", "nickname")).containsExactly("WhereMedium");
+        assertThat(overviewField(body, "who-said-it", "standard", "nickname")).containsExactly("Quoter");
+        // Every position is counted inside its own group: all of them are first.
+        List<Integer> positions = JsonPath.read(body, "$.groups[*].entries[*].position");
+
+        assertThat(positions).hasSize(5).containsOnly(1);
+        assertThat(overviewField(body, "lore-challenge", "medium", "nickname")).isEmpty();
+        assertThat(overviewField(body, "who-am-i", "hard", "nickname")).isEmpty();
+    }
+
+    @Test
+    void shouldReturnOnlyTheFirstThreePositionsOfEachDivision() throws Exception {
+        String[] names = {"P100", "P90", "P80", "P70", "P60"};
+        int[] scores = {100, 90, 80, 70, 60};
+
+        for (int i = 0; i < names.length; i++) {
+            insert(GameType.LORE_CHALLENGE, RankingDivision.EASY, "g" + i, names[i], scores[i], 100,
+                    "2026-01-0" + (i + 1) + "T00:00:00Z");
+        }
+
+        String body = overview();
+
+        assertThat(overviewField(body, "lore-challenge", "easy", "nickname")).containsExactly("P100", "P90", "P80");
+        assertThat(overviewField(body, "lore-challenge", "easy", "position")).containsExactly(1, 2, 3);
+    }
+
+    @Test
+    void shouldKeepEveryPlayerTiedInsideTheFirstThreePositions() throws Exception {
+        // Four players tied for first: all four appear and the next result is fifth, so it is out.
+        for (int i = 0; i < 4; i++) {
+            insert(GameType.WHO_AM_I, RankingDivision.EASY, "t" + i, "Tied " + i, 900, 1000,
+                    "2026-01-0" + (i + 1) + "T00:00:00Z");
+        }
+
+        insert(GameType.WHO_AM_I, RankingDivision.EASY, "fifth", "Fifth", 800, 1000, "2026-01-01T00:00:00Z");
+
+        // 100, 90, 90, 90, 80: positions 1, 2, 2, 2 and the 80 is fifth.
+        insert(GameType.LORE_CHALLENGE, RankingDivision.HARD, "h0", "Best", 300, 300, "2026-01-01T00:00:00Z");
+        insert(GameType.LORE_CHALLENGE, RankingDivision.HARD, "h1", "Tie A", 270, 300, "2026-01-02T00:00:00Z");
+        insert(GameType.LORE_CHALLENGE, RankingDivision.HARD, "h2", "Tie B", 270, 300, "2026-01-03T00:00:00Z");
+        insert(GameType.LORE_CHALLENGE, RankingDivision.HARD, "h3", "Tie C", 270, 300, "2026-01-04T00:00:00Z");
+        insert(GameType.LORE_CHALLENGE, RankingDivision.HARD, "h4", "Out", 240, 300, "2026-01-05T00:00:00Z");
+
+        // 100, 90, 80 and then two tied for fourth: the tie is below the cut and stays out.
+        insert(GameType.WHERE_IN_MIDDLE_EARTH, RankingDivision.EASY, "w0", "Where 1", 1000, 1000, "2026-01-01T00:00:00Z");
+        insert(GameType.WHERE_IN_MIDDLE_EARTH, RankingDivision.EASY, "w1", "Where 2", 900, 1000, "2026-01-01T00:00:00Z");
+        insert(GameType.WHERE_IN_MIDDLE_EARTH, RankingDivision.EASY, "w2", "Where 3", 800, 1000, "2026-01-01T00:00:00Z");
+        insert(GameType.WHERE_IN_MIDDLE_EARTH, RankingDivision.EASY, "w3", "Where 4a", 700, 1000, "2026-01-01T00:00:00Z");
+        insert(GameType.WHERE_IN_MIDDLE_EARTH, RankingDivision.EASY, "w4", "Where 4b", 700, 1000, "2026-01-01T00:00:00Z");
+
+        String body = overview();
+
+        assertThat(overviewField(body, "who-am-i", "easy", "nickname"))
+                .containsExactly("Tied 0", "Tied 1", "Tied 2", "Tied 3");
+        assertThat(overviewField(body, "who-am-i", "easy", "position")).containsExactly(1, 1, 1, 1);
+
+        assertThat(overviewField(body, "lore-challenge", "hard", "nickname"))
+                .containsExactly("Best", "Tie A", "Tie B", "Tie C");
+        assertThat(overviewField(body, "lore-challenge", "hard", "position")).containsExactly(1, 2, 2, 2);
+
+        assertThat(overviewField(body, "where-in-middle-earth", "easy", "nickname")).containsExactly("Where 1", "Where 2", "Where 3");
+    }
+
+    @Test
+    void shouldShowTiesInDisplayOrderByDateAndNeverRankThemByDateOrId() throws Exception {
+        insert(GameType.WHO_SAID_IT, "z-late", "TieLate", 80, 100, "2026-01-09T00:00:00Z");
+        insert(GameType.WHO_SAID_IT, "a-early", "TieEarly", 80, 100, "2026-01-01T00:00:00Z");
+        insert(GameType.WHO_SAID_IT, "m-mid", "TieMid", 80, 100, "2026-01-05T00:00:00Z");
+        insert(GameType.WHO_SAID_IT, "top", "Top", 90, 100, "2026-01-10T00:00:00Z");
+
+        String first = overview();
+        String second = overview();
+
+        assertThat(overviewField(first, "who-said-it", "standard", "nickname"))
+                .containsExactly("Top", "TieEarly", "TieMid", "TieLate");
+        assertThat(overviewField(first, "who-said-it", "standard", "position")).containsExactly(1, 2, 2, 2);
+        assertThat(overviewField(second, "who-said-it", "standard", "nickname"))
+                .isEqualTo(overviewField(first, "who-said-it", "standard", "nickname"));
+    }
+
+    @Test
+    void shouldNeverShowRowsPublishedBeforeV2WithoutADivisionInTheOverview() throws Exception {
+        insertWithoutDivision(GameType.LORE_CHALLENGE, "a", "Historic1", 100, 100);
+        insertWithoutDivision(GameType.WHO_SAID_IT, "b", "Historic2", 100, 100);
+        insertWithoutDivision(GameType.WHO_AM_I, "c", "Historic3", 1000, 1000);
+        insert(GameType.WHO_AM_I, RankingDivision.EASY, "d", "Current", 10, 1000, "2026-01-01T00:00:00Z");
+
+        String body = overview();
+        List<String> nicknames = JsonPath.read(body, "$.groups[*].entries[*].nickname");
+
+        assertThat(nicknames).containsExactly("Current");
+        assertThat(overviewField(body, "who-am-i", "easy", "position")).containsExactly(1);
+    }
+
+    @Test
+    void shouldShowAPublishedGameInTheOverviewGroupOfItsDivision() throws Exception {
+        GamePlayer.Played played = player.play(GameType.WHERE_IN_MIDDLE_EARTH, "MEDIUM");
+
+        publish(GameType.WHERE_IN_MIDDLE_EARTH, played.gameId(), "Legolas", 201);
+
+        String body = overview();
+
+        assertThat(overviewField(body, "where-in-middle-earth", "medium", "nickname")).containsExactly("Legolas");
+        assertThat(overviewField(body, "where-in-middle-earth", "medium", "division")).containsExactly("medium");
+        assertThat(overviewField(body, "where-in-middle-earth", "easy", "nickname")).isEmpty();
+        assertThat(overviewField(body, "where-in-middle-earth", "hard", "nickname")).isEmpty();
+    }
 }

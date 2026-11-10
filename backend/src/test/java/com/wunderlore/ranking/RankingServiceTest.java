@@ -308,4 +308,84 @@ class RankingServiceTest {
         assertThatThrownBy(() -> service.top("who-am-i", "easy"))
                 .satisfies(e -> assertThat(reasonOf(e)).isEqualTo(Reason.UNAVAILABLE));
     }
+
+    private static RankingEntryRepository.Row row(long position, String nickname, GameType game,
+            RankingDivision division, String percentage) {
+        return new RankingEntryRepository.Row() {
+            public long getPosition() { return position; }
+            public String getNickname() { return nickname; }
+            public String getGameType() { return game.name(); }
+            public String getDivision() { return division.name(); }
+            public BigDecimal getPercentage() { return new BigDecimal(percentage); }
+            public Instant getPlayedAt() { return PLAYED_AT; }
+        };
+    }
+
+    @Test
+    void shouldBuildOneGroupForEveryValidDivisionInAFixedOrderEvenWithoutResults() {
+        when(repository.findOverview(3)).thenReturn(List.of());
+
+        List<RankingService.OverviewGroup> groups = service.overview();
+
+        assertThat(groups).extracting(group -> group.game() + "/" + group.division()).containsExactly(
+                "LORE_CHALLENGE/EASY", "LORE_CHALLENGE/MEDIUM", "LORE_CHALLENGE/HARD",
+                "WHO_AM_I/EASY", "WHO_AM_I/MEDIUM", "WHO_AM_I/HARD",
+                "WHERE_IN_MIDDLE_EARTH/EASY", "WHERE_IN_MIDDLE_EARTH/MEDIUM", "WHERE_IN_MIDDLE_EARTH/HARD",
+                "WHO_SAID_IT/STANDARD");
+        assertThat(groups).allSatisfy(group -> assertThat(group.entries()).isEmpty());
+    }
+
+    @Test
+    void shouldPlaceEachRowInTheGroupOfItsOwnGameAndDivisionAndKeepTheirOrder() {
+        var first = row(1, "A", GameType.WHO_AM_I, RankingDivision.HARD, "90");
+        var tie1 = row(2, "B", GameType.WHO_AM_I, RankingDivision.HARD, "80");
+        var tie2 = row(2, "C", GameType.WHO_AM_I, RankingDivision.HARD, "80");
+        var otherDivision = row(1, "D", GameType.WHO_AM_I, RankingDivision.EASY, "70");
+        var otherGame = row(1, "E", GameType.LORE_CHALLENGE, RankingDivision.HARD, "99");
+        var single = row(1, "F", GameType.WHO_SAID_IT, RankingDivision.STANDARD, "60");
+
+        when(repository.findOverview(3))
+                .thenReturn(List.of(otherGame, otherDivision, first, tie1, tie2, single));
+
+        List<RankingService.OverviewGroup> groups = service.overview();
+
+        assertThat(group(groups, GameType.WHO_AM_I, RankingDivision.HARD).entries())
+                .containsExactly(first, tie1, tie2);
+        assertThat(group(groups, GameType.WHO_AM_I, RankingDivision.EASY).entries()).containsExactly(otherDivision);
+        assertThat(group(groups, GameType.LORE_CHALLENGE, RankingDivision.HARD).entries()).containsExactly(otherGame);
+        assertThat(group(groups, GameType.WHO_SAID_IT, RankingDivision.STANDARD).entries()).containsExactly(single);
+        assertThat(group(groups, GameType.LORE_CHALLENGE, RankingDivision.EASY).entries()).isEmpty();
+        assertThat(groups).hasSize(10);
+    }
+
+    @Test
+    void shouldReadTheWholeOverviewWithASingleQueryAndNoneForEachDivision() {
+        when(repository.findOverview(3)).thenReturn(List.of());
+
+        service.overview();
+
+        verify(repository, org.mockito.Mockito.times(1)).findOverview(3);
+        org.mockito.Mockito.verifyNoMoreInteractions(repository);
+    }
+
+    @Test
+    void shouldReportUnavailableForTheOverviewWhenPersistenceIsNotConfiguredOrTheReadFails() {
+        when(provider.getIfAvailable()).thenReturn(null);
+
+        assertThatThrownBy(() -> service.overview())
+                .satisfies(e -> assertThat(reasonOf(e)).isEqualTo(Reason.UNAVAILABLE));
+
+        when(provider.getIfAvailable()).thenReturn(repository);
+        when(repository.findOverview(3)).thenThrow(new QueryTimeoutException("slow"));
+
+        assertThatThrownBy(() -> service.overview())
+                .satisfies(e -> assertThat(reasonOf(e)).isEqualTo(Reason.UNAVAILABLE));
+    }
+
+    private static RankingService.OverviewGroup group(
+            List<RankingService.OverviewGroup> groups, GameType game, RankingDivision division) {
+        return groups.stream()
+                .filter(candidate -> candidate.game() == game && candidate.division() == division)
+                .findFirst().orElseThrow();
+    }
 }

@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.wunderlore.ranking.dto.LeaderboardResponse;
+import com.wunderlore.ranking.dto.OverviewResponse;
 import com.wunderlore.ranking.dto.PublishRequest;
 import com.wunderlore.ranking.dto.PublishedEntryResponse;
 
@@ -52,6 +53,12 @@ public class RankingController {
             @RequestParam(required = false) String game,
             @RequestParam(required = false) String division) {
         return LeaderboardResponse.from(game, division, service.top(game, division));
+    }
+
+    // The first places of every division of every game, grouped and never combined.
+    @GetMapping("/overview")
+    public OverviewResponse overview() {
+        return OverviewResponse.from(service.overview());
     }
 
     @ExceptionHandler(RankingException.class)
