@@ -157,6 +157,10 @@ describe("WhichCharacterContent", () => {
         expect(screen.getByText("Quiz complete")).toBeInTheDocument();
         expect(screen.queryByRole("radio")).not.toBeInTheDocument();
         expect(screen.getByRole("button", { name: "Play again" })).toBeInTheDocument();
+        expect(screen.getByRole("link", { name: "Back to games" })).toHaveAttribute(
+            "href",
+            "/#experiences",
+        );
     });
 
     it("restarts the quiz from the first question with no answers", async () => {

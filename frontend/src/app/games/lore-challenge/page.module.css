@@ -53,8 +53,13 @@
 
 .choices {
     display: grid;
-    grid-template-columns: minmax(0, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: var(--space-2);
+}
+
+/* Three difficulties carry a longer hint: one per row on narrow screens (see below for wider). */
+.difficulties {
+    grid-template-columns: minmax(0, 1fr);
 }
 
 /* The native radio stays in the page for the keyboard and for screen readers; the label
@@ -115,8 +120,9 @@
 
 /* The second declaration gives screen readers an empty alternative. */
 .radio:checked + .choiceBody .choiceLabel::after {
-    content: " ✓";
-    content: " ✓" / "";
+    /* A no-break space keeps the mark with the last word when a narrow card wraps the label. */
+    content: "\00a0✓";
+    content: "\00a0✓" / "";
     color: var(--scene-glow);
 }
 
@@ -547,5 +553,32 @@
 
     .option:active:not(:disabled) {
         transform: none;
+    }
+}
+
+/* Result tiles on narrow screens: tighter padding and a smaller figure, so labels and values stay
+   on as few lines as possible without fixing any height. */
+@media (max-width: 35.99em) {
+    .stat {
+        padding: var(--space-3);
+    }
+
+    .stat dt {
+        letter-spacing: 0.04em;
+    }
+
+    .stat dd {
+        font-size: var(--text-xl);
+    }
+}
+
+/* Two category cards per row on narrow screens: a slightly smaller label keeps them tidy. */
+@media (max-width: 35.99em) {
+    .choiceBody {
+        padding: var(--space-3);
+    }
+
+    .choiceLabel {
+        font-size: var(--text-base);
     }
 }

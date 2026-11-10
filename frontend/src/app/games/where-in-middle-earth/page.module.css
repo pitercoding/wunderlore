@@ -12,6 +12,13 @@
     box-shadow: 0 1.5rem 3rem -1.5rem color-mix(in srgb, var(--scene-abyss) 90%, transparent);
 }
 
+/* The map runs to the screen's edges on narrow screens: the gutter, the border and the padding. */
+@media (max-width: 35.99em) {
+    .stage {
+        --map-bleed: calc(var(--space-4) + var(--gutter) + 1px);
+    }
+}
+
 .srOnly {
     position: absolute;
     width: 1px;
@@ -732,5 +739,28 @@
 
     .confirmRow .readout {
         margin: 0;
+    }
+}
+
+/* Result tiles on narrow screens: tighter padding and a smaller figure, so labels and values stay
+   on as few lines as possible without fixing any height. */
+@media (max-width: 35.99em) {
+    .stat {
+        padding: var(--space-3);
+    }
+
+    .stat dt {
+        letter-spacing: 0.04em;
+    }
+
+    .stat dd {
+        font-size: var(--text-xl);
+    }
+}
+
+/* Four facts in one row on wide screens: the verdict stays short, so it is not far below the map. */
+@media (min-width: 64em) {
+    .facts {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
     }
 }

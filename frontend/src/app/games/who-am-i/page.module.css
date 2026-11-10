@@ -75,10 +75,37 @@
 }
 
 .rungPoints {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     color: var(--scene-glow);
     font-family: var(--font-serif);
     font-size: var(--text-lg);
     line-height: 1.2;
+}
+
+/* Five rungs share one row: on narrow screens the unit sits small under the number instead of
+   breaking the word out of a column barely wider than itself. */
+.rungUnit {
+    color: var(--scene-text-muted);
+    font-family: var(--font-sans);
+    font-size: 0.6875rem;
+    letter-spacing: 0.02em;
+}
+
+@media (min-width: 36em) {
+    .rungPoints {
+        flex-direction: row;
+        gap: 0.3em;
+        align-items: baseline;
+    }
+
+    .rungUnit {
+        color: inherit;
+        font-family: inherit;
+        font-size: inherit;
+        letter-spacing: inherit;
+    }
 }
 
 .fineprint {
@@ -736,5 +763,21 @@
 
     .option:active:not(:disabled) {
         transform: none;
+    }
+}
+
+/* Result tiles on narrow screens: tighter padding and a smaller figure, so labels and values stay
+   on as few lines as possible without fixing any height. */
+@media (max-width: 35.99em) {
+    .stat {
+        padding: var(--space-3);
+    }
+
+    .stat dt {
+        letter-spacing: 0.04em;
+    }
+
+    .stat dd {
+        font-size: var(--text-xl);
     }
 }

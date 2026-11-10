@@ -105,6 +105,33 @@
     overscroll-behavior: contain;
 }
 
+/* At 1x nothing is outside the window, so there is nothing to scroll to. */
+.viewport:has(.canvas[data-zoom="1"]) {
+    overflow: hidden;
+}
+
+/* On narrow screens the map runs to the edges of the screen, the way a photo does: every pixel
+   of width is legibility. The page sets --map-bleed to what separates the map from the edge. */
+@media (max-width: 35.99em) {
+    .viewport {
+        width: calc(100% + 2 * var(--map-bleed, 0px));
+        max-width: none;
+        margin-inline: calc(-1 * var(--map-bleed, 0px));
+        border-inline-width: 0;
+        border-radius: 0;
+    }
+}
+
+/* On wide screens the whole map at 1x is capped by the height of the screen, so a laptop does not
+   have to scroll past a map taller than its window. It keeps its proportions, never less than a
+   readable width, and is centred. Zoomed in, it is the full width again. */
+@media (min-width: 36em) {
+    .viewport:has(.canvas[data-zoom="1"]) {
+        width: clamp(min(100%, 36rem), calc((100svh - 14rem) * 10 / 7), 100%);
+        margin-inline: auto;
+    }
+}
+
 .viewport:focus-visible {
     outline: var(--focus-ring-width) solid var(--color-focus-ring);
     outline-offset: var(--focus-ring-offset);
@@ -474,6 +501,30 @@
 .chipAnswer {
     color: var(--map-answer);
     margin-top: 0.6rem;
+}
+
+/* Near an edge of the map the tag moves to the other side of its marker, or leans inward, so it
+   never extends past the picture. */
+.chip[data-chip-v="above"] {
+    top: auto;
+    bottom: 100%;
+    margin-top: 0;
+    margin-bottom: 0.45rem;
+}
+
+.chipAnswer[data-chip-v="above"] {
+    margin-bottom: 0.6rem;
+}
+
+.chip[data-chip-h="start"] {
+    left: -0.25rem;
+    transform: none;
+}
+
+.chip[data-chip-h="end"] {
+    right: -0.25rem;
+    left: auto;
+    transform: none;
 }
 
 /* ---- Help and clear ------------------------------------------------ */

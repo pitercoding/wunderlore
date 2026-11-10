@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import Button from "@/components/Button/Button";
 import type {
     WhichCharacterAnswer,
@@ -151,6 +152,9 @@ export default function WhichCharacterContent({
                             <Button size="lg" stretch="mobile" onClick={handlePlayAgain}>
                                 Play again
                             </Button>
+                            <Link href="/#experiences" className={styles.backToGames}>
+                                Back to games
+                            </Link>
                         </div>
                     </div>
                 </section>

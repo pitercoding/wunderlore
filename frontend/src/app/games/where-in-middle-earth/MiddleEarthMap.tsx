@@ -49,6 +49,32 @@ const EXCELLENT_RADIUS = 15;
 
 const toPercent = (value: number, max: number) => `${(value / max) * 100}%`;
 
+// Where a marker's name tag sits, so it stays inside the picture: the tag goes to the other side
+// of the marker near the top or bottom edge, and leans inward near the left or right edge. Without
+// this a tag near the coast spills past the map and the map starts to scroll inside itself.
+type ChipPlacement = { vertical: "above" | "below"; horizontal: "start" | "center" | "end" };
+
+function chipAttributes(position: MapPosition, preferred: ChipPlacement["vertical"]) {
+    const { vertical, horizontal } = chipPlacement(position, preferred);
+    return { "data-chip-v": vertical, "data-chip-h": horizontal };
+}
+
+const EDGE_X = 0.16;
+const EDGE_Y = 0.2;
+
+function chipPlacement(position: MapPosition, preferred: ChipPlacement["vertical"]): ChipPlacement {
+    const fx = position.x / MAP_WIDTH;
+    const fy = position.y / MAP_HEIGHT;
+    let vertical = preferred;
+    if (preferred === "below" && fy > 1 - EDGE_Y) {
+        vertical = "above";
+    } else if (preferred === "above" && fy < EDGE_Y) {
+        vertical = "below";
+    }
+    const horizontal = fx < EDGE_X ? "start" : fx > 1 - EDGE_X ? "end" : "center";
+    return { vertical, horizontal };
+}
+
 // The picture itself: sea, land, mountains, forests, rivers, the compass and the frame. It never
 // changes, so it is drawn once and kept out of the way of the markers.
 const MapArtwork = memo(function MapArtwork({ ids }: { ids: Record<string, string> }) {
@@ -408,7 +434,9 @@ export default function MiddleEarthMap({
                                         top: toPercent(feedback.guess.y, MAP_HEIGHT),
                                     }}
                                 >
-                                    <span className={styles.chip}>Your guess</span>
+                                    <span className={styles.chip} {...chipAttributes(feedback.guess, "above")}>
+                                        Your guess
+                                    </span>
                                 </span>
                                 <span
                                     className={`${styles.marker} ${styles.answer}`}
@@ -419,7 +447,10 @@ export default function MiddleEarthMap({
                                     }}
                                 >
                                     <span className={styles.diamond} />
-                                    <span className={`${styles.chip} ${styles.chipAnswer}`}>
+                                    <span
+                                        className={`${styles.chip} ${styles.chipAnswer}`}
+                                        {...chipAttributes(feedback.answer, "below")}
+                                    >
                                         {feedback.answerLabel}
                                     </span>
                                 </span>

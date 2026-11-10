@@ -179,6 +179,8 @@
 
 .optionText {
     min-width: 0;
+    /* Several lines read from the marker's edge, not from the middle of the card. */
+    text-align: left;
     font-size: var(--text-base);
     overflow-wrap: anywhere;
 }
@@ -322,9 +324,34 @@
 
 .again {
     display: flex;
-    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-3);
     width: 100%;
     margin-top: var(--space-6);
+}
+
+/* The way out of the result: a quiet link, like the other games. */
+.backToGames {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: var(--touch-target);
+    padding-inline: var(--space-3);
+    border-radius: var(--radius-full);
+    color: var(--scene-text-muted);
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+    transition: var(--transition-colors);
+}
+
+.backToGames:hover {
+    color: var(--scene-text);
+}
+
+.backToGames:focus-visible {
+    outline: var(--focus-ring-width) solid var(--color-focus-ring);
+    outline-offset: var(--focus-ring-offset);
 }
 
 .again button {

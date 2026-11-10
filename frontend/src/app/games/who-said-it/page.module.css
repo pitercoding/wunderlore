@@ -301,9 +301,14 @@
 
 .stats {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: var(--space-2);
     margin: 0 0 var(--space-5);
+}
+
+/* Two columns on narrow screens: three labels do not fit side by side. The odd tile spans both. */
+.stats > .stat:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
 }
 
 .stat {
@@ -412,11 +417,40 @@
     font-size: var(--text-sm);
 }
 
+/* Narrow screens: the verdict drops under the quote so the quote keeps the full row width. */
+@media (max-width: 35.99em) {
+    .summaryRight,
+    .summaryWrong {
+        grid-column: 2;
+        grid-row: 2;
+    }
+}
+
 @media (min-width: 36em) {
+    .stats {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
     .matchActions,
     .modes {
         flex-direction: row;
         flex-wrap: wrap;
         align-items: center;
+    }
+}
+
+/* Result tiles on narrow screens: tighter padding and a smaller figure, so labels and values stay
+   on as few lines as possible without fixing any height. */
+@media (max-width: 35.99em) {
+    .stat {
+        padding: var(--space-3);
+    }
+
+    .stat dt {
+        letter-spacing: 0.04em;
+    }
+
+    .stat dd {
+        font-size: var(--text-xl);
     }
 }

@@ -42,7 +42,9 @@ export default function WhoAmISetup({
                 {CLUE_POINTS.map((points, index) => (
                     <li key={index} className={styles.rung}>
                         <span className={styles.rungClue}>Clue {index + 1}</span>
-                        <span className={styles.rungPoints}>{points} points</span>
+                        <span className={styles.rungPoints}>
+                            {points} <span className={styles.rungUnit}>points</span>
+                        </span>
                     </li>
                 ))}
             </ol>
