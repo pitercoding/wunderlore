@@ -4,6 +4,7 @@ import type { CSSProperties } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import PageShell from "@/components/PageShell/PageShell";
+import SceneNav from "@/components/SceneNav/SceneNav";
 import JsonLd from "@/lib/seo/JsonLd";
 import {
   SITE_DESCRIPTION,
@@ -60,28 +61,6 @@ const FIREFLIES = [
   { x: "36%", y: "34%", s: 1.6, d: 15, delay: 10, dx: 10, dy: 14 },
 ];
 
-function Logo() {
-  return (
-    <svg className={styles.logo} viewBox="0 0 32 32" aria-hidden="true" focusable="false">
-      <circle cx="16" cy="16" r="14.5" fill="none" stroke="currentColor" strokeOpacity="0.35" />
-      <path
-        d="M16 6c-5.5 4-7.5 9.5-1.5 19.5C20.5 15.5 21.5 10 16 6Z"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.4"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M15.2 11.5v12.5M15.2 16.5l-3-2.4M15.2 20l3.4-2.6"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.1"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
-
 export default function HomePage() {
   const sceneImage = findSceneImage();
 
@@ -126,63 +105,7 @@ export default function HomePage() {
           <div className={styles.vignette} />
         </div>
 
-        <header className={styles.navWrap}>
-          <div className={styles.capsule}>
-            <Link href="/" className={styles.brand}>
-              <Logo />
-              Wunderlore
-            </Link>
-
-            <nav aria-label="Primary" className={styles.primaryNav}>
-              <Link href="/games/who-said-it" className={styles.navLink}>
-                Who Said It?
-              </Link>
-              <Link href="/games/which-character" className={styles.navLink}>
-                Which Character?
-              </Link>
-              <Link href="/games/lore-challenge" className={styles.navLink}>
-                Lore Challenge
-              </Link>
-              <Link href="/games/who-am-i" className={styles.navLink}>
-                Who Am I?
-              </Link>
-              <Link href="/games/where-in-middle-earth" className={styles.navLink}>
-                Where in Middle-earth
-              </Link>
-              <Link href="/quotes" className={styles.navLink}>
-                Quotes
-              </Link>
-            </nav>
-
-            {/* Small screens: one compact control instead of three crowded links. */}
-            <details className={styles.menu}>
-              <summary className={styles.menuButton}>
-                Menu
-                <span className={styles.chevron} aria-hidden="true" />
-              </summary>
-              <nav aria-label="Menu" className={styles.menuPanel}>
-                <Link href="/games/who-said-it" className={styles.menuLink}>
-                  Who Said It?
-                </Link>
-                <Link href="/games/which-character" className={styles.menuLink}>
-                  Which Character?
-                </Link>
-                <Link href="/games/lore-challenge" className={styles.menuLink}>
-                  Lore Challenge
-                </Link>
-                <Link href="/games/who-am-i" className={styles.menuLink}>
-                  Who Am I?
-                </Link>
-                <Link href="/games/where-in-middle-earth" className={styles.menuLink}>
-                  Where in Middle-earth
-                </Link>
-                <Link href="/quotes" className={styles.menuLink}>
-                  Quotes
-                </Link>
-              </nav>
-            </details>
-          </div>
-        </header>
+        <SceneNav />
 
         <PageShell size="wide" className={styles.main}>
           <section className={styles.hero}>

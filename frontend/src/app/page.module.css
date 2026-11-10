@@ -172,135 +172,7 @@
     );
 }
 
-/* ---- Navigation: a floating glass capsule ------------------------- */
-
-.navWrap {
-    position: relative;
-    z-index: 3;
-    display: flex;
-    justify-content: center;
-    padding: var(--space-3) var(--gutter) 0;
-}
-
-.capsule {
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: min(100%, 46rem);
-    padding: 0.25rem 0.35rem 0.25rem var(--space-4);
-    border: 1px solid var(--scene-border);
-    border-radius: var(--radius-full);
-    background: color-mix(in srgb, var(--scene-surface) 55%, transparent);
-    -webkit-backdrop-filter: blur(14px) saturate(1.1);
-    backdrop-filter: blur(14px) saturate(1.1);
-}
-
-.brand {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-2);
-    min-height: var(--touch-target);
-    font-family: var(--font-serif);
-    font-size: var(--text-xl);
-    font-weight: var(--weight-regular);
-    letter-spacing: 0.01em;
-}
-
-.logo {
-    width: 1.75rem;
-    height: 1.75rem;
-    color: var(--scene-glow);
-    filter: drop-shadow(0 0 6px color-mix(in srgb, var(--scene-glow) 45%, transparent));
-}
-
-.primaryNav {
-    display: none;
-}
-
-.navLink {
-    display: inline-flex;
-    align-items: center;
-    min-height: var(--touch-target);
-    padding-inline: var(--space-3);
-    border-radius: var(--radius-full);
-    color: var(--scene-text-muted);
-    font-size: var(--text-sm);
-    font-weight: var(--weight-regular);
-    transition: var(--transition-colors);
-}
-
-.navLink:hover {
-    background: var(--color-overlay-hover);
-    color: var(--scene-text);
-}
-
-.menu {
-    display: block;
-}
-
-.menuButton {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-2);
-    min-height: var(--touch-target);
-    padding-inline: var(--space-4);
-    border-radius: var(--radius-full);
-    color: var(--scene-text);
-    font-size: var(--text-sm);
-    cursor: pointer;
-    list-style: none;
-    transition: var(--transition-colors);
-}
-
-.menuButton::-webkit-details-marker {
-    display: none;
-}
-
-.menuButton:hover {
-    background: var(--color-overlay-hover);
-}
-
-.chevron {
-    width: 0.45rem;
-    height: 0.45rem;
-    border-right: 1.5px solid currentColor;
-    border-bottom: 1.5px solid currentColor;
-    transform: translateY(-0.1rem) rotate(45deg);
-    transition: transform var(--duration-base) var(--ease-standard);
-}
-
-.menu[open] .chevron {
-    transform: translateY(0.1rem) rotate(-135deg);
-}
-
-.menuPanel {
-    position: absolute;
-    top: calc(100% + var(--space-2));
-    right: 0;
-    left: 0;
-    display: grid;
-    padding: var(--space-2);
-    border: 1px solid var(--scene-border);
-    border-radius: var(--radius-xl);
-    /* Opaque: a backdrop blur inside the blurred capsule cannot see the hero behind it,
-       and even a faint see-through lets the bright title ghost across the links. */
-    background: var(--scene-surface);
-    box-shadow: 0 1.25rem 2.5rem -1rem color-mix(in srgb, var(--scene-abyss) 90%, transparent);
-}
-
-.menuLink {
-    display: flex;
-    align-items: center;
-    min-height: var(--touch-target);
-    padding-inline: var(--space-4);
-    border-radius: var(--radius-lg);
-    transition: var(--transition-colors);
-}
-
-.menuLink:hover {
-    background: var(--color-overlay-hover);
-}
+/* The navigation capsule is the shared SceneNav component. */
 
 /* ---- Hero --------------------------------------------------------- */
 
@@ -319,7 +191,8 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding-block: var(--space-7) var(--space-6);
+    /* The top padding is the minimum clearance under the capsule. */
+    padding-block: clamp(var(--space-6), 7svh, var(--space-8)) var(--space-6);
     text-align: center;
 }
 
@@ -352,20 +225,25 @@
 .lead,
 .title {
     font-family: var(--font-serif);
-    font-size: clamp(2.1rem, 1rem + 5.5vw, 5rem);
     font-weight: var(--weight-regular);
-    line-height: 1.06;
-    letter-spacing: -0.012em;
 }
 
+/* The lead is a quiet murmur; the brand name is the scene's main voice. */
 .lead {
     color: var(--scene-text-muted);
+    font-size: clamp(1.35rem, 0.9rem + 2.2vw, 2.25rem);
+    font-style: italic;
+    line-height: 1.2;
+    letter-spacing: 0.005em;
 }
 
-/* The second line carries the light. */
 .title {
-    color: color-mix(in srgb, var(--scene-glow-soft) 30%, var(--scene-text));
-    text-shadow: 0 0 2.5rem color-mix(in srgb, var(--scene-glow) 28%, transparent);
+    margin-top: var(--space-1);
+    color: color-mix(in srgb, var(--scene-glow-soft) 52%, var(--scene-text));
+    font-size: clamp(3.1rem, 1.2rem + 8.5vw, 7rem);
+    line-height: 1;
+    letter-spacing: -0.02em;
+    text-shadow: 0 0 3rem color-mix(in srgb, var(--scene-glow) 22%, transparent);
 }
 
 .subtitle {
@@ -583,32 +461,13 @@
     }
 }
 
-@media (min-width: 60em) {
-    .capsule {
-        display: grid;
-        grid-template-columns: 1fr auto 1fr;
-        padding-right: var(--space-4);
-    }
-
-    .primaryNav {
-        display: flex;
-        gap: var(--space-1);
-    }
-
-    .menu {
-        display: none;
-    }
-}
-
 @media (min-width: 48em) {
     .item {
         padding: var(--space-5);
     }
 
     .hero {
-        padding-block: var(--space-5) var(--space-6);
-        /* A little above the vertical center. */
-        margin-top: -3vh;
+        padding-block: clamp(var(--space-7), 9svh, var(--space-9)) var(--space-7);
     }
 
     .image {
