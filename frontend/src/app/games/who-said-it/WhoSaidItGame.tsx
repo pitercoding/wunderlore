@@ -87,7 +87,7 @@ export default function WhoSaidItGame() {
         return (
             <WhoSaidItFrame
                 title="Ranked match"
-                description="Ten quotes. Four speakers each. Your score goes to the backend, not the browser."
+                description="Ten quotes, four speakers each. Your score is checked by Wunderlore, so you can share it on the leaderboard."
             >
                 <WhoSaidItMatch
                     // A new match replaces the whole component, so its state starts clean.

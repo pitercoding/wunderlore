@@ -4,24 +4,15 @@
     margin-bottom: var(--space-5);
 }
 
-/* One row that scrolls sideways on small screens, so the filters don't push the ranking down.
-   The padding (undone by the negative margin) keeps the focus ring from being clipped. */
+/* The filters wrap onto as many rows as the width needs, so every one is in view at once and no
+   scrollbar appears; on a phone the chips are a little tighter to keep the rows few. */
 .filterList {
     display: flex;
+    flex-wrap: wrap;
     gap: var(--space-2);
-    margin: calc(-1 * var(--space-1));
-    padding: var(--space-1);
+    margin: 0;
+    padding: 0;
     list-style: none;
-    overflow-x: auto;
-    overscroll-behavior-x: contain;
-    scroll-snap-type: x proximity;
-    scroll-padding-inline: var(--space-1);
-    scrollbar-width: thin;
-}
-
-.filterList li {
-    flex: none;
-    scroll-snap-align: start;
 }
 
 .filter {
@@ -236,5 +227,11 @@
     .table td:nth-child(3),
     .table td:nth-child(4) {
         white-space: nowrap;
+    }
+}
+
+@media (max-width: 35.99em) {
+    .filter {
+        padding-inline: var(--space-3);
     }
 }

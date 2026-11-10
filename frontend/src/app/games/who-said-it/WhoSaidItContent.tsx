@@ -34,6 +34,17 @@ export default function WhoSaidItContent({
         quoteRef.current?.focus();
     }, []);
 
+    // Answering disables the option that had focus, which would drop it to the top of the page and
+    // send a keyboard player back to the navigation. Land on the way forward instead, as the other
+    // games do.
+    const newRoundRef = useRef<HTMLButtonElement>(null);
+
+    useEffect(() => {
+        if (result) {
+            newRoundRef.current?.focus();
+        }
+    }, [result]);
+
     async function handleAnswer(characterId: string) {
         if (isSubmitting || isRoundOver) {
             return;
@@ -161,6 +172,7 @@ export default function WhoSaidItContent({
                     )}
 
                     <Button
+                        ref={newRoundRef}
                         className={styles.newRound}
                         stretch="mobile"
                         onClick={onNewRound}

@@ -475,18 +475,45 @@
     }
 }
 
-/* Five columns: titles wrap onto two lines; below this the paths stack. */
-@media (min-width: 64em) {
+/* The six paths: one column on a phone, two columns by three rows on a tablet, three columns by
+   two rows on a desktop. Always an even grid, never a lone card on a last row. */
+@media (min-width: 40em) {
     .items {
-        grid-template-columns: repeat(5, minmax(0, 1fr));
-    }
-
-    .item {
-        padding: var(--space-4);
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
     .item + .item {
         border-top: 0;
+    }
+
+    .item:nth-child(n + 3) {
+        border-top: 1px solid var(--scene-border);
+    }
+
+    .item:nth-child(even) {
+        border-left: 1px solid var(--scene-border);
+    }
+}
+
+@media (min-width: 64em) {
+    .items {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .item:nth-child(n + 3) {
+        border-top: 0;
+    }
+
+    .item:nth-child(n + 4) {
+        border-top: 1px solid var(--scene-border);
+    }
+
+    .item:nth-child(even) {
+        border-left: 0;
+    }
+
+    .item:nth-child(3n + 2),
+    .item:nth-child(3n) {
         border-left: 1px solid var(--scene-border);
     }
 }

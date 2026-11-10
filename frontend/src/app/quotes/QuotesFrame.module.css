@@ -190,6 +190,19 @@
         );
 }
 
+/* The fire is brightest right behind the introduction. A soft, feathered dark patch behind the
+   words alone keeps them legible without dimming the dragon (the same trick as the Home's link). */
+.dragon .description::before {
+    content: "";
+    position: absolute;
+    inset: -1rem -1.5rem;
+    z-index: -1;
+    border-radius: var(--radius-xl);
+    background: color-mix(in srgb, var(--scene-abyss) 62%, transparent);
+    filter: blur(14px);
+    pointer-events: none;
+}
+
 /* ---- Hero ---------------------------------------------------------- */
 
 .main {

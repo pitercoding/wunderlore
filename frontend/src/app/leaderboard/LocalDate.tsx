@@ -9,10 +9,14 @@ interface LocalDateProps {
 
 const noop = () => () => {};
 
-// The server and the first client render show the date in UTC with a fixed locale, so they always
-// match. Right after hydration the browser's own time zone and language take over.
+// The interface is in English, so the dates are too, whatever language the browser is set to: one
+// fixed locale (day first, 24-hour clock) for the server, the first client render and the final
+// text. Only the time zone changes: the server and the first client render show UTC so they always
+// match, and right after hydration the visitor's own time zone takes over.
+const DATE_LOCALE = "en-GB";
+
 function formatUtc(iso: string): string {
-    return `${new Intl.DateTimeFormat("en-US", {
+    return `${new Intl.DateTimeFormat(DATE_LOCALE, {
         dateStyle: "medium",
         timeStyle: "short",
         timeZone: "UTC",
@@ -20,7 +24,7 @@ function formatUtc(iso: string): string {
 }
 
 function formatLocal(iso: string): string {
-    return new Intl.DateTimeFormat(undefined, {
+    return new Intl.DateTimeFormat(DATE_LOCALE, {
         dateStyle: "medium",
         timeStyle: "short",
     }).format(new Date(iso));

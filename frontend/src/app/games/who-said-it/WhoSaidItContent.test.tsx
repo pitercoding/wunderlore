@@ -131,6 +131,25 @@ describe("WhoSaidItContent", () => {
         expect(screen.queryByRole("alert")).not.toBeInTheDocument();
     });
 
+    it("moves focus to Play another round once answered, so keyboard play can go on", async () => {
+        const user = userEvent.setup();
+        submitWhoSaidItAnswerMock.mockResolvedValue({
+            ok: true,
+            result: {
+                roundId: "round-1",
+                submittedCharacterId: "c2",
+                correct: false,
+                correctCharacterId: "c1",
+            },
+        });
+        render(<WhoSaidItContent round={round} {...idleGame} />);
+
+        await user.click(screen.getByRole("button", { name: "Aragorn" }));
+
+        await screen.findByRole("heading", { name: "Not quite!" });
+        expect(screen.getByRole("button", { name: "Play another round" })).toHaveFocus();
+    });
+
     it("announces a wrong answer and reveals the correct character", async () => {
         const user = userEvent.setup();
         submitWhoSaidItAnswerMock.mockResolvedValue({
