@@ -110,20 +110,37 @@ class RankingPostgresIntegrationTest {
                 .andReturn().getResponse().getContentAsString();
     }
 
-    private String leaderboard(String game) throws Exception {
-        var request = get("/api/ranking");
+    private String leaderboard(String game, String division) throws Exception {
+        return mockMvc.perform(get("/api/ranking").param("game", game).param("division", division))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+    }
 
-        if (game != null) {
-            request = request.param("game", game);
-        }
-
-        return mockMvc.perform(request).andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+    private String standardWhoSaidIt() throws Exception {
+        return leaderboard("who-said-it", "standard");
     }
 
     private void insert(GameType type, String gameId, String nickname, int score, int max, String playedAt) {
         repository.saveAndFlush(new RankingEntry(
                 type, gameId, nickname,
                 new FinishedGame(score, max, Instant.parse(playedAt), RankingDivision.of(type).get(0))));
+    }
+
+    // A division of its own, for the rows of other divisions and games a ranking must not show.
+    private void insert(GameType type, RankingDivision division, String gameId, String nickname, int score, int max,
+            String playedAt) {
+        repository.saveAndFlush(new RankingEntry(
+                type, gameId, nickname, new FinishedGame(score, max, Instant.parse(playedAt), division)));
+    }
+
+    // A row published before V2: no division column in the INSERT, as the previous version did.
+    private void insertWithoutDivision(GameType type, String gameId, String nickname, int score, int max) {
+        jdbc.update("""
+                INSERT INTO ranking_entries
+                    (id, game_type, game_id, nickname, score, max_score, percentage, played_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, now())
+                """,
+                java.util.UUID.randomUUID(), type.name(), gameId, nickname, score, max,
+                BigDecimal.valueOf(score * 100.0 / max));
     }
 
     @Test
@@ -341,12 +358,12 @@ class RankingPostgresIntegrationTest {
     void shouldOrderByPercentageThenEarlierGameAndShareThePositionOnExactTies() throws Exception {
         insert(GameType.WHO_SAID_IT, "a", "Low", 30, 100, "2026-01-01T00:00:00Z");
         insert(GameType.WHO_SAID_IT, "b", "TieLater", 80, 100, "2026-01-03T00:00:00Z");
-        insert(GameType.WHO_AM_I, "c", "Best", 100, 100, "2026-01-05T00:00:00Z");
+        insert(GameType.WHO_SAID_IT, "c", "Best", 100, 100, "2026-01-05T00:00:00Z");
         insert(GameType.WHO_SAID_IT, "d", "TieEarlier", 80, 100, "2026-01-02T00:00:00Z");
-        // 8/10 is exactly 80% as well, from another game with another maximum.
-        insert(GameType.LORE_CHALLENGE, "e", "TieOtherMax", 240, 300, "2026-01-04T00:00:00Z");
+        // 240/300 is exactly 80% as well, with another maximum.
+        insert(GameType.WHO_SAID_IT, "e", "TieOtherMax", 240, 300, "2026-01-04T00:00:00Z");
 
-        String body = leaderboard(null);
+        String body = standardWhoSaidIt();
 
         List<String> nicknames = JsonPath.read(body, "$.entries[*].nickname");
         List<Integer> positions = JsonPath.read(body, "$.entries[*].position");
@@ -361,7 +378,7 @@ class RankingPostgresIntegrationTest {
         insert(GameType.WHO_SAID_IT, "a", "Worse", 3333, 10000, "2026-01-01T00:00:00Z");
         insert(GameType.WHO_SAID_IT, "b", "Better", 1000, 3000, "2026-01-02T00:00:00Z");
 
-        String body = leaderboard(null);
+        String body = standardWhoSaidIt();
 
         assertThat(jsonList(body, "$.entries[*].nickname")).containsExactly("Better", "Worse");
         assertThat(jsonList(body, "$.entries[*].position")).containsExactly(1, 2);
@@ -372,20 +389,97 @@ class RankingPostgresIntegrationTest {
     }
 
     @Test
-    void shouldRecalculatePositionsInsideAFilteredGame() throws Exception {
-        insert(GameType.WHO_AM_I, "a", "Top", 100, 100, "2026-01-01T00:00:00Z");
-        insert(GameType.WHO_SAID_IT, "b", "Second", 90, 100, "2026-01-01T00:00:00Z");
-        insert(GameType.WHO_SAID_IT, "c", "Third", 70, 100, "2026-01-01T00:00:00Z");
+    void shouldRankOnlyTheRequestedGameAndDivisionAndCountPositionsInsideIt() throws Exception {
+        // The requested division: Lore Challenge, Hard.
+        insert(GameType.LORE_CHALLENGE, RankingDivision.HARD, "a", "Second", 270, 300, "2026-01-01T00:00:00Z");
+        insert(GameType.LORE_CHALLENGE, RankingDivision.HARD, "b", "Third", 210, 300, "2026-01-01T00:00:00Z");
+        // Never shown: another division of the same game, the same division of other games, a
+        // better result in each, and a row published before V2 (no division).
+        insert(GameType.LORE_CHALLENGE, RankingDivision.EASY, "c", "OtherDivision", 100, 100, "2026-01-01T00:00:00Z");
+        insert(GameType.LORE_CHALLENGE, RankingDivision.MEDIUM, "d", "OtherMedium", 200, 200, "2026-01-01T00:00:00Z");
+        insert(GameType.WHO_AM_I, RankingDivision.HARD, "e", "OtherGame", 1000, 1000, "2026-01-01T00:00:00Z");
+        insert(GameType.WHERE_IN_MIDDLE_EARTH, RankingDivision.HARD, "f", "OtherGame2", 1000, 1000,
+                "2026-01-01T00:00:00Z");
+        insert(GameType.WHO_SAID_IT, RankingDivision.STANDARD, "g", "OtherMode", 100, 100, "2026-01-01T00:00:00Z");
+        insertWithoutDivision(GameType.LORE_CHALLENGE, "h", "Historic", 300, 300);
 
-        String filtered = leaderboard("who-said-it");
+        String body = leaderboard("lore-challenge", "hard");
 
-        assertThat(jsonList(filtered, "$.entries[*].nickname")).containsExactly("Second", "Third");
-        assertThat(jsonList(filtered, "$.entries[*].position")).containsExactly(1, 2);
-        assertThat(jsonList(filtered, "$.entries[*].gameType")).containsOnly("who-said-it");
-        assertThat((String) JsonPath.read(filtered, "$.game")).isEqualTo("who-said-it");
+        assertThat(jsonList(body, "$.entries[*].nickname")).containsExactly("Second", "Third");
+        assertThat(jsonList(body, "$.entries[*].position")).containsExactly(1, 2);
+        assertThat(jsonList(body, "$.entries[*].gameType")).containsOnly("lore-challenge");
+        assertThat(jsonList(body, "$.entries[*].division")).containsOnly("hard");
+        assertThat((String) JsonPath.read(body, "$.game")).isEqualTo("lore-challenge");
+        assertThat((String) JsonPath.read(body, "$.division")).isEqualTo("hard");
+    }
 
-        // Global positions are unaffected.
-        assertThat(jsonList(leaderboard(null), "$.entries[*].position")).containsExactly(1, 2, 3);
+    // At most 16 characters (the column), and different for every game and division.
+    private static String boardNickname(GameType type, RankingDivision division) {
+        return "Board " + type.ordinal() + "-" + division.ordinal();
+    }
+
+    @Test
+    void shouldAnswerEveryValidDivisionAndKeepTheirResultsApart() throws Exception {
+        for (GameType type : GameType.values()) {
+            for (RankingDivision division : RankingDivision.of(type)) {
+                insert(type, division, "id-" + type + "-" + division, boardNickname(type, division), 50, 100,
+                        "2026-01-01T00:00:00Z");
+            }
+        }
+
+        for (GameType type : GameType.values()) {
+            for (RankingDivision division : RankingDivision.of(type)) {
+                String body = leaderboard(type.slug(), division.slug());
+
+                assertThat(jsonList(body, "$.entries[*].nickname")).containsExactly(boardNickname(type, division));
+            }
+        }
+    }
+
+    @Test
+    void shouldNeverShowRowsPublishedBeforeV2WithoutADivision() throws Exception {
+        insertWithoutDivision(GameType.LORE_CHALLENGE, "a", "Historic1", 100, 100);
+        insertWithoutDivision(GameType.WHO_SAID_IT, "b", "Historic2", 100, 100);
+        insertWithoutDivision(GameType.WHO_AM_I, "c", "Historic3", 1000, 1000);
+
+        for (GameType type : GameType.values()) {
+            for (RankingDivision division : RankingDivision.of(type)) {
+                assertThat((List<?>) JsonPath.read(leaderboard(type.slug(), division.slug()), "$.entries"))
+                        .isEmpty();
+            }
+        }
+    }
+
+    @Test
+    void shouldGiveEqualPercentagesTheSamePositionWhateverTheirDateOrId() throws Exception {
+        insert(GameType.WHO_AM_I, RankingDivision.EASY, "z-late", "TieLate", 800, 1000, "2026-01-09T00:00:00Z");
+        insert(GameType.WHO_AM_I, RankingDivision.EASY, "a-early", "TieEarly", 800, 1000, "2026-01-01T00:00:00Z");
+        insert(GameType.WHO_AM_I, RankingDivision.EASY, "m-mid", "TieMid", 800, 1000, "2026-01-05T00:00:00Z");
+        insert(GameType.WHO_AM_I, RankingDivision.EASY, "top", "Top", 900, 1000, "2026-01-10T00:00:00Z");
+        insert(GameType.WHO_AM_I, RankingDivision.EASY, "low", "Low", 100, 1000, "2026-01-02T00:00:00Z");
+
+        String body = leaderboard("who-am-i", "easy");
+
+        // Display order: percentage, then the earlier game. Positions: by percentage alone.
+        assertThat(jsonList(body, "$.entries[*].nickname"))
+                .containsExactly("Top", "TieEarly", "TieMid", "TieLate", "Low");
+        assertThat(jsonList(body, "$.entries[*].position")).containsExactly(1, 2, 2, 2, 5);
+    }
+
+    @Test
+    void shouldOrderExactTiesOnTheSameInstantByIdSoTheOrderIsTotal() throws Exception {
+        for (String id : List.of("c", "a", "b")) {
+            insert(GameType.WHERE_IN_MIDDLE_EARTH, RankingDivision.HARD, id, "Same " + id, 500, 1000,
+                    "2026-01-01T00:00:00Z");
+        }
+
+        String first = leaderboard("where-in-middle-earth", "hard");
+        String second = leaderboard("where-in-middle-earth", "hard");
+
+        // Ids are random UUIDs, so only the repeatability and the shared position are asserted.
+        assertThat(jsonList(first, "$.entries[*].nickname")).hasSize(3)
+                .isEqualTo(jsonList(second, "$.entries[*].nickname"));
+        assertThat(jsonList(first, "$.entries[*].position")).containsExactly(1, 1, 1);
     }
 
     @Test
@@ -398,7 +492,7 @@ class RankingPostgresIntegrationTest {
             insert(GameType.WHO_SAID_IT, "g" + i, "Player " + i, score, 100, "2026-01-01T00:00:00Z");
         }
 
-        String body = leaderboard(null);
+        String body = standardWhoSaidIt();
         List<Integer> positions = JsonPath.read(body, "$.entries[*].position");
 
         assertThat(positions).hasSize(50);
@@ -412,7 +506,7 @@ class RankingPostgresIntegrationTest {
     void shouldStoreAndReturnTimestampsInUtc() throws Exception {
         insert(GameType.WHO_SAID_IT, "a", "Frodo", 80, 100, "2026-03-01T23:30:00Z");
 
-        String body = leaderboard(null);
+        String body = standardWhoSaidIt();
 
         assertThat((String) JsonPath.read(body, "$.entries[0].playedAt")).isEqualTo("2026-03-01T23:30:00Z");
 
@@ -427,8 +521,53 @@ class RankingPostgresIntegrationTest {
     }
 
     @Test
+    void shouldAnswer400ToUnknownMissingOrIncompatibleFilters() throws Exception {
+        String[][] bad = {
+            {"nonsense", "easy"},
+            {"lore-challenge", "nonsense"},
+            {"lore-challenge", "standard"},
+            {"who-said-it", "easy"},
+            {"who-said-it", "hard"},
+            {"WHO_SAID_IT", "standard"},
+            {"lore-challenge", "EASY"},
+        };
+
+        for (String[] filters : bad) {
+            mockMvc.perform(get("/api/ranking").param("game", filters[0]).param("division", filters[1]))
+                    .andExpect(status().isBadRequest());
+        }
+
+        // No global ranking any more: both filters are needed.
+        mockMvc.perform(get("/api/ranking")).andExpect(status().isBadRequest());
+        mockMvc.perform(get("/api/ranking").param("game", "lore-challenge")).andExpect(status().isBadRequest());
+        mockMvc.perform(get("/api/ranking").param("division", "easy")).andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void shouldShowAPublishedGameInTheRankingOfItsOwnDivisionOnly() throws Exception {
+        GamePlayer.Played played = player.play(GameType.WHO_AM_I, "HARD");
+
+        publish(GameType.WHO_AM_I, played.gameId(), "Aragorn", 201);
+
+        String hard = leaderboard("who-am-i", "hard");
+
+        assertThat(jsonList(hard, "$.entries[*].nickname")).containsExactly("Aragorn");
+        assertThat(jsonList(hard, "$.entries[*].division")).containsExactly("hard");
+        assertThat((List<?>) JsonPath.read(leaderboard("who-am-i", "easy"), "$.entries")).isEmpty();
+        assertThat((List<?>) JsonPath.read(leaderboard("who-am-i", "medium"), "$.entries")).isEmpty();
+        assertThat((List<?>) JsonPath.read(leaderboard("lore-challenge", "hard"), "$.entries")).isEmpty();
+    }
+
+    @Test
     void shouldReturnAnEmptyLeaderboardWhenNothingWasPublished() throws Exception {
-        assertThat((List<?>) JsonPath.read(leaderboard(null), "$.entries")).isEmpty();
+        for (GameType type : GameType.values()) {
+            for (RankingDivision division : RankingDivision.of(type)) {
+                String body = leaderboard(type.slug(), division.slug());
+
+                assertThat((List<?>) JsonPath.read(body, "$.entries")).isEmpty();
+                assertThat((String) JsonPath.read(body, "$.division")).isEqualTo(division.slug());
+            }
+        }
     }
 
     @Test
@@ -437,6 +576,7 @@ class RankingPostgresIntegrationTest {
                 "SELECT indexname FROM pg_indexes WHERE tablename = 'ranking_entries'", String.class);
 
         assertThat(indexes).contains(
-                "ranking_entries_global_order_idx", "ranking_entries_game_order_idx", "ranking_entries_game_unique");
+                "ranking_entries_global_order_idx", "ranking_entries_game_order_idx",
+                "ranking_entries_division_order_idx", "ranking_entries_game_unique");
     }
 }

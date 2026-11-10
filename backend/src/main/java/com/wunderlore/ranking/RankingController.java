@@ -43,10 +43,15 @@ public class RankingController {
                 .body(PublishedEntryResponse.from(published.entry(), !published.created()));
     }
 
-    // game: optional slug of one game (lore-challenge, who-am-i, where-in-middle-earth, who-said-it).
+    // game: slug of one game (lore-challenge, who-am-i, where-in-middle-earth, who-said-it).
+    // division: slug of one of its divisions (easy, medium, hard; standard for who-said-it). Both
+    // are required; they are declared optional here only so that a missing one is answered by the
+    // service with the same 400 as an unknown one.
     @GetMapping
-    public LeaderboardResponse leaderboard(@RequestParam(required = false) String game) {
-        return LeaderboardResponse.from(game, service.top(game));
+    public LeaderboardResponse leaderboard(
+            @RequestParam(required = false) String game,
+            @RequestParam(required = false) String division) {
+        return LeaderboardResponse.from(game, division, service.top(game, division));
     }
 
     @ExceptionHandler(RankingException.class)

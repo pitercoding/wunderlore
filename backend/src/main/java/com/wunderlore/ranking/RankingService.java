@@ -79,17 +79,19 @@ public class RankingService {
         }
     }
 
-    // The best TOP_LIMIT results, of one game when gameSlug is given (null or blank: all games).
-    public List<RankingEntryRepository.Row> top(String gameSlug) {
-        GameType type = gameSlug == null || gameSlug.isBlank()
-                ? null
-                : GameType.fromSlug(gameSlug).orElseThrow(() -> new RankingException(Reason.INVALID_GAME));
+    // The best TOP_LIMIT results of one division of one game. Both are required: results of
+    // different games or divisions are never ranked together. The division must exist in the game
+    // (RankingDivision decides). Invalid input is refused before the database is touched.
+    public List<RankingEntryRepository.Row> top(String gameSlug, String divisionSlug) {
+        GameType type = GameType.fromSlug(gameSlug)
+                .orElseThrow(() -> new RankingException(Reason.INVALID_GAME));
+        RankingDivision division = RankingDivision.fromSlug(divisionSlug)
+                .filter(candidate -> candidate.isValidFor(type))
+                .orElseThrow(() -> new RankingException(Reason.INVALID_DIVISION));
         RankingEntryRepository repository = repository();
 
         try {
-            return type == null
-                    ? repository.findTop(TOP_LIMIT)
-                    : repository.findTopByGameType(type.name(), TOP_LIMIT);
+            return repository.findTopByGameTypeAndDivision(type.name(), division.name(), TOP_LIMIT);
         } catch (DataAccessException | TransactionException exception) {
             throw unavailable(exception);
         }

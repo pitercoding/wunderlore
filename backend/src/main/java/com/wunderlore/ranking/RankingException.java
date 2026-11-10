@@ -9,6 +9,8 @@ public class RankingException extends RuntimeException {
     public enum Reason {
         // 400: the game is not one of the four that can be published.
         INVALID_GAME(HttpStatus.BAD_REQUEST, "Unknown game"),
+        // 400: the division is missing, unknown, or does not exist in that game.
+        INVALID_DIVISION(HttpStatus.BAD_REQUEST, "Unknown division for this game"),
         // 400: the game id is missing or malformed.
         INVALID_GAME_ID(HttpStatus.BAD_REQUEST, "Invalid game id"),
         // 400: the nickname breaks the rules in NicknamePolicy.

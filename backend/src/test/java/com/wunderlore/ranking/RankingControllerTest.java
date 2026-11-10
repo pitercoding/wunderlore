@@ -139,41 +139,90 @@ class RankingControllerTest {
     }
 
     @Test
-    void shouldReturnTheGlobalLeaderboardByDefault() throws Exception {
+    void shouldReturnTheRankingOfOneDivisionOfOneGame() throws Exception {
         RankingEntryRepository.Row row = new RankingEntryRepository.Row() {
             public long getPosition() { return 1; }
             public String getNickname() { return "Frodo"; }
             public String getGameType() { return "WHERE_IN_MIDDLE_EARTH"; }
+            public String getDivision() { return "MEDIUM"; }
             public BigDecimal getPercentage() { return new BigDecimal("93.500000"); }
             public Instant getPlayedAt() { return PLAYED_AT; }
         };
 
-        when(service.top(null)).thenReturn(List.of(row));
+        when(service.top("where-in-middle-earth", "medium")).thenReturn(List.of(row));
 
-        mockMvc.perform(get("/api/ranking"))
+        mockMvc.perform(get("/api/ranking").param("game", "where-in-middle-earth").param("division", "medium"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.game").value((Object) null))
+                .andExpect(jsonPath("$.game").value("where-in-middle-earth"))
+                .andExpect(jsonPath("$.division").value("medium"))
                 .andExpect(jsonPath("$.entries", hasSize(1)))
                 .andExpect(jsonPath("$.entries[0].position").value(1))
                 .andExpect(jsonPath("$.entries[0].nickname").value("Frodo"))
                 .andExpect(jsonPath("$.entries[0].gameType").value("where-in-middle-earth"))
+                .andExpect(jsonPath("$.entries[0].division").value("medium"))
                 .andExpect(jsonPath("$.entries[0].percentage").value(93.5))
                 .andExpect(jsonPath("$.entries[0].playedAt").value("2026-03-01T10:15:30Z"));
     }
 
     @Test
-    void shouldPassTheGameFilterAndMapItsFailures() throws Exception {
-        when(service.top("who-am-i")).thenReturn(List.of());
-        when(service.top("nonsense")).thenThrow(new RankingException(Reason.INVALID_GAME));
-        when(service.top("lore-challenge")).thenThrow(new RankingException(Reason.UNAVAILABLE));
+    void shouldAnswer200WithAnEmptyListForADivisionWithoutResults() throws Exception {
+        when(service.top("who-said-it", "standard")).thenReturn(List.of());
 
-        mockMvc.perform(get("/api/ranking").param("game", "who-am-i"))
+        mockMvc.perform(get("/api/ranking").param("game", "who-said-it").param("division", "standard"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.game").value("who-am-i"))
+                .andExpect(jsonPath("$.game").value("who-said-it"))
+                .andExpect(jsonPath("$.division").value("standard"))
                 .andExpect(jsonPath("$.entries", hasSize(0)));
-        mockMvc.perform(get("/api/ranking").param("game", "nonsense")).andExpect(status().isBadRequest());
-        mockMvc.perform(get("/api/ranking").param("game", "lore-challenge"))
+    }
+
+    @Test
+    void shouldPassTheGameAndDivisionOfEveryValidCombinationToTheService() throws Exception {
+        for (GameType type : GameType.values()) {
+            for (RankingDivision division : RankingDivision.of(type)) {
+                when(service.top(type.slug(), division.slug())).thenReturn(List.of());
+
+                mockMvc.perform(get("/api/ranking").param("game", type.slug()).param("division", division.slug()))
+                        .andExpect(status().isOk());
+                verify(service).top(eq(type.slug()), eq(division.slug()));
+            }
+        }
+    }
+
+    @Test
+    void shouldAnswer400ForAnUnknownGameAnUnknownDivisionOrAnInvalidCombination() throws Exception {
+        when(service.top("nonsense", "easy")).thenThrow(new RankingException(Reason.INVALID_GAME));
+        when(service.top("lore-challenge", "nonsense")).thenThrow(new RankingException(Reason.INVALID_DIVISION));
+        when(service.top("who-said-it", "easy")).thenThrow(new RankingException(Reason.INVALID_DIVISION));
+        when(service.top("lore-challenge", "standard")).thenThrow(new RankingException(Reason.INVALID_DIVISION));
+
+        mockMvc.perform(get("/api/ranking").param("game", "nonsense").param("division", "easy"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.detail").value(Reason.INVALID_GAME.detail()));
+        mockMvc.perform(get("/api/ranking").param("game", "lore-challenge").param("division", "nonsense"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.detail").value(Reason.INVALID_DIVISION.detail()));
+        mockMvc.perform(get("/api/ranking").param("game", "who-said-it").param("division", "easy"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.detail").value(Reason.INVALID_DIVISION.detail()));
+        mockMvc.perform(get("/api/ranking").param("game", "lore-challenge").param("division", "standard"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.detail").value(Reason.INVALID_DIVISION.detail()));
+    }
+
+    @Test
+    void shouldNotAnswerWithAGlobalRankingWhenTheFiltersAreMissing() throws Exception {
+        when(service.top(null, null)).thenThrow(new RankingException(Reason.INVALID_GAME));
+        when(service.top("who-am-i", null)).thenThrow(new RankingException(Reason.INVALID_DIVISION));
+
+        mockMvc.perform(get("/api/ranking")).andExpect(status().isBadRequest());
+        mockMvc.perform(get("/api/ranking").param("game", "who-am-i")).andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void shouldAnswer503WhenTheLeaderboardIsUnavailable() throws Exception {
+        when(service.top("lore-challenge", "easy")).thenThrow(new RankingException(Reason.UNAVAILABLE));
+
+        mockMvc.perform(get("/api/ranking").param("game", "lore-challenge").param("division", "easy"))
                 .andExpect(status().isServiceUnavailable());
-        verify(service).top(eq("who-am-i"));
     }
 }

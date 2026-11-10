@@ -11,6 +11,7 @@ import static org.mockito.Mockito.when;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -233,20 +234,78 @@ class RankingServiceTest {
 
         assertThatThrownBy(() -> service.publish("who-said-it", "g", "Frodo"))
                 .satisfies(e -> assertThat(reasonOf(e)).isEqualTo(Reason.UNAVAILABLE));
-        assertThatThrownBy(() -> service.top(null))
+        assertThatThrownBy(() -> service.top("who-am-i", "easy"))
                 .satisfies(e -> assertThat(reasonOf(e)).isEqualTo(Reason.UNAVAILABLE));
         verify(lookup, never()).find(any(), any());
     }
 
     @Test
-    void shouldReadTheTopFiftyGloballyOrPerGame() {
-        service.top(null);
-        service.top("  ");
-        service.top("who-am-i");
+    void shouldReadTheTopFiftyOfEveryValidGameAndDivision() {
+        for (GameType type : GameType.values()) {
+            for (RankingDivision division : RankingDivision.of(type)) {
+                service.top(type.slug(), division.slug());
 
-        verify(repository, org.mockito.Mockito.times(2)).findTop(50);
-        verify(repository).findTopByGameType("WHO_AM_I", 50);
-        assertThatThrownBy(() -> service.top("nonsense"))
-                .satisfies(e -> assertThat(reasonOf(e)).isEqualTo(Reason.INVALID_GAME));
+                verify(repository).findTopByGameTypeAndDivision(type.name(), division.name(), 50);
+            }
+        }
+
+        // 3 games x 3 difficulties + Who Said It? = 10 divisions, and nothing else was queried.
+        org.mockito.Mockito.verifyNoMoreInteractions(repository);
+    }
+
+    @Test
+    void shouldReturnWhatTheRepositoryFoundAndAnEmptyListForADivisionWithoutResults() {
+        when(repository.findTopByGameTypeAndDivision("LORE_CHALLENGE", "HARD", 50)).thenReturn(List.of());
+
+        assertThat(service.top("lore-challenge", "hard")).isEmpty();
+    }
+
+    @Test
+    void shouldRefuseAnUnknownGameWithoutTouchingTheDatabase() {
+        for (String game : new String[] {"nonsense", "WHO_SAID_IT", "which-character", "", "  ", null}) {
+            assertThatThrownBy(() -> service.top(game, "easy"))
+                    .satisfies(e -> assertThat(reasonOf(e)).isEqualTo(Reason.INVALID_GAME));
+        }
+
+        verify(repository, never()).findTopByGameTypeAndDivision(any(), any(), org.mockito.ArgumentMatchers.anyInt());
+    }
+
+    @Test
+    void shouldRefuseAMissingOrUnknownDivisionWithoutTouchingTheDatabase() {
+        for (String division : new String[] {"nonsense", "EASY", "expert", "", "  ", null}) {
+            assertThatThrownBy(() -> service.top("lore-challenge", division))
+                    .satisfies(e -> assertThat(reasonOf(e)).isEqualTo(Reason.INVALID_DIVISION));
+        }
+
+        verify(repository, never()).findTopByGameTypeAndDivision(any(), any(), org.mockito.ArgumentMatchers.anyInt());
+    }
+
+    @Test
+    void shouldRefuseEveryDivisionThatDoesNotExistInTheGame() {
+        int refused = 0;
+
+        for (GameType type : GameType.values()) {
+            for (RankingDivision division : RankingDivision.values()) {
+                if (division.isValidFor(type)) {
+                    continue;
+                }
+
+                assertThatThrownBy(() -> service.top(type.slug(), division.slug()))
+                        .satisfies(e -> assertThat(reasonOf(e)).isEqualTo(Reason.INVALID_DIVISION));
+                refused++;
+            }
+        }
+
+        assertThat(refused).isEqualTo(6);
+        verify(repository, never()).findTopByGameTypeAndDivision(any(), any(), org.mockito.ArgumentMatchers.anyInt());
+    }
+
+    @Test
+    void shouldReportUnavailableWhenTheRankingReadFails() {
+        when(repository.findTopByGameTypeAndDivision("WHO_AM_I", "EASY", 50))
+                .thenThrow(new QueryTimeoutException("slow"));
+
+        assertThatThrownBy(() -> service.top("who-am-i", "easy"))
+                .satisfies(e -> assertThat(reasonOf(e)).isEqualTo(Reason.UNAVAILABLE));
     }
 }
