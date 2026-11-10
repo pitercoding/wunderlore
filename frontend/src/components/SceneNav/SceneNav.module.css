@@ -70,6 +70,17 @@
     color: var(--scene-text);
 }
 
+/* The page being viewed: brighter text on a faint glow, quiet enough not to compete with the title. */
+.navLink[aria-current="page"],
+.menuLink[aria-current="page"] {
+    background: color-mix(in srgb, var(--scene-glow) 12%, transparent);
+    color: var(--scene-text);
+}
+
+.menuLink[aria-current="page"] {
+    box-shadow: inset 2px 0 0 var(--scene-glow);
+}
+
 .navLink:active,
 .menuButton:active,
 .menuLink:active {

@@ -2,6 +2,8 @@
 
 import { useRef, type KeyboardEvent } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { isActiveLink } from "./activeLink";
 import styles from "./SceneNav.module.css";
 
 interface SceneNavMenuProps {
@@ -13,6 +15,7 @@ interface SceneNavMenuProps {
 // hands focus back to the button that opened it.
 export default function SceneNavMenu({ links }: SceneNavMenuProps) {
     const details = useRef<HTMLDetailsElement>(null);
+    const pathname = usePathname();
 
     function closeOnEscape(event: KeyboardEvent<HTMLDetailsElement>) {
         const menu = details.current;
@@ -33,7 +36,12 @@ export default function SceneNavMenu({ links }: SceneNavMenuProps) {
             </summary>
             <nav aria-label="Menu" className={styles.menuPanel}>
                 {links.map((link) => (
-                    <Link key={link.href} href={link.href} className={styles.menuLink}>
+                    <Link
+                        key={link.href}
+                        href={link.href}
+                        className={styles.menuLink}
+                        aria-current={isActiveLink(pathname, link.href) ? "page" : undefined}
+                    >
                         {link.label}
                     </Link>
                 ))}

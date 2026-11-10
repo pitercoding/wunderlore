@@ -5,7 +5,10 @@ import type { WhoSaidItMatchQuestion, WhoSaidItMatchResult } from "@/lib/api/who
 import { answerWhoSaidItMatch, fetchWhoSaidItMatchState, startWhoSaidItMatch } from "./matchActions";
 import WhoSaidItGame from "./WhoSaidItGame";
 
-vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: vi.fn() }) }));
+vi.mock("next/navigation", () => ({
+    useRouter: () => ({ refresh: vi.fn() }),
+    usePathname: () => "/games/who-said-it",
+}));
 vi.mock("./actions", () => ({ createWhoSaidItRound: vi.fn(), submitWhoSaidItAnswer: vi.fn() }));
 vi.mock("./matchActions", () => ({
     startWhoSaidItMatch: vi.fn(),

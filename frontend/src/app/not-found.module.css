@@ -1,0 +1,45 @@
+/* The scene (palette tokens, banner, title) comes from QuotesFrame. */
+
+.actions {
+    margin: 0;
+}
+
+/* The Home's moss call to action, as a link: it navigates, so it is not a button. */
+.home {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 3.25rem;
+    padding-inline: var(--space-6);
+    border: 1px solid color-mix(in srgb, var(--scene-glow) 34%, transparent);
+    border-radius: var(--radius-full);
+    background: linear-gradient(180deg, var(--scene-moss-light), var(--scene-moss));
+    box-shadow:
+        inset 0 1px 0 color-mix(in srgb, var(--scene-text) 14%, transparent),
+        0 0 1.5rem -0.35rem color-mix(in srgb, var(--scene-glow) 40%, transparent);
+    color: var(--scene-text);
+    font-size: var(--text-base);
+    font-weight: var(--weight-medium);
+    text-align: center;
+    transition:
+        var(--transition-colors),
+        box-shadow var(--duration-base) var(--ease-standard);
+}
+
+.home:hover {
+    border-color: color-mix(in srgb, var(--scene-glow) 55%, transparent);
+    box-shadow:
+        inset 0 1px 0 color-mix(in srgb, var(--scene-text) 18%, transparent),
+        0 0 2rem -0.2rem color-mix(in srgb, var(--scene-glow) 55%, transparent);
+}
+
+.home:focus-visible {
+    outline: var(--focus-ring-width) solid var(--color-focus-ring);
+    outline-offset: var(--focus-ring-offset);
+}
+
+@media (max-width: 35.99em) {
+    .home {
+        width: 100%;
+    }
+}

@@ -99,6 +99,8 @@
   --width-narrow: 40rem; /* 640px: reading column */
   --width-content: 47.5rem; /* 760px: default page column */
   --width-wide: 67.5rem; /* 1080px: grids and hero */
+  --width-frame: 64rem; /* 1024px: the frame of a scene page, as wide as the navigation capsule */
+  --width-column: 46rem; /* 736px: a column of cards or reading, set against the frame's left edge */
   --gutter: var(--space-4);
   --touch-target: 2.75rem; /* 44px minimum */
 

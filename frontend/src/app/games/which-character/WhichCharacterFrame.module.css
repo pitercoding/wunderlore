@@ -83,7 +83,7 @@
 /* ---- Hero ---------------------------------------------------------- */
 
 .main {
-    width: min(100% - 2 * var(--gutter), 60rem);
+    width: min(100% - 2 * var(--gutter), var(--width-frame));
     margin-inline: auto;
     padding-block: var(--space-5) var(--space-8);
 }

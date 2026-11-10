@@ -16,15 +16,17 @@
 }
 
 .links {
-    margin-top: var(--space-2);
+    margin-top: 0;
     font-size: var(--text-xs);
     text-align: center;
 }
 
-/* Padding keeps the target at least 24px tall (WCAG 2.2 AA, target size). */
+/* A full 44px tall target (the site's touch minimum), still a small underlined line of text. */
 .link {
-    display: inline-block;
-    padding: 0.4rem 0.5rem;
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--touch-target);
+    padding-inline: var(--space-3);
     color: var(--scene-text-muted);
     text-decoration: underline;
     text-underline-offset: 0.2em;

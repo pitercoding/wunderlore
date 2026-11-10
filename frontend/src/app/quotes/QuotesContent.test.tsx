@@ -18,6 +18,7 @@ vi.mock("next/navigation", () => ({
         throw new Error(`NEXT_REDIRECT ${url}`);
     }),
     useRouter: () => ({ refresh, push, replace }),
+    usePathname: () => "/quotes",
 }));
 
 vi.mock("next/server", () => ({

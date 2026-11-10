@@ -193,7 +193,7 @@
 /* ---- Hero ---------------------------------------------------------- */
 
 .main {
-    width: min(100% - 2 * var(--gutter), 46rem);
+    width: min(100% - 2 * var(--gutter), var(--width-frame));
     margin-inline: auto;
     padding-bottom: var(--space-8);
 }

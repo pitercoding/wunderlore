@@ -9,6 +9,7 @@ const refresh = vi.fn();
 
 vi.mock("next/navigation", () => ({
     useRouter: () => ({ refresh }),
+    usePathname: () => "/games/who-said-it",
 }));
 
 vi.mock("./actions", () => ({

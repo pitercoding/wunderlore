@@ -1,6 +1,8 @@
 /* ---- The collection: quotes set as reading, not as cards ----------- */
 
 .quoteList {
+    /* Reading column: short lines, set against the frame's left edge like the title. */
+    max-width: var(--width-column);
     border-top: 1px solid var(--scene-border);
 }
 
@@ -63,6 +65,7 @@
 /* ---- Pagination ---------------------------------------------------- */
 
 .pagination {
+    max-width: var(--width-column);
     display: flex;
     flex-wrap: wrap;
     align-items: center;

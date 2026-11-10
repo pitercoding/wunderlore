@@ -4,6 +4,8 @@
 
 /* A quiet surface: the quote and answers never sit directly on the photograph. */
 .stage {
+    /* A card column against the frame's left edge, aligned with the title above it. */
+    max-width: var(--width-column);
     padding: var(--space-5) var(--space-4) var(--space-5);
     border: 1px solid var(--scene-border);
     border-radius: var(--radius-xl);

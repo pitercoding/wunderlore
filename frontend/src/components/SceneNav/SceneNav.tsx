@@ -1,4 +1,5 @@
 import Link from "next/link";
+import SceneNavLinks from "./SceneNavLinks";
 import SceneNavMenu from "./SceneNavMenu";
 import styles from "./SceneNav.module.css";
 
@@ -53,13 +54,7 @@ export default function SceneNav({ compact = false }: SceneNavProps) {
 
                 {!compact && (
                     <>
-                        <nav aria-label="Primary" className={styles.primaryNav}>
-                            {LINKS.map((link) => (
-                                <Link key={link.href} href={link.href} className={styles.navLink}>
-                                    {link.label}
-                                </Link>
-                            ))}
-                        </nav>
+                        <SceneNavLinks links={LINKS} />
 
                         {/* Small screens: one compact control instead of three crowded links. */}
                         <SceneNavMenu links={LINKS} />

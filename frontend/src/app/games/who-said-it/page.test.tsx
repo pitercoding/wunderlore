@@ -6,6 +6,7 @@ import WhoSaidItPage from "./page";
 
 vi.mock("next/navigation", () => ({
     useRouter: () => ({ refresh: vi.fn() }),
+    usePathname: () => "/games/who-said-it",
 }));
 
 vi.mock("@/lib/api/whoSaidIt", () => ({
