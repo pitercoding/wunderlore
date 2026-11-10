@@ -122,7 +122,8 @@ class RankingPostgresIntegrationTest {
 
     private void insert(GameType type, String gameId, String nickname, int score, int max, String playedAt) {
         repository.saveAndFlush(new RankingEntry(
-                type, gameId, nickname, new FinishedGame(score, max, Instant.parse(playedAt))));
+                type, gameId, nickname,
+                new FinishedGame(score, max, Instant.parse(playedAt), RankingDivision.of(type).get(0))));
     }
 
     @Test
@@ -145,6 +146,76 @@ class RankingPostgresIntegrationTest {
         }
 
         assertThat(repository.count()).isEqualTo(4);
+    }
+
+    @Test
+    void shouldStoreTheDivisionOfEveryDifficultyOfEveryGame() throws Exception {
+        for (GameType type : GameType.values()) {
+            for (RankingDivision division : RankingDivision.of(type)) {
+                // Who Said It? ignores the difficulty argument: it has one division only.
+                GamePlayer.Played played = player.play(
+                        type, division == RankingDivision.STANDARD ? "EASY" : division.name());
+
+                publish(type, played.gameId(), "Player", 201);
+
+                assertThat(repository.findByGameTypeAndGameId(type, played.gameId()).orElseThrow().getDivision())
+                        .as("%s %s", type, division).isEqualTo(division);
+                assertThat(jdbc.queryForObject(
+                        "SELECT division FROM ranking_entries WHERE game_type = ? AND game_id = ?",
+                        String.class, type.name(), played.gameId())).isEqualTo(division.name());
+            }
+        }
+
+        assertThat(repository.count()).isEqualTo(10);
+    }
+
+    @Test
+    void shouldIgnoreADivisionSentByTheClient() throws Exception {
+        GamePlayer.Played hard = player.play(GameType.LORE_CHALLENGE, "HARD");
+        GamePlayer.Played whoSaidIt = player.play(GameType.WHO_SAID_IT);
+
+        for (String forged : List.of("EASY", "STANDARD", "NOT_A_DIVISION")) {
+            mockMvc.perform(post("/api/ranking/entries")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("{\"gameType\":\"lore-challenge\",\"gameId\":\"" + hard.gameId()
+                                    + "\",\"nickname\":\"Cheater\",\"division\":\"" + forged
+                                    + "\",\"difficulty\":\"" + forged + "\"}"))
+                    .andExpect(status().is2xxSuccessful());
+        }
+
+        mockMvc.perform(post("/api/ranking/entries")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"gameType\":\"who-said-it\",\"gameId\":\"" + whoSaidIt.gameId()
+                                + "\",\"nickname\":\"Cheater\",\"division\":\"HARD\"}"))
+                .andExpect(status().isCreated());
+
+        assertThat(repository.findByGameTypeAndGameId(GameType.LORE_CHALLENGE, hard.gameId()).orElseThrow()
+                .getDivision()).isEqualTo(RankingDivision.HARD);
+        assertThat(repository.findByGameTypeAndGameId(GameType.WHO_SAID_IT, whoSaidIt.gameId()).orElseThrow()
+                .getDivision()).isEqualTo(RankingDivision.STANDARD);
+        assertThat(repository.count()).isEqualTo(2);
+    }
+
+    @Test
+    void shouldKeepTheOriginalDivisionWhenAGameIsPublishedAgain() throws Exception {
+        GamePlayer.Played played = player.play(GameType.WHO_AM_I, "MEDIUM");
+
+        publish(GameType.WHO_AM_I, played.gameId(), "First", 201);
+        publish(GameType.WHO_AM_I, played.gameId(), "Second", 200);
+
+        assertThat(repository.count()).isEqualTo(1);
+        assertThat(repository.findByGameTypeAndGameId(GameType.WHO_AM_I, played.gameId()).orElseThrow()
+                .getDivision()).isEqualTo(RankingDivision.MEDIUM);
+    }
+
+    @Test
+    void shouldNotRankTheCasualWhoSaidItRounds() throws Exception {
+        String round = mockMvc.perform(post("/api/games/who-said-it/rounds"))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        String roundId = JsonPath.read(round, "$.roundId");
+
+        publish(GameType.WHO_SAID_IT, roundId, "Frodo", 404);
+        assertThat(repository.count()).isZero();
     }
 
     @Test

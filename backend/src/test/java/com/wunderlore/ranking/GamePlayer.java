@@ -24,10 +24,15 @@ final class GamePlayer {
     }
 
     Played play(GameType type) throws Exception {
+        return play(type, "EASY");
+    }
+
+    // difficulty (EASY, MEDIUM or HARD) is ignored by Who Said It?, which has no levels.
+    Played play(GameType type, String difficulty) throws Exception {
         return switch (type) {
-            case LORE_CHALLENGE -> playLoreChallenge();
-            case WHO_AM_I -> playWhoAmI();
-            case WHERE_IN_MIDDLE_EARTH -> playWhereInMiddleEarth();
+            case LORE_CHALLENGE -> playLoreChallenge(difficulty);
+            case WHO_AM_I -> playWhoAmI(difficulty);
+            case WHERE_IN_MIDDLE_EARTH -> playWhereInMiddleEarth(difficulty);
             case WHO_SAID_IT -> playWhoSaidIt();
         };
     }
@@ -48,11 +53,11 @@ final class GamePlayer {
         };
     }
 
-    private Played playLoreChallenge() throws Exception {
+    private Played playLoreChallenge(String difficulty) throws Exception {
         String base = "/api/games/lore-challenge/matches";
         String body = send(post(base)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"category\":\"ALL\",\"difficulty\":\"EASY\"}"));
+                .content("{\"category\":\"ALL\",\"difficulty\":\"" + difficulty + "\"}"));
         String matchId = JsonPath.read(body, "$.matchId");
         String questionId = JsonPath.read(body, "$.questionId");
         String optionId = JsonPath.read(body, "$.options[0].id");
@@ -75,11 +80,11 @@ final class GamePlayer {
         return result(base, matchId);
     }
 
-    private Played playWhoAmI() throws Exception {
+    private Played playWhoAmI(String difficulty) throws Exception {
         String base = "/api/games/who-am-i/games";
         String round = send(post(base)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"difficulty\":\"EASY\"}"));
+                .content("{\"difficulty\":\"" + difficulty + "\"}"));
         String gameId = JsonPath.read(round, "$.gameId");
 
         while (true) {
@@ -100,11 +105,11 @@ final class GamePlayer {
         return result(base, gameId);
     }
 
-    private Played playWhereInMiddleEarth() throws Exception {
+    private Played playWhereInMiddleEarth(String difficulty) throws Exception {
         String base = "/api/games/where-in-middle-earth/games";
         String round = send(post(base)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"difficulty\":\"EASY\"}"));
+                .content("{\"difficulty\":\"" + difficulty + "\"}"));
         String gameId = JsonPath.read(round, "$.gameId");
 
         while (true) {

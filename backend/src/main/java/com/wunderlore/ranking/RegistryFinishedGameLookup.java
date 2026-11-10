@@ -2,12 +2,15 @@ package com.wunderlore.ranking;
 
 import org.springframework.stereotype.Component;
 
+import com.wunderlore.game.lorechallenge.LoreChallengeDifficulty;
 import com.wunderlore.game.lorechallenge.LoreChallengeException;
 import com.wunderlore.game.lorechallenge.LoreChallengeMatch;
 import com.wunderlore.game.lorechallenge.LoreChallengeMatchRegistry;
+import com.wunderlore.game.whereinmiddleearth.WhereInMiddleEarthDifficulty;
 import com.wunderlore.game.whereinmiddleearth.WhereInMiddleEarthException;
 import com.wunderlore.game.whereinmiddleearth.WhereInMiddleEarthGame;
 import com.wunderlore.game.whereinmiddleearth.WhereInMiddleEarthGameRegistry;
+import com.wunderlore.game.whoami.WhoAmIDifficulty;
 import com.wunderlore.game.whoami.WhoAmIException;
 import com.wunderlore.game.whoami.WhoAmIGame;
 import com.wunderlore.game.whoami.WhoAmIGameRegistry;
@@ -45,23 +48,39 @@ public class RegistryFinishedGameLookup implements FinishedGameLookup {
                 case LORE_CHALLENGE -> {
                     LoreChallengeMatch.Result result = loreChallenge.result(gameId);
 
-                    yield new FinishedGame(result.score(), result.maxScore(), loreChallenge.createdAt(gameId));
+                    yield new FinishedGame(
+                            result.score(),
+                            result.maxScore(),
+                            loreChallenge.createdAt(gameId),
+                            divisionOf(result.difficulty()));
                 }
                 case WHO_AM_I -> {
                     WhoAmIGame.Result result = whoAmI.result(gameId);
 
-                    yield new FinishedGame(result.score(), result.maxScore(), whoAmI.createdAt(gameId));
+                    yield new FinishedGame(
+                            result.score(),
+                            result.maxScore(),
+                            whoAmI.createdAt(gameId),
+                            divisionOf(result.difficulty()));
                 }
                 case WHERE_IN_MIDDLE_EARTH -> {
                     WhereInMiddleEarthGame.Result result = whereInMiddleEarth.result(gameId);
 
                     yield new FinishedGame(
-                            result.score(), result.maxScore(), whereInMiddleEarth.createdAt(gameId));
+                            result.score(),
+                            result.maxScore(),
+                            whereInMiddleEarth.createdAt(gameId),
+                            divisionOf(result.difficulty()));
                 }
                 case WHO_SAID_IT -> {
                     WhoSaidItMatch.Result result = whoSaidIt.result(gameId);
 
-                    yield new FinishedGame(result.score(), result.maxScore(), whoSaidIt.createdAt(gameId));
+                    // Only the competitive match is ranked, and it has no difficulty levels.
+                    yield new FinishedGame(
+                            result.score(),
+                            result.maxScore(),
+                            whoSaidIt.createdAt(gameId),
+                            RankingDivision.STANDARD);
                 }
             };
         } catch (LoreChallengeException exception) {
@@ -73,6 +92,31 @@ public class RegistryFinishedGameLookup implements FinishedGameLookup {
         } catch (WhoSaidItMatchException exception) {
             throw translate(exception.reason() == WhoSaidItMatchException.Reason.MATCH_NOT_FINISHED);
         }
+    }
+
+    // Explicit mappings: each game has its own difficulty enum, and none is converted by name.
+    private static RankingDivision divisionOf(LoreChallengeDifficulty difficulty) {
+        return switch (difficulty) {
+            case EASY -> RankingDivision.EASY;
+            case MEDIUM -> RankingDivision.MEDIUM;
+            case HARD -> RankingDivision.HARD;
+        };
+    }
+
+    private static RankingDivision divisionOf(WhoAmIDifficulty difficulty) {
+        return switch (difficulty) {
+            case EASY -> RankingDivision.EASY;
+            case MEDIUM -> RankingDivision.MEDIUM;
+            case HARD -> RankingDivision.HARD;
+        };
+    }
+
+    private static RankingDivision divisionOf(WhereInMiddleEarthDifficulty difficulty) {
+        return switch (difficulty) {
+            case EASY -> RankingDivision.EASY;
+            case MEDIUM -> RankingDivision.MEDIUM;
+            case HARD -> RankingDivision.HARD;
+        };
     }
 
     private static RankingException translate(boolean notFinished) {

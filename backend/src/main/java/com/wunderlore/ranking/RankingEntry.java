@@ -51,10 +51,22 @@ public class RankingEntry {
     @Column(name = "played_at", nullable = false, updatable = false)
     private Instant playedAt;
 
+    // Null only in rows published before V2, whose division could not be recovered. Every new
+    // entry has one (the constructor requires it); the column itself stays nullable.
+    @Enumerated(EnumType.STRING)
+    @Column(name = "division", length = 16, updatable = false)
+    private RankingDivision division;
+
     protected RankingEntry() {
     }
 
+    // Throws IllegalArgumentException when the game's division does not exist in that game
+    // (RankingDivision decides): such an entry is never created, so it is never saved.
     public RankingEntry(GameType gameType, String gameId, String nickname, FinishedGame game) {
+        if (!game.division().isValidFor(gameType)) {
+            throw new IllegalArgumentException("Division " + game.division() + " does not exist in " + gameType);
+        }
+
         this.gameType = gameType;
         this.gameId = gameId;
         this.nickname = nickname;
@@ -62,6 +74,7 @@ public class RankingEntry {
         this.maxScore = game.maxScore();
         this.percentage = percentageOf(game.score(), game.maxScore());
         this.playedAt = game.playedAt();
+        this.division = game.division();
     }
 
     // (score / maxScore) * 100 with the precision the table keeps.
@@ -101,5 +114,9 @@ public class RankingEntry {
 
     public Instant getPlayedAt() {
         return playedAt;
+    }
+
+    public RankingDivision getDivision() {
+        return division;
     }
 }

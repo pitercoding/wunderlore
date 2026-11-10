@@ -52,7 +52,7 @@ class RankingControllerTest {
     private RankingService service;
 
     private static RankingEntry entry(String nickname) {
-        return new RankingEntry(GameType.WHO_SAID_IT, "game-1", nickname, new FinishedGame(70, 100, PLAYED_AT));
+        return new RankingEntry(GameType.WHO_SAID_IT, "game-1", nickname, new FinishedGame(70, 100, PLAYED_AT, RankingDivision.STANDARD));
     }
 
     private void publish(String body) throws Exception {

@@ -49,7 +49,7 @@ class RankingServiceTest {
     @Test
     void shouldPublishWithTheScoreTheServerKeptForEachOfTheFourGames() {
         for (GameType type : GameType.values()) {
-            when(lookup.find(type, "game-1")).thenReturn(new FinishedGame(70, 100, PLAYED_AT));
+            when(lookup.find(type, "game-1")).thenReturn(new FinishedGame(70, 100, PLAYED_AT, RankingDivision.of(type).get(0)));
 
             RankingService.Published published = service.publish(type.slug(), "game-1", "Frodo");
 
@@ -59,13 +59,41 @@ class RankingServiceTest {
             assertThat(published.entry().getMaxScore()).isEqualTo(100);
             assertThat(published.entry().getPercentage()).isEqualByComparingTo("70");
             assertThat(published.entry().getPlayedAt()).isEqualTo(PLAYED_AT);
+            assertThat(published.entry().getDivision()).isEqualTo(RankingDivision.of(type).get(0));
         }
     }
 
     @Test
+    void shouldStoreTheDivisionTheGameReports() {
+        when(lookup.find(GameType.LORE_CHALLENGE, "g"))
+                .thenReturn(new FinishedGame(10, 30, PLAYED_AT, RankingDivision.HARD));
+        when(lookup.find(GameType.WHO_SAID_IT, "g"))
+                .thenReturn(new FinishedGame(50, 100, PLAYED_AT, RankingDivision.STANDARD));
+
+        assertThat(service.publish("lore-challenge", "g", "Frodo").entry().getDivision())
+                .isEqualTo(RankingDivision.HARD);
+        assertThat(service.publish("who-said-it", "g", "Frodo").entry().getDivision())
+                .isEqualTo(RankingDivision.STANDARD);
+    }
+
+    @Test
+    void shouldNotSaveAnEntryWhoseDivisionDoesNotExistInTheGame() {
+        when(lookup.find(GameType.WHO_SAID_IT, "g"))
+                .thenReturn(new FinishedGame(50, 100, PLAYED_AT, RankingDivision.HARD));
+        when(lookup.find(GameType.LORE_CHALLENGE, "g"))
+                .thenReturn(new FinishedGame(50, 100, PLAYED_AT, RankingDivision.STANDARD));
+
+        assertThatThrownBy(() -> service.publish("who-said-it", "g", "Frodo"))
+                .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> service.publish("lore-challenge", "g", "Frodo"))
+                .isInstanceOf(IllegalArgumentException.class);
+        verify(repository, never()).saveAndFlush(any());
+    }
+
+    @Test
     void shouldComputeThePercentageFromScoreAndMaximumWithFullPrecision() {
-        when(lookup.find(GameType.LORE_CHALLENGE, "g")).thenReturn(new FinishedGame(10, 30, PLAYED_AT));
-        when(lookup.find(GameType.WHERE_IN_MIDDLE_EARTH, "g")).thenReturn(new FinishedGame(2, 3, PLAYED_AT));
+        when(lookup.find(GameType.LORE_CHALLENGE, "g")).thenReturn(new FinishedGame(10, 30, PLAYED_AT, RankingDivision.EASY));
+        when(lookup.find(GameType.WHERE_IN_MIDDLE_EARTH, "g")).thenReturn(new FinishedGame(2, 3, PLAYED_AT, RankingDivision.MEDIUM));
 
         assertThat(service.publish("lore-challenge", "g", "Frodo").entry().getPercentage())
                 .isEqualByComparingTo(new BigDecimal("33.333333"));
@@ -83,7 +111,7 @@ class RankingServiceTest {
 
     @Test
     void shouldStoreTheNormalizedNickname() {
-        when(lookup.find(GameType.WHO_SAID_IT, "g")).thenReturn(new FinishedGame(100, 100, PLAYED_AT));
+        when(lookup.find(GameType.WHO_SAID_IT, "g")).thenReturn(new FinishedGame(100, 100, PLAYED_AT, RankingDivision.STANDARD));
 
         assertThat(service.publish("who-said-it", "g", "  Frodo   Baggins ").entry().getNickname())
                 .isEqualTo("Frodo Baggins");
@@ -129,10 +157,10 @@ class RankingServiceTest {
 
     @Test
     void shouldReturnTheExistingEntryWhenTheGameIsAlreadyPublished() {
-        when(lookup.find(GameType.WHO_SAID_IT, "g")).thenReturn(new FinishedGame(50, 100, PLAYED_AT));
+        when(lookup.find(GameType.WHO_SAID_IT, "g")).thenReturn(new FinishedGame(50, 100, PLAYED_AT, RankingDivision.STANDARD));
 
         RankingEntry existing = new RankingEntry(
-                GameType.WHO_SAID_IT, "g", "First Name", new FinishedGame(50, 100, PLAYED_AT));
+                GameType.WHO_SAID_IT, "g", "First Name", new FinishedGame(50, 100, PLAYED_AT, RankingDivision.STANDARD));
         when(repository.findByGameTypeAndGameId(GameType.WHO_SAID_IT, "g")).thenReturn(Optional.of(existing));
 
         RankingService.Published published = service.publish("who-said-it", "g", "Other Name");
@@ -144,10 +172,10 @@ class RankingServiceTest {
 
     @Test
     void shouldTreatALostRaceAsAlreadyPublished() {
-        when(lookup.find(GameType.WHO_SAID_IT, "g")).thenReturn(new FinishedGame(50, 100, PLAYED_AT));
+        when(lookup.find(GameType.WHO_SAID_IT, "g")).thenReturn(new FinishedGame(50, 100, PLAYED_AT, RankingDivision.STANDARD));
 
         RankingEntry winner = new RankingEntry(
-                GameType.WHO_SAID_IT, "g", "Winner", new FinishedGame(50, 100, PLAYED_AT));
+                GameType.WHO_SAID_IT, "g", "Winner", new FinishedGame(50, 100, PLAYED_AT, RankingDivision.STANDARD));
         when(repository.findByGameTypeAndGameId(GameType.WHO_SAID_IT, "g"))
                 .thenReturn(Optional.empty())
                 .thenReturn(Optional.of(winner));
@@ -162,7 +190,7 @@ class RankingServiceTest {
 
     @Test
     void shouldReportUnavailableWhenAnIntegrityErrorLeavesNoEntryBehind() {
-        when(lookup.find(GameType.WHO_SAID_IT, "g")).thenReturn(new FinishedGame(50, 100, PLAYED_AT));
+        when(lookup.find(GameType.WHO_SAID_IT, "g")).thenReturn(new FinishedGame(50, 100, PLAYED_AT, RankingDivision.STANDARD));
         when(repository.findByGameTypeAndGameId(GameType.WHO_SAID_IT, "g")).thenReturn(Optional.empty());
         when(repository.saveAndFlush(any(RankingEntry.class)))
                 .thenThrow(new DataIntegrityViolationException("not a duplicate"));
@@ -173,7 +201,7 @@ class RankingServiceTest {
 
     @Test
     void shouldReportUnavailableWhenTheDatabaseFailsAndNeverClaimPublication() {
-        when(lookup.find(GameType.WHO_SAID_IT, "g")).thenReturn(new FinishedGame(50, 100, PLAYED_AT));
+        when(lookup.find(GameType.WHO_SAID_IT, "g")).thenReturn(new FinishedGame(50, 100, PLAYED_AT, RankingDivision.STANDARD));
         when(repository.saveAndFlush(any(RankingEntry.class)))
                 .thenThrow(new CannotCreateTransactionException("connection refused"));
 
@@ -191,7 +219,7 @@ class RankingServiceTest {
 
     @Test
     void shouldReportUnavailableWhenReadFailsWhileCheckingForAnExistingEntry() {
-        when(lookup.find(GameType.WHO_SAID_IT, "g")).thenReturn(new FinishedGame(50, 100, PLAYED_AT));
+        when(lookup.find(GameType.WHO_SAID_IT, "g")).thenReturn(new FinishedGame(50, 100, PLAYED_AT, RankingDivision.STANDARD));
         when(repository.findByGameTypeAndGameId(eq(GameType.WHO_SAID_IT), eq("g")))
                 .thenThrow(new QueryTimeoutException("slow"));
 
