@@ -13,6 +13,7 @@ import {
     divisionLabel,
     divisionsOf,
     gameLabel,
+    isDivisionOf,
     OVERVIEW_HREF,
     RANKING_GAMES,
     rankingHref,
@@ -20,6 +21,7 @@ import {
     type RankingGame,
 } from "@/lib/ranking/games";
 import { resolveSelection, type LeaderboardSelection } from "@/lib/ranking/selection";
+import GameFilterList from "./GameFilterList";
 import LocalDate from "./LocalDate";
 import styles from "./page.module.css";
 
@@ -41,13 +43,23 @@ function selectionHref(selection: LeaderboardSelection): string {
     return selection.kind === "division" ? rankingHref(selection.game, selection.division) : OVERVIEW_HREF;
 }
 
-// The way back to the overview, and one link per game (to its first division).
+// The division a game link leads to: the current one when the target game has it, otherwise the
+// target's first. From the overview there is no current division, so it is the first too.
+function divisionForGame(game: RankingGame, selection: LeaderboardSelection): RankingDivision {
+    return selection.kind === "division" && isDivisionOf(game, selection.division)
+        ? selection.division
+        : defaultDivisionOf(game);
+}
+
+// Step one: the way back to the overview, and one link per game. These are links, not tabs: each
+// one is a page. The row scrolls sideways by itself when the width runs out (the links are all
+// focusable, so keyboard focus brings any of them into view).
 function GameFilters({ selection }: { selection: LeaderboardSelection }) {
     const active = activeGame(selection);
 
     return (
-        <nav aria-label="Choose a game" className={styles.filters}>
-            <ul className={styles.filterList}>
+        <nav aria-label="Choose a game" className={styles.games}>
+            <GameFilterList className={styles.gameList} activeKey={active ?? "overview"}>
                 <li>
                     <Link
                         href={OVERVIEW_HREF}
@@ -60,7 +72,7 @@ function GameFilters({ selection }: { selection: LeaderboardSelection }) {
                 {RANKING_GAMES.map((game) => (
                     <li key={game.slug}>
                         <Link
-                            href={rankingHref(game.slug, defaultDivisionOf(game.slug))}
+                            href={rankingHref(game.slug, divisionForGame(game.slug, selection))}
                             className={styles.filter}
                             aria-current={active === game.slug ? "page" : undefined}
                         >
@@ -68,12 +80,13 @@ function GameFilters({ selection }: { selection: LeaderboardSelection }) {
                         </Link>
                     </li>
                 ))}
-            </ul>
+            </GameFilterList>
         </nav>
     );
 }
 
-// Only for a game with levels: Who Said It? has the single standard division and no choice.
+// Step two, only for a game with levels: Who Said It? has the single standard division and no
+// choice. Smaller and quieter than the games, since it belongs to the selected one.
 function DivisionFilters({ game, active }: { game: RankingGame; active: RankingDivision }) {
     const divisions = divisionsOf(game);
 
@@ -82,13 +95,13 @@ function DivisionFilters({ game, active }: { game: RankingGame; active: RankingD
     }
 
     return (
-        <nav aria-label={`Choose a ${gameLabel(game)} division`} className={styles.filters}>
-            <ul className={styles.filterList}>
+        <nav aria-label={`Choose a ${gameLabel(game)} division`} className={styles.divisionNav}>
+            <ul className={styles.divisionList}>
                 {divisions.map((division) => (
                     <li key={division}>
                         <Link
                             href={rankingHref(game, division)}
-                            className={styles.filter}
+                            className={styles.divisionFilter}
                             aria-current={active === division ? "page" : undefined}
                         >
                             {divisionLabel(division)}
@@ -102,12 +115,12 @@ function DivisionFilters({ game, active }: { game: RankingGame; active: RankingD
 
 function Filters({ selection }: { selection: LeaderboardSelection }) {
     return (
-        <>
+        <div className={styles.filters}>
             <GameFilters selection={selection} />
             {selection.kind === "division" && (
                 <DivisionFilters game={selection.game} active={selection.division} />
             )}
-        </>
+        </div>
     );
 }
 

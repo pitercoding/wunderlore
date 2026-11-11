@@ -1,18 +1,29 @@
 /* The scene (palette tokens, banner, title) comes from QuotesFrame. */
 
+/* Step one: the games, one row. When the width runs out the row scrolls sideways inside its own
+   box (never the page), with a thin, quiet scrollbar. */
 .filters {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-2);
     margin-bottom: var(--space-5);
 }
 
-/* The filters wrap onto as many rows as the width needs, so every one is in view at once and no
-   scrollbar appears; on a phone the chips are a little tighter to keep the rows few. */
-.filterList {
+.gameList {
     display: flex;
-    flex-wrap: wrap;
     gap: var(--space-2);
     margin: 0;
-    padding: 0;
+    padding: 0 0 var(--space-1);
     list-style: none;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-padding-inline: var(--space-2);
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-border-strong) transparent;
+}
+
+.gameList > li {
+    flex: none;
 }
 
 .filter {
@@ -29,7 +40,8 @@
     text-decoration: none;
 }
 
-.filter:hover {
+.filter:hover,
+.divisionFilter:hover {
     background: var(--color-overlay-hover);
 }
 
@@ -39,7 +51,43 @@
     color: var(--color-accent-text);
 }
 
+/* Step two: the divisions of the chosen game, a smaller segmented control that sits under it. */
+.divisionNav {
+    min-width: 0;
+}
+
+.divisionList {
+    display: flex;
+    width: fit-content;
+    max-width: 100%;
+    margin: 0;
+    padding: 2px;
+    gap: 2px;
+    list-style: none;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-full);
+    background: color-mix(in srgb, var(--color-surface) 45%, transparent);
+}
+
+.divisionFilter {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.25rem;
+    padding: 0 var(--space-4);
+    border-radius: var(--radius-full);
+    color: var(--color-foreground-muted);
+    font-size: var(--text-sm);
+    text-decoration: none;
+}
+
+.divisionFilter[aria-current="page"] {
+    background: color-mix(in srgb, var(--color-accent-text) 18%, var(--color-surface));
+    color: var(--color-accent-text);
+    box-shadow: inset 0 0 0 1px var(--color-accent-text);
+}
+
 .filter:focus-visible,
+.divisionFilter:focus-visible,
 .retry:focus-visible {
     outline: 2px solid var(--color-focus-ring);
     outline-offset: 2px;
@@ -232,16 +280,7 @@
     color: color-mix(in srgb, var(--color-accent-text) 75%, var(--color-foreground-muted));
 }
 
-/* From 48em the filters fit on one row again, so they wrap instead of scrolling. */
 @media (min-width: 48em) {
-    .filterList {
-        flex-wrap: wrap;
-        margin: 0;
-        padding: 0;
-        overflow-x: visible;
-        scroll-snap-type: none;
-    }
-
     .table thead {
         position: static;
         width: auto;
@@ -346,6 +385,10 @@
 
 @media (max-width: 35.99em) {
     .filter {
+        padding-inline: var(--space-3);
+    }
+
+    .divisionFilter {
         padding-inline: var(--space-3);
     }
 }

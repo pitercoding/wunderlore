@@ -605,6 +605,91 @@ describe("the ranking of one division", () => {
     });
 });
 
+describe("the filters", () => {
+    const GAMES = ["Lore Challenge", "Who Am I?", "Where in Middle-earth", "Who Said It?"];
+
+    function gameHref(name: string): string | null {
+        return within(screen.getByRole("navigation", { name: "Choose a game" }))
+            .getByRole("link", { name })
+            .getAttribute("href");
+    }
+
+    it("lists the four games and marks only the selected one as current", async () => {
+        fetchMock.mockResolvedValue({ game: "who-am-i", division: "hard", entries: [] });
+
+        await renderPage({ game: "who-am-i", division: "hard" });
+
+        const nav = screen.getByRole("navigation", { name: "Choose a game" });
+
+        for (const name of GAMES) {
+            expect(within(nav).getByRole("link", { name })).toBeInTheDocument();
+        }
+        expect(within(nav).getAllByRole("link").filter((l) => l.getAttribute("aria-current") === "page")).toHaveLength(1);
+        expect(within(nav).getByRole("link", { name: "Who Am I?" })).toHaveAttribute("aria-current", "page");
+        expect(within(nav).getByRole("link", { name: "Who Am I?" }).className).toMatch(/filter/);
+        expect(nav.closest("[role=tablist]")).toBeNull();
+        expect(nav.querySelector("[role=tab]")).toBeNull();
+    });
+
+    it("keeps a valid division when switching game", async () => {
+        fetchMock.mockResolvedValue({ game: "lore-challenge", division: "hard", entries: [] });
+
+        await renderPage({ game: "lore-challenge", division: "hard" });
+
+        expect(gameHref("Who Am I?")).toBe("/leaderboard?game=who-am-i&division=hard");
+        expect(gameHref("Where in Middle-earth")).toBe("/leaderboard?game=where-in-middle-earth&division=hard");
+    });
+
+    it("selects the first valid division when the current one does not exist in the target", async () => {
+        fetchMock.mockResolvedValue({ game: "lore-challenge", division: "hard", entries: [] });
+
+        await renderPage({ game: "lore-challenge", division: "hard" });
+
+        expect(gameHref("Who Said It?")).toBe("/leaderboard?game=who-said-it&division=standard");
+    });
+
+    it("goes back to the first difficulty when leaving Who Said It?", async () => {
+        fetchMock.mockResolvedValue({ game: "who-said-it", division: "standard", entries: [] });
+
+        await renderPage({ game: "who-said-it", division: "standard" });
+
+        expect(gameHref("Lore Challenge")).toBe("/leaderboard?game=lore-challenge&division=easy");
+        expect(gameHref("Who Said It?")).toBe("/leaderboard?game=who-said-it&division=standard");
+    });
+
+    it("keeps the division when the selected game is clicked again", async () => {
+        fetchMock.mockResolvedValue({ game: "lore-challenge", division: "medium", entries: [] });
+
+        await renderPage({ game: "lore-challenge", division: "medium" });
+
+        expect(gameHref("Lore Challenge")).toBe("/leaderboard?game=lore-challenge&division=medium");
+    });
+
+    it("starts from the first division when coming from the overview", async () => {
+        overviewMock.mockResolvedValue({ groups: groups() });
+
+        await renderPage();
+
+        expect(gameHref("Who Am I?")).toBe("/leaderboard?game=who-am-i&division=easy");
+        expect(screen.getByRole("link", { name: "Overview" })).toHaveAttribute("href", "/leaderboard");
+    });
+
+    it("marks the current division and links each one to the same game", async () => {
+        fetchMock.mockResolvedValue({ game: "lore-challenge", division: "medium", entries: [] });
+
+        await renderPage({ game: "lore-challenge", division: "medium" });
+
+        const nav = screen.getByRole("navigation", { name: "Choose a Lore Challenge division" });
+
+        expect(within(nav).getByRole("link", { name: "Medium" })).toHaveAttribute("aria-current", "page");
+        expect(within(nav).getAllByRole("link").map((l) => l.getAttribute("href"))).toEqual([
+            "/leaderboard?game=lore-challenge&division=easy",
+            "/leaderboard?game=lore-challenge&division=medium",
+            "/leaderboard?game=lore-challenge&division=hard",
+        ]);
+    });
+});
+
 describe("the page", () => {
     it("has its own metadata and canonical", () => {
         expect(metadata.title).toBe("Leaderboard");
