@@ -124,12 +124,21 @@
 
 /* On wide screens the whole map at 1x is capped by the height of the screen, so a laptop does not
    have to scroll past a map taller than its window. It keeps its proportions, never less than a
-   readable width, and is centred. Zoomed in, it is the full width again. */
+   readable width, and is centred. Zoomed in, it is the full width again. The 34rem is what sits
+   around the map during a round (the navigation, the title, the prompt, the zoom controls and the
+   Confirm row), so on a tall window the map and Confirm fit together; on a short one the map stops
+   at 42rem wide and Confirm is a short scroll away. */
 @media (min-width: 36em) {
     .viewport:has(.canvas[data-zoom="1"]) {
-        width: clamp(min(100%, 36rem), calc((100svh - 14rem) * 10 / 7), 100%);
+        width: clamp(min(100%, 42rem), calc((100svh - 34rem) * 10 / 7), 100%);
         margin-inline: auto;
     }
+}
+
+/* Zoomed in, the map scrolls inside its window, both ways, instead of making the page as tall as
+   the enlarged map. */
+.viewport:not(:has(.canvas[data-zoom="1"])) {
+    max-height: max(22rem, calc(100svh - 16rem));
 }
 
 .viewport:focus-visible {

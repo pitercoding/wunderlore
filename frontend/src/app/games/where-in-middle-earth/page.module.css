@@ -12,11 +12,30 @@
     box-shadow: 0 1.5rem 3rem -1.5rem color-mix(in srgb, var(--scene-abyss) 90%, transparent);
 }
 
-/* The map runs to the screen's edges on narrow screens: the gutter, the border and the padding. */
+/* On narrow screens the map runs the full width of its card, border to border, and stops there:
+   it is the card's padding that it gives up, not the screen's margin. */
 @media (max-width: 35.99em) {
     .stage {
-        --map-bleed: calc(var(--space-4) + var(--gutter) + 1px);
+        --map-bleed: var(--space-4);
     }
+}
+
+/* A round in progress: the prompt and the map sit closer together, so less of the screen goes to
+   spacing before the map. */
+.stage.playStage {
+    padding-block: var(--space-4);
+}
+
+.playStage .tags {
+    margin-top: var(--space-3);
+}
+
+.playStage .prompt {
+    margin-block: var(--space-3);
+}
+
+.playStage .mapWrap {
+    margin-bottom: var(--space-3);
 }
 
 .srOnly {

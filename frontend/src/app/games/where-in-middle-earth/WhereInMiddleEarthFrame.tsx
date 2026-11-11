@@ -8,6 +8,8 @@ interface WhereInMiddleEarthFrameProps {
     description?: string;
     // The small line above the title.
     badge?: string;
+    // A shorter hero for a round in progress, so the map comes into view sooner.
+    compact?: boolean;
     children?: ReactNode;
 }
 
@@ -18,6 +20,7 @@ export default function WhereInMiddleEarthFrame({
     title,
     description,
     badge = "Click the map. Find the place.",
+    compact = false,
     children,
 }: WhereInMiddleEarthFrameProps) {
     return (
@@ -32,7 +35,7 @@ export default function WhereInMiddleEarthFrame({
             <SceneNav />
 
             <main className={styles.main}>
-                <header className={styles.hero}>
+                <header className={compact ? `${styles.hero} ${styles.heroCompact}` : styles.hero}>
                     <p className={styles.badge}>
                         <span className={styles.badgeDot} aria-hidden="true" />
                         {badge}

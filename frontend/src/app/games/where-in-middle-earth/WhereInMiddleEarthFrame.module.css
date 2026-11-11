@@ -201,6 +201,35 @@
     }
 }
 
+/* A round in progress: the title stays, the rest of the hero steps back, so the map and the
+   Confirm button come into view sooner. The description repeats what the prompt below says. */
+.hero.heroCompact {
+    padding-block: var(--space-4);
+}
+
+.heroCompact .title {
+    margin-top: 0;
+    font-size: clamp(1.75rem, 1.3rem + 2vw, 2.5rem);
+}
+
+.heroCompact .badge,
+.heroCompact .description {
+    display: none;
+}
+
+@media (min-width: 48em) {
+    .hero.heroCompact {
+        flex-direction: row;
+        align-items: center;
+        gap: var(--space-4);
+        padding-block: var(--space-5);
+    }
+
+    .heroCompact .badge {
+        display: inline-flex;
+    }
+}
+
 /* Decorative motion off: the glow holds still. */
 @media (prefers-reduced-motion: reduce) {
     .glow {

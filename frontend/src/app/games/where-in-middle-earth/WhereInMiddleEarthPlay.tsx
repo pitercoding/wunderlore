@@ -96,7 +96,10 @@ export default function WhereInMiddleEarthPlay({
     }
 
     return (
-        <section className={styles.stage} aria-busy={isSubmitting || isAdvancing}>
+        <section
+            className={`${styles.stage} ${styles.playStage}`}
+            aria-busy={isSubmitting || isAdvancing}
+        >
             <div className={styles.progressRow}>
                 <h2 className={styles.roundHeading}>
                     Round {round.roundNumber} of {round.totalRounds}

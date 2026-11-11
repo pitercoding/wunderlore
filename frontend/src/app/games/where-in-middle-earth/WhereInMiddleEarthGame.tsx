@@ -145,6 +145,7 @@ export default function WhereInMiddleEarthGame() {
                 title="Where in Middle-earth"
                 badge="Find the Place"
                 description="Read the name. Find it on the map."
+                compact
             >
                 <WhereInMiddleEarthPlay
                     key={`${round.gameId}-${round.roundNumber}`}
