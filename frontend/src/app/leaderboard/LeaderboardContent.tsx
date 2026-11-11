@@ -8,120 +8,28 @@ import {
     type LeaderboardOverviewResponse,
     type LeaderboardResponse,
 } from "@/lib/api/ranking";
+import { unavailableMessage } from "@/lib/api/unavailable";
 import {
-    defaultDivisionOf,
     divisionLabel,
     divisionsOf,
     gameLabel,
-    isDivisionOf,
-    OVERVIEW_HREF,
     RANKING_GAMES,
     rankingHref,
     type RankingDivision,
     type RankingGame,
 } from "@/lib/ranking/games";
-import { resolveSelection, type LeaderboardSelection } from "@/lib/ranking/selection";
-import GameFilterList from "./GameFilterList";
+import type { LeaderboardSelection } from "@/lib/ranking/selection";
+import RetryButton from "../RetryButton";
+import LeaderboardFilters from "./LeaderboardFilters";
 import LocalDate from "./LocalDate";
 import styles from "./page.module.css";
 
-const DESCRIPTION =
+// Also the description of the loading state (see page.tsx), so the title area does not change size.
+export const DESCRIPTION =
     "Each division competes only with itself. There is no overall ranking. Equal percentages share a position; the earlier game comes first.";
 
 interface LeaderboardContentProps {
-    searchParams: Promise<{
-        game?: string | string[];
-        division?: string | string[];
-    }>;
-}
-
-function activeGame(selection: LeaderboardSelection): RankingGame | undefined {
-    return selection.kind === "division" ? selection.game : undefined;
-}
-
-function selectionHref(selection: LeaderboardSelection): string {
-    return selection.kind === "division" ? rankingHref(selection.game, selection.division) : OVERVIEW_HREF;
-}
-
-// The division a game link leads to: the current one when the target game has it, otherwise the
-// target's first. From the overview there is no current division, so it is the first too.
-function divisionForGame(game: RankingGame, selection: LeaderboardSelection): RankingDivision {
-    return selection.kind === "division" && isDivisionOf(game, selection.division)
-        ? selection.division
-        : defaultDivisionOf(game);
-}
-
-// Step one: the way back to the overview, and one link per game. These are links, not tabs: each
-// one is a page. The row scrolls sideways by itself when the width runs out (the links are all
-// focusable, so keyboard focus brings any of them into view).
-function GameFilters({ selection }: { selection: LeaderboardSelection }) {
-    const active = activeGame(selection);
-
-    return (
-        <nav aria-label="Choose a game" className={styles.games}>
-            <GameFilterList className={styles.gameList} activeKey={active ?? "overview"}>
-                <li>
-                    <Link
-                        href={OVERVIEW_HREF}
-                        className={styles.filter}
-                        aria-current={active ? undefined : "page"}
-                    >
-                        Overview
-                    </Link>
-                </li>
-                {RANKING_GAMES.map((game) => (
-                    <li key={game.slug}>
-                        <Link
-                            href={rankingHref(game.slug, divisionForGame(game.slug, selection))}
-                            className={styles.filter}
-                            aria-current={active === game.slug ? "page" : undefined}
-                        >
-                            {game.label}
-                        </Link>
-                    </li>
-                ))}
-            </GameFilterList>
-        </nav>
-    );
-}
-
-// Step two, only for a game with levels: Who Said It? has the single standard division and no
-// choice. Smaller and quieter than the games, since it belongs to the selected one.
-function DivisionFilters({ game, active }: { game: RankingGame; active: RankingDivision }) {
-    const divisions = divisionsOf(game);
-
-    if (divisions.length < 2) {
-        return null;
-    }
-
-    return (
-        <nav aria-label={`Choose a ${gameLabel(game)} division`} className={styles.divisionNav}>
-            <ul className={styles.divisionList}>
-                {divisions.map((division) => (
-                    <li key={division}>
-                        <Link
-                            href={rankingHref(game, division)}
-                            className={styles.divisionFilter}
-                            aria-current={active === division ? "page" : undefined}
-                        >
-                            {divisionLabel(division)}
-                        </Link>
-                    </li>
-                ))}
-            </ul>
-        </nav>
-    );
-}
-
-function Filters({ selection }: { selection: LeaderboardSelection }) {
-    return (
-        <div className={styles.filters}>
-            <GameFilters selection={selection} />
-            {selection.kind === "division" && (
-                <DivisionFilters game={selection.game} active={selection.division} />
-            )}
-        </div>
-    );
+    selection: LeaderboardSelection;
 }
 
 // What the division is, so a player sees why a result competes where it does.
@@ -279,10 +187,17 @@ function Results({ leaderboard }: { leaderboard: LeaderboardResponse }) {
             <p className={styles.scope}>{scopeNote(game, division)}</p>
 
             {entries.length === 0 ? (
-                <p className={styles.empty}>
-                    No {title} results have been published yet. Finish a game and publish your
-                    result to be the first.
-                </p>
+                <div className={styles.empty}>
+                    <p className={styles.emptyTitle}>
+                        No {title} results have been published yet.
+                    </p>
+                    <p className={styles.emptyText}>
+                        Finish a game and publish your result to be the first.
+                    </p>
+                    <Link href={`/games/${game}`} className={styles.cta}>
+                        Play {gameLabel(game)}
+                    </Link>
+                </div>
             ) : (
                 // Roles are spelled out because the stacked layout on small screens changes the
                 // display of the cells, which some browsers treat as dropping the table semantics.
@@ -330,12 +245,9 @@ function Results({ leaderboard }: { leaderboard: LeaderboardResponse }) {
     );
 }
 
-// The overview by default (?game= absent or unknown), or the full ranking of one division
-// (?game=...&division=...). The URL is reduced to a pair the backend accepts before anything is
-// requested. Positions and percentages come from the backend as they are.
-export default async function LeaderboardContent({ searchParams }: LeaderboardContentProps) {
-    const selection = resolveSelection(await searchParams);
-
+// The overview, or the full ranking of one division. The selection (see resolveSelection) is a pair
+// the backend accepts. Positions and percentages come from the backend as they are.
+export default async function LeaderboardContent({ selection }: LeaderboardContentProps) {
     // Only the data requests are inside the try: the JSX is built after it.
     let overview: LeaderboardOverviewResponse | undefined;
     let ranking: LeaderboardResponse | undefined;
@@ -349,14 +261,28 @@ export default async function LeaderboardContent({ searchParams }: LeaderboardCo
     } catch (error: unknown) {
         console.error("Failed to load the leaderboard", error);
 
+        // Only a temporary outage (503, timeout, network) is told apart; anything else, an invalid
+        // payload included, gets the generic message. Neither shows the backend's own text.
+        const unavailable = unavailableMessage(error) !== undefined;
+
         return (
             <QuotesFrame scene="dragon" title="Leaderboard" description={DESCRIPTION}>
-                <Filters selection={selection} />
-                <div role="alert" className={styles.error}>
-                    <p>The leaderboard couldn&apos;t be loaded right now. Please try again.</p>
-                    <Link href={selectionHref(selection)} className={styles.retry}>
-                        Try again
-                    </Link>
+                <LeaderboardFilters selection={selection} />
+                <div className={styles.error}>
+                    <div role="alert">
+                        <p className={styles.errorTitle}>
+                            {unavailable
+                                ? "The leaderboard is taking a while to answer."
+                                : "The leaderboard couldn't be loaded right now."}
+                        </p>
+                        <p>
+                            {unavailable
+                                ? "The service may be waking up after a quiet period, which can take a little while. Please try again in a moment."
+                                : "The results could not be fetched, so none are shown. Please try again in a moment."}
+                        </p>
+                    </div>
+                    {/* refresh keeps the URL, so the game and the division are kept. */}
+                    <RetryButton />
                 </div>
             </QuotesFrame>
         );
@@ -364,7 +290,7 @@ export default async function LeaderboardContent({ searchParams }: LeaderboardCo
 
     return (
         <QuotesFrame scene="dragon" title="Leaderboard" description={DESCRIPTION}>
-            <Filters selection={selection} />
+            <LeaderboardFilters selection={selection} />
             {overview && <Overview groups={overview.groups} />}
             {ranking && <Results leaderboard={ranking} />}
         </QuotesFrame>

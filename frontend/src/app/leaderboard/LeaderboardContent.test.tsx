@@ -1,5 +1,8 @@
+import { Suspense } from "react";
 import { render, screen, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { ApiError, ApiTimeoutError } from "@/lib/api/client";
 import {
     fetchLeaderboard,
     fetchLeaderboardOverview,
@@ -8,7 +11,16 @@ import {
 } from "@/lib/api/ranking";
 import type { RankingDivision, RankingGame } from "@/lib/ranking/games";
 import LeaderboardContent from "./LeaderboardContent";
+import { resolveSelection } from "@/lib/ranking/selection";
+import LeaderboardLoading from "./LeaderboardLoading";
 import page, { metadata } from "./page";
+
+const refresh = vi.fn();
+
+vi.mock("next/navigation", () => ({
+    useRouter: () => ({ refresh }),
+    usePathname: () => "/leaderboard",
+}));
 
 vi.mock("@/lib/api/ranking", () => ({
     fetchLeaderboard: vi.fn(),
@@ -56,8 +68,10 @@ function groups(filled: Partial<Record<string, LeaderboardEntry[]>> = {}): Leade
     }));
 }
 
-async function renderPage(params: { game?: string | string[]; division?: string | string[] } = {}) {
-    render(await LeaderboardContent({ searchParams: Promise.resolve(params) }));
+type Params = { game?: string | string[]; division?: string | string[] };
+
+async function renderPage(params: Params = {}) {
+    render(await LeaderboardContent({ selection: resolveSelection(params) }));
 }
 
 describe("the overview (no parameters)", () => {
@@ -261,7 +275,7 @@ describe("the overview (no parameters)", () => {
         await renderPage();
 
         expect(screen.getByRole("alert")).toHaveTextContent("couldn't be loaded");
-        expect(screen.getByRole("link", { name: "Try again" })).toHaveAttribute("href", "/leaderboard");
+        expect(screen.getByRole("button", { name: "Try again" })).toBeEnabled();
         expect(screen.getByRole("navigation", { name: "Choose a game" })).toBeInTheDocument();
     });
 
@@ -581,6 +595,32 @@ describe("the ranking of one division", () => {
         expect(screen.queryByRole("table")).not.toBeInTheDocument();
     });
 
+    it.each(PAIRS)("offers to play the right game from an empty %s / %s", async (game, division) => {
+        fetchMock.mockResolvedValue({ game, division, entries: [] });
+
+        await renderPage({ game, division });
+
+        const main = within(screen.getByRole("main"));
+
+        expect(main.getByRole("link", { name: /^Play / })).toHaveAttribute("href", `/games/${game}`);
+        // An empty ranking is not an error, and keeps the filters.
+        expect(main.queryByRole("alert")).not.toBeInTheDocument();
+        expect(main.queryByRole("button", { name: "Try again" })).not.toBeInTheDocument();
+        expect(main.getByRole("navigation", { name: "Choose a game" })).toBeInTheDocument();
+    });
+
+    it("does not offer to play when the division has results", async () => {
+        fetchMock.mockResolvedValue({
+            game: "who-am-i",
+            division: "hard",
+            entries: [entry({ gameType: "who-am-i", division: "hard" })],
+        });
+
+        await renderPage({ game: "who-am-i", division: "hard" });
+
+        expect(screen.queryByRole("link", { name: /^Play / })).not.toBeInTheDocument();
+    });
+
     it("shows an accessible error with a way to retry that keeps the division", async () => {
         vi.spyOn(console, "error").mockImplementation(() => {});
         fetchMock.mockRejectedValue(new Error("down"));
@@ -588,10 +628,7 @@ describe("the ranking of one division", () => {
         await renderPage({ game: "lore-challenge", division: "hard" });
 
         expect(screen.getByRole("alert")).toHaveTextContent("couldn't be loaded");
-        expect(screen.getByRole("link", { name: "Try again" })).toHaveAttribute(
-            "href",
-            "/leaderboard?game=lore-challenge&division=hard",
-        );
+        expect(screen.getByRole("button", { name: "Try again" })).toBeEnabled();
         expect(screen.getByRole("navigation", { name: "Choose a game" })).toBeInTheDocument();
         expect(screen.getByRole("navigation", { name: /division$/ })).toBeInTheDocument();
     });
@@ -602,6 +639,117 @@ describe("the ranking of one division", () => {
         await renderPage({ game: "lore-challenge", division: "easy" });
 
         expect(screen.getByRole("link", { name: "Overview" })).toHaveAttribute("href", "/leaderboard");
+    });
+});
+
+describe("the error states", () => {
+    const OUTAGES: ReadonlyArray<readonly [string, () => Error]> = [
+        ["a 503", () => new ApiError("Service Unavailable", 503)],
+        ["a timeout", () => new ApiTimeoutError(130_000)],
+        ["a network failure", () => new TypeError("fetch failed")],
+    ];
+
+    it.each(OUTAGES)("explains that the service may be waking up after %s", async (_name, make) => {
+        vi.spyOn(console, "error").mockImplementation(() => {});
+        overviewMock.mockRejectedValue(make());
+
+        await renderPage();
+
+        const alert = screen.getByRole("alert");
+
+        expect(alert).toHaveTextContent(/waking up/);
+        expect(alert).not.toHaveTextContent(/\d+ seconds|\d+ minutes/);
+        expect(screen.queryByText(/No results yet/)).not.toBeInTheDocument();
+    });
+
+    it("gives a generic message when the failure cannot be told apart, without internal details", async () => {
+        vi.spyOn(console, "error").mockImplementation(() => {});
+        fetchMock.mockRejectedValue(new Error("NullPointerException at com.wunderlore.Ranking"));
+
+        await renderPage({ game: "who-am-i", division: "easy" });
+
+        const alert = screen.getByRole("alert");
+
+        expect(alert).toHaveTextContent("couldn't be loaded");
+        expect(alert).not.toHaveTextContent(/waking up|NullPointer|wunderlore\.Ranking/);
+        expect(screen.queryByText(/have been published yet/)).not.toBeInTheDocument();
+    });
+
+    it.each([
+        [{}],
+        [{ game: "where-in-middle-earth", division: "medium" }],
+        [{ game: "who-said-it" }],
+    ])("retries by refreshing the route, which keeps %j", async (params) => {
+        vi.spyOn(console, "error").mockImplementation(() => {});
+        overviewMock.mockRejectedValue(new Error("down"));
+        fetchMock.mockRejectedValue(new Error("down"));
+        const user = userEvent.setup();
+
+        await renderPage(params);
+
+        expect(refresh).not.toHaveBeenCalled();
+
+        await user.click(screen.getByRole("button", { name: "Try again" }));
+
+        // refresh() re-renders the current URL: nothing rebuilds the selection.
+        expect(refresh).toHaveBeenCalledTimes(1);
+        expect(screen.queryByRole("link", { name: "Try again" })).not.toBeInTheDocument();
+    });
+
+    it("keeps the division filters in the error state of a ranking", async () => {
+        vi.spyOn(console, "error").mockImplementation(() => {});
+        fetchMock.mockRejectedValue(new Error("down"));
+
+        await renderPage({ game: "lore-challenge", division: "medium" });
+
+        const divisions = within(screen.getByRole("navigation", { name: /division$/ }));
+
+        expect(divisions.getByRole("link", { name: "Medium" })).toHaveAttribute("aria-current", "page");
+    });
+});
+
+describe("the loading state", () => {
+    function renderLoading(params: Params = {}) {
+        render(<LeaderboardLoading selection={resolveSelection(params)} />);
+    }
+
+    it("announces the overview loading with one status and hides the placeholders", () => {
+        renderLoading();
+
+        expect(screen.getByRole("status")).toHaveTextContent("Loading the leaderboard");
+        expect(screen.getAllByRole("status")).toHaveLength(1);
+        // The placeholders carry no text and no semantics of their own.
+        expect(screen.queryByRole("table")).not.toBeInTheDocument();
+        expect(screen.queryByRole("heading")).not.toBeInTheDocument();
+        expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    });
+
+    it("keeps the filters, with the overview current", () => {
+        renderLoading();
+
+        expect(screen.getByRole("link", { name: "Overview" })).toHaveAttribute("aria-current", "page");
+        expect(screen.getAllByRole("link")).toHaveLength(5);
+    });
+
+    it("names the game and the division of a specific ranking and keeps its filters", () => {
+        renderLoading({ game: "lore-challenge", division: "hard" });
+
+        expect(screen.getByRole("status")).toHaveTextContent("Loading the Lore Challenge · Hard ranking");
+        expect(screen.getByRole("link", { name: "Lore Challenge" })).toHaveAttribute("aria-current", "page");
+        expect(screen.getByRole("link", { name: "Hard" })).toHaveAttribute("aria-current", "page");
+    });
+
+    it("falls back to the first division like the content does", () => {
+        renderLoading({ game: "who-said-it" });
+
+        expect(screen.getByRole("status")).toHaveTextContent("Loading the Who Said It? · Standard ranking");
+    });
+
+    it("explains the cold start without calling it an error", () => {
+        renderLoading();
+
+        expect(screen.getByText(/waking them can take a minute or two/)).toBeInTheDocument();
+        expect(screen.queryByRole("alert")).not.toBeInTheDocument();
     });
 });
 
@@ -699,8 +847,140 @@ describe("the page", () => {
         expect(metadata.alternates?.canonical).toBe("/leaderboard");
     });
 
-    it("renders a loading state in a Suspense fallback", () => {
-        // The default export wraps the content in Suspense with a status fallback.
-        expect(typeof page).toBe("function");
+    // What the server sends first for a URL: the route resolves the selection and its Suspense
+    // fallback is the loading state of that very selection.
+    async function initialFallback(params: Params) {
+        const shell = page({ searchParams: Promise.resolve(params) });
+        const route = shell.props.children;
+        const inner = await route.type(route.props);
+
+        expect(inner.type).toBe(Suspense);
+
+        return inner;
+    }
+
+    function filtersState() {
+        const links = within(screen.getByRole("navigation", { name: "Choose a game" })).getAllByRole("link");
+        const divisions = screen.queryByRole("navigation", { name: /division$/ });
+
+        return {
+            games: links.map((link) => [link.textContent, link.getAttribute("href"), link.getAttribute("aria-current")]),
+            divisions: divisions
+                ? within(divisions)
+                      .getAllByRole("link")
+                      .map((link) => [link.textContent, link.getAttribute("href"), link.getAttribute("aria-current")])
+                : null,
+        };
+    }
+
+    it("shows the overview skeleton, in the frame, for the route without parameters", async () => {
+        const inner = await initialFallback({});
+
+        render(inner.props.fallback);
+
+        expect(screen.getByRole("heading", { level: 1, name: "Leaderboard" })).toBeInTheDocument();
+        expect(screen.getByRole("status")).toHaveTextContent("Loading the leaderboard");
+        expect(screen.getByRole("link", { name: "Overview" })).toHaveAttribute("aria-current", "page");
+        expect(screen.queryByRole("navigation", { name: /division$/ })).not.toBeInTheDocument();
+    });
+
+    it("shows the skeleton of the requested game and division from the first response", async () => {
+        const inner = await initialFallback({ game: "lore-challenge", division: "hard" });
+
+        render(inner.props.fallback);
+
+        expect(screen.getByRole("status")).toHaveTextContent("Loading the Lore Challenge · Hard ranking");
+        expect(within(screen.getByRole("navigation", { name: "Choose a game" })).getByRole("link", { name: "Lore Challenge" })).toHaveAttribute("aria-current", "page");
+        expect(screen.getByRole("link", { name: "Hard" })).toHaveAttribute("aria-current", "page");
+        expect(within(screen.getByRole("navigation", { name: "Choose a game" })).getByRole("link", { name: "Overview" })).not.toHaveAttribute("aria-current");
+    });
+
+    it("shows Who Said It? as Standard, with no difficulty divisions", async () => {
+        const inner = await initialFallback({ game: "who-said-it", division: "standard" });
+
+        render(inner.props.fallback);
+
+        expect(screen.getByRole("status")).toHaveTextContent("Loading the Who Said It? · Standard ranking");
+        expect(screen.queryByRole("navigation", { name: /division$/ })).not.toBeInTheDocument();
+    });
+
+    it.each([
+        [{ game: "who-said-it", division: "hard" }, "Who Said It? · Standard"],
+        [{ game: "lore-challenge", division: "standard" }, "Lore Challenge · Easy"],
+        [{ game: "lore-challenge" }, "Lore Challenge · Easy"],
+        [{ game: "lore-challenge", division: "bogus" }, "Lore Challenge · Easy"],
+        [{ game: ["who-am-i", "lore-challenge"], division: ["medium", "hard"] }, "Who Am I? · Medium"],
+    ])("applies the existing fallback rule to %j in the first response", async (params, label) => {
+        const inner = await initialFallback(params);
+
+        render(inner.props.fallback);
+
+        expect(screen.getByRole("status")).toHaveTextContent(`Loading the ${label} ranking`);
+    });
+
+    it("sends the overview skeleton for an unknown game, like the content does", async () => {
+        const inner = await initialFallback({ game: "nonsense", division: "easy" });
+
+        render(inner.props.fallback);
+
+        expect(screen.getByRole("status")).toHaveTextContent("Loading the leaderboard");
+        expect(screen.getByRole("link", { name: "Overview" })).toHaveAttribute("aria-current", "page");
+    });
+
+    it.each([
+        [{}],
+        [{ game: "lore-challenge", division: "hard" }],
+        [{ game: "who-said-it", division: "standard" }],
+        [{ game: "who-am-i" }],
+    ])("keeps the filters unchanged when the content replaces the loading state for %j", async (params) => {
+        const inner = await initialFallback(params);
+
+        const first = render(inner.props.fallback);
+        const before = filtersState();
+
+        first.unmount();
+
+        const selection = inner.props.children.props.selection;
+
+        fetchMock.mockResolvedValue({ game: selection.game, division: selection.division, entries: [] });
+        overviewMock.mockResolvedValue({ groups: groups() });
+        render(await inner.props.children.type(inner.props.children.props));
+
+        expect(filtersState()).toEqual(before);
+    });
+
+    it("keeps the links between games and divisions of the loading state working", async () => {
+        const inner = await initialFallback({ game: "lore-challenge", division: "hard" });
+
+        render(inner.props.fallback);
+        const games = within(screen.getByRole("navigation", { name: "Choose a game" }));
+
+        expect(games.getByRole("link", { name: "Who Am I?" })).toHaveAttribute(
+            "href",
+            "/leaderboard?game=who-am-i&division=hard",
+        );
+        expect(games.getByRole("link", { name: "Who Said It?" })).toHaveAttribute(
+            "href",
+            "/leaderboard?game=who-said-it&division=standard",
+        );
+        expect(games.getByRole("link", { name: "Overview" })).toHaveAttribute("href", "/leaderboard");
+        expect(screen.getByRole("link", { name: "Easy" })).toHaveAttribute(
+            "href",
+            "/leaderboard?game=lore-challenge&division=easy",
+        );
+    });
+
+    it("has a prerendered shell that does not guess a selection", () => {
+        const shell = page({ searchParams: Promise.resolve({ game: "lore-challenge", division: "hard" }) });
+
+        expect(shell.type).toBe(Suspense);
+        render(shell.props.fallback);
+        expect(screen.getByRole("heading", { level: 1, name: "Leaderboard" })).toBeInTheDocument();
+        expect(screen.getByRole("status")).toHaveTextContent("Loading the leaderboard");
+        // No filter is marked as current, and none is offered until the URL is known.
+        expect(screen.queryByRole("navigation", { name: "Choose a game" })).not.toBeInTheDocument();
+        expect(
+            screen.queryAllByRole("link").filter((link) => link.getAttribute("href")?.startsWith("/leaderboard?")),
+        ).toHaveLength(0);
     });
 });

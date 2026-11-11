@@ -1,9 +1,9 @@
 import { Suspense } from "react";
 import QuotesFrame from "@/app/quotes/QuotesFrame";
-import ColdStartHint from "@/components/ColdStartHint/ColdStartHint";
 import { pageMetadata } from "@/lib/seo/site";
-import LeaderboardContent from "./LeaderboardContent";
-import styles from "./page.module.css";
+import { resolveSelection, type LeaderboardSelection } from "@/lib/ranking/selection";
+import LeaderboardContent, { DESCRIPTION } from "./LeaderboardContent";
+import LeaderboardLoading, { LeaderboardLoadingShell } from "./LeaderboardLoading";
 
 // The canonical is /leaderboard for every ?game=&division= too: the metadata is static so the page stays
 // cheap, and the filtered views are not meant to be separate search results.
@@ -21,21 +21,39 @@ interface LeaderboardPageProps {
     }>;
 }
 
-function LeaderboardFallback() {
+function LeaderboardFallback({ selection }: { selection: LeaderboardSelection }) {
     return (
-        <QuotesFrame scene="dragon" title="Leaderboard">
-            <p className={styles.loading} role="status">
-                Loading the leaderboard...
-            </p>
-            <ColdStartHint />
+        <QuotesFrame scene="dragon" title="Leaderboard" description={DESCRIPTION}>
+            <LeaderboardLoading selection={selection} />
         </QuotesFrame>
+    );
+}
+
+// Reading searchParams is request-time work, so it happens inside a Suspense boundary and the
+// prerendered shell cannot know the selection (it shows neutral placeholders). As soon as the request is
+// handled, this resolves the selection once, on the server, and hands the same value to the loading
+// state and to the content: the right filters and skeleton appear without waiting for the ranking
+// and without any client-side read of the URL.
+async function LeaderboardRoute({ searchParams }: LeaderboardPageProps) {
+    const selection = resolveSelection(await searchParams);
+
+    return (
+        <Suspense fallback={<LeaderboardFallback selection={selection} />}>
+            <LeaderboardContent selection={selection} />
+        </Suspense>
     );
 }
 
 export default function LeaderboardPage({ searchParams }: LeaderboardPageProps) {
     return (
-        <Suspense fallback={<LeaderboardFallback />}>
-            <LeaderboardContent searchParams={searchParams} />
+        <Suspense
+            fallback={
+                <QuotesFrame scene="dragon" title="Leaderboard" description={DESCRIPTION}>
+                    <LeaderboardLoadingShell />
+                </QuotesFrame>
+            }
+        >
+            <LeaderboardRoute searchParams={searchParams} />
         </Suspense>
     );
 }
