@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, type KeyboardEvent } from "react";
+import { useEffect, useRef, type KeyboardEvent } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { isActiveLink } from "./activeLink";
@@ -28,6 +28,16 @@ export default function SceneNavMenu({ links }: SceneNavMenuProps) {
         menu.querySelector("summary")?.focus();
     }
 
+    // Choosing an option must dismiss the panel: the header can outlive the navigation
+    // (shared layout, or the link points at the current page), so it would stay on top.
+    function close() {
+        if (details.current) {
+            details.current.open = false;
+        }
+    }
+
+    useEffect(close, [pathname]);
+
     return (
         <details ref={details} className={styles.menu} onKeyDown={closeOnEscape}>
             <summary className={styles.menuButton}>
@@ -40,6 +50,7 @@ export default function SceneNavMenu({ links }: SceneNavMenuProps) {
                         key={link.href}
                         href={link.href}
                         className={styles.menuLink}
+                        onClick={close}
                         aria-current={isActiveLink(pathname, link.href) ? "page" : undefined}
                     >
                         {link.label}

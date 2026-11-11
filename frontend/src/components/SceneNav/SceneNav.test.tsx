@@ -38,6 +38,19 @@ describe("SceneNav compact menu", () => {
         expect(screen.getByText("Menu").closest("summary")).toHaveFocus();
     });
 
+    it("closes after choosing an option, including the current page", async () => {
+        const user = userEvent.setup();
+        render(<SceneNav />);
+
+        for (const name of ["Quotes", "Leaderboard"]) {
+            await user.click(screen.getByText("Menu"));
+            expect(menu().open).toBe(true);
+
+            await user.click(screen.getAllByRole("link", { name })[1]);
+            expect(menu().open).toBe(false);
+        }
+    });
+
     it("ignores Escape while the menu is closed", async () => {
         const user = userEvent.setup();
         render(<SceneNav />);
