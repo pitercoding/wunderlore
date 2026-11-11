@@ -13,6 +13,7 @@ import {
     divisionLabel,
     divisionsOf,
     gameLabel,
+    LEADERBOARD_TOP_LIMIT,
     RANKING_GAMES,
     rankingHref,
     type RankingDivision,
@@ -240,6 +241,9 @@ function Results({ leaderboard }: { leaderboard: LeaderboardResponse }) {
                         </tbody>
                     </table>
                 </div>
+            )}
+            {entries.length >= LEADERBOARD_TOP_LIMIT && (
+                <p className={styles.limitNote}>Showing the top {LEADERBOARD_TOP_LIMIT} results.</p>
             )}
         </section>
     );

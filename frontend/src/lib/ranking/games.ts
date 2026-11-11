@@ -74,6 +74,10 @@ export function divisionFromDifficulty(difficulty: "EASY" | "MEDIUM" | "HARD"): 
     }
 }
 
+// The most results the backend returns for one division (RankingService.TOP_LIMIT). A list this
+// long may have been cut; a shorter one is complete.
+export const LEADERBOARD_TOP_LIMIT = 50;
+
 export const OVERVIEW_HREF = "/leaderboard";
 
 // The link to the full ranking of one division. Only built from a valid pair.

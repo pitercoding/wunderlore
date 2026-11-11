@@ -544,6 +544,13 @@
     font-size: var(--text-sm);
 }
 
+.limitNote {
+    margin: var(--space-3) 0 0;
+    color: var(--color-foreground-muted);
+    font-size: var(--text-sm);
+    text-align: center;
+}
+
 /* The columns follow the room there is: as many as fit at 16rem each, so a phone gets one, a
    tablet two, and a wide screen three, with no breakpoint to keep in step. Cards keep their own
    height, so an empty one stays short. */

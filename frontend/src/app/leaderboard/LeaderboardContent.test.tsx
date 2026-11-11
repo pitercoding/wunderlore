@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { render, screen, within } from "@testing-library/react";
+import { cleanup, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { ApiError, ApiTimeoutError } from "@/lib/api/client";
@@ -432,6 +432,22 @@ describe("the ranking of one division", () => {
         expect(
             screen.getByText(/Each division competes only with itself\. There is no overall ranking\./),
         ).toBeInTheDocument();
+    });
+
+    it("says the list is cut only when it has as many results as the backend returns at most", async () => {
+        const many = (count: number) =>
+            Array.from({ length: count }, (_, index) =>
+                entry({ position: index + 1, nickname: `Player ${index + 1}` }),
+            );
+
+        fetchMock.mockResolvedValue({ game: "lore-challenge", division: "easy", entries: many(49) });
+        await renderPage({ game: "lore-challenge", division: "easy" });
+        expect(screen.queryByText("Showing the top 50 results.")).not.toBeInTheDocument();
+        cleanup();
+
+        fetchMock.mockResolvedValue({ game: "lore-challenge", division: "easy", entries: many(50) });
+        await renderPage({ game: "lore-challenge", division: "easy" });
+        expect(screen.getByText("Showing the top 50 results.")).toBeInTheDocument();
     });
 
     it("shows the full ranking in the order received, without a Game column", async () => {
