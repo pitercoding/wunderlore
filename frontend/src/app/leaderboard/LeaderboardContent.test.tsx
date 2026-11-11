@@ -276,6 +276,123 @@ describe("the overview (no parameters)", () => {
     });
 });
 
+describe("the overview cards", () => {
+    it("offers a way to play only in empty divisions, to the game's own page", async () => {
+        overviewMock.mockResolvedValue({
+            groups: groups({
+                "lore-challenge/medium": [entry({ division: "medium" })],
+            }),
+        });
+
+        await renderPage();
+
+        // 10 divisions, one with a result: nine empty ones, each with a link to its game.
+        const play = screen.getAllByRole("link", { name: /^Play / });
+
+        expect(play).toHaveLength(9);
+        expect(play.map((link) => link.getAttribute("href"))).toEqual([
+            "/games/lore-challenge",
+            "/games/lore-challenge",
+            "/games/who-am-i",
+            "/games/who-am-i",
+            "/games/who-am-i",
+            "/games/where-in-middle-earth",
+            "/games/where-in-middle-earth",
+            "/games/where-in-middle-earth",
+            "/games/who-said-it",
+        ]);
+        expect(screen.getAllByText("No results yet")).toHaveLength(9);
+        // A division with results has the list and no play link.
+        const lore = within(screen.getByRole("region", { name: "Lore Challenge" }));
+
+        expect(lore.getAllByRole("listitem")).toHaveLength(1);
+        expect(lore.getAllByRole("link", { name: /^Play / })).toHaveLength(2);
+    });
+
+    it("keeps the full ranking link and the division name in empty and filled cards alike", async () => {
+        overviewMock.mockResolvedValue({
+            groups: groups({ "who-am-i/easy": [entry({ gameType: "who-am-i", division: "easy" })] }),
+        });
+
+        await renderPage();
+
+        for (const [game, division] of PAIRS) {
+            expect(
+                screen.getAllByRole("link").some(
+                    (link) => link.getAttribute("href") === `/leaderboard?game=${game}&division=${division}`,
+                ),
+            ).toBe(true);
+        }
+        expect(screen.getAllByRole("heading", { level: 3 })).toHaveLength(10);
+    });
+
+    it("shows Who Said It? Standard as one wide card with its scope note, tie mark and podium", async () => {
+        overviewMock.mockResolvedValue({
+            groups: groups({
+                "who-said-it/standard": [
+                    entry({ gameType: "who-said-it", division: "standard", position: 1, nickname: "Q1", percentage: 100 }),
+                    entry({ gameType: "who-said-it", division: "standard", position: 1, nickname: "Q2", percentage: 100 }),
+                    entry({ gameType: "who-said-it", division: "standard", position: 3, nickname: "Q3", percentage: 30 }),
+                    entry({ gameType: "who-said-it", division: "standard", position: 4, nickname: "Q4", percentage: 10 }),
+                ],
+            }),
+        });
+
+        await renderPage();
+
+        const section = within(screen.getByRole("region", { name: "Who Said It?" }));
+
+        expect(section.getAllByRole("heading", { level: 3 })).toHaveLength(1);
+        expect(section.getByRole("heading", { level: 3, name: "Standard" })).toBeInTheDocument();
+        expect(section.getByText(/has a single mode, so every match competes together/)).toBeInTheDocument();
+
+        const items = section.getAllByRole("listitem");
+
+        expect(items.map((item) => item.textContent)).toEqual([
+            expect.stringMatching(/^1Q1100\.00%/),
+            expect.stringMatching(/^1Q2100\.00%/),
+            expect.stringMatching(/^3Q330\.00%/),
+            expect.stringMatching(/^4Q410\.00%/),
+        ]);
+        // Only the two tied entries carry the mark, and the podium tiers follow the position.
+        expect(items.map((item) => item.querySelector('[role="img"]')?.getAttribute("aria-label") ?? null)).toEqual([
+            "tied",
+            "tied",
+            null,
+            null,
+        ]);
+        expect(items[0].className).toMatch(/tier1/);
+        expect(items[1].className).toMatch(/tier1/);
+        expect(items[2].className).toMatch(/tier3/);
+        expect(items[3].className).not.toMatch(/tier/);
+        // Standard has results, so no play link in its card.
+        expect(section.queryByRole("link", { name: "Play Who Said It?" })).not.toBeInTheDocument();
+    });
+
+    it("gives the second place its own tier, and keeps nicknames whole", async () => {
+        overviewMock.mockResolvedValue({
+            groups: groups({
+                "lore-challenge/medium": [
+                    entry({ division: "medium", position: 1, nickname: "LocalLore01", percentage: 100 }),
+                    entry({ division: "medium", position: 2, nickname: "LocalLore02", percentage: 70 }),
+                ],
+            }),
+        });
+
+        await renderPage();
+
+        const items = within(screen.getByRole("region", { name: "Lore Challenge" })).getAllByRole("listitem");
+
+        expect(items[0].className).toMatch(/tier1/);
+        expect(items[1].className).toMatch(/tier2/);
+        expect(items.map((item) => item.querySelector("span:nth-child(2)")?.textContent)).toEqual([
+            "LocalLore01",
+            "LocalLore02",
+        ]);
+        expect(items.map((item) => item.querySelector('[role="img"]'))).toEqual([null, null]);
+    });
+});
+
 describe("the ranking of one division", () => {
     it.each(PAIRS)("asks the backend for %s / %s only", async (game, division) => {
         fetchMock.mockResolvedValue({ game, division, entries: [] });
@@ -322,8 +439,8 @@ describe("the ranking of one division", () => {
         expect(within(table).getAllByRole("columnheader").map((header) => header.textContent)).toEqual([
             "Rank",
             "Player",
-            "Date",
             "Score",
+            "Date",
         ]);
 
         const rows = within(table).getAllByRole("row");
@@ -332,8 +449,8 @@ describe("the ranking of one division", () => {
         expect(within(rows[1]).getAllByRole("cell").map((cell) => cell.textContent)).toEqual([
             "1",
             "Frodo",
-            expect.stringMatching(/\d/),
             "93.46%",
+            expect.stringMatching(/\d/),
         ]);
         expect(rows[1].querySelector("time")).toHaveAttribute("datetime", "2026-03-01T23:30:00Z");
         // Ties and the gap after them are exactly what the backend sent.

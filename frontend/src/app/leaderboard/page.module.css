@@ -158,12 +158,78 @@
     text-align: right;
 }
 
-.table td:nth-child(3) {
+.table td.date {
     grid-column: 2 / span 2;
+    grid-row: 2;
+    font-size: var(--text-xs);
 }
 
-.podium td.rank {
-    text-shadow: 0 0 1rem color-mix(in srgb, var(--color-accent-text) 55%, transparent);
+.table td.rank,
+.table td.numeric,
+.miniRank,
+.miniScore {
+    font-variant-numeric: tabular-nums;
+}
+
+/* The sign of a shared position: a small "=" next to the number. It is drawn by CSS, so the cell
+   text stays the position alone; the span carries the accessible label. */
+.tie {
+    display: inline-block;
+    margin-left: 0.25em;
+    color: var(--color-foreground-muted);
+    font-family: var(--font-sans);
+    font-size: var(--text-xs);
+    line-height: 1;
+}
+
+.tie::before {
+    content: "=";
+}
+
+/* ---- Podium: the first place leads, the second and third step down; the rest stay plain ---- */
+
+.table tbody tr {
+    transition: background-color 120ms ease;
+}
+
+.table tbody tr.tier1 {
+    background: color-mix(in srgb, var(--color-accent-text) 11%, transparent);
+    box-shadow: inset 3px 0 0 var(--color-accent-text);
+}
+
+.table tbody tr.tier2 {
+    background: color-mix(in srgb, var(--color-accent-text) 5%, transparent);
+    box-shadow: inset 3px 0 0 color-mix(in srgb, var(--color-accent-text) 45%, transparent);
+}
+
+.table tbody tr.tier3 {
+    box-shadow: inset 2px 0 0 color-mix(in srgb, var(--color-accent-text) 25%, transparent);
+}
+
+.table tbody tr.tier1 td.rank {
+    font-size: var(--text-3xl);
+    line-height: 1;
+}
+
+.table tbody tr.tier1 td.numeric {
+    color: var(--color-accent-text);
+    font-size: var(--text-2xl);
+}
+
+.table tbody tr.tier1 td.player {
+    font-weight: 600;
+}
+
+.table tbody tr.tier2 td.rank {
+    font-size: var(--text-2xl);
+}
+
+.table tbody tr.tier2 td.numeric {
+    font-size: var(--text-xl);
+}
+
+.table tbody tr.tier3 td.rank {
+    color: color-mix(in srgb, var(--color-accent-text) 75%, var(--color-foreground-muted));
 }
 
 /* From 48em the filters fit on one row again, so they wrap instead of scrolling. */
@@ -187,6 +253,38 @@
     .table tr {
         display: table-row;
         padding: 0;
+    }
+
+    .table tbody tr:hover {
+        background: var(--color-overlay-hover);
+    }
+
+    .table thead tr {
+        border-top: 0;
+        border-bottom: 1px solid var(--color-border-strong);
+    }
+
+    /* Table rows can't take an inset shadow everywhere: the marker sits on the first cell. */
+    .table tbody tr.tier1,
+    .table tbody tr.tier2,
+    .table tbody tr.tier3 {
+        box-shadow: none;
+    }
+
+    .table tbody tr.tier1:hover {
+        background: color-mix(in srgb, var(--color-accent-text) 15%, transparent);
+    }
+
+    .table tbody tr.tier1 td:first-child {
+        box-shadow: inset 3px 0 0 var(--color-accent-text);
+    }
+
+    .table tbody tr.tier2 td:first-child {
+        box-shadow: inset 3px 0 0 color-mix(in srgb, var(--color-accent-text) 45%, transparent);
+    }
+
+    .table tbody tr.tier3 td:first-child {
+        box-shadow: inset 2px 0 0 color-mix(in srgb, var(--color-accent-text) 25%, transparent);
     }
 
     .table th,
@@ -221,10 +319,28 @@
 
     .table td.numeric {
         font-size: var(--text-lg);
+        width: 8rem;
     }
 
-    .table td:nth-child(3) {
+    .table td.date {
+        font-size: var(--text-sm);
         white-space: nowrap;
+    }
+
+    .table tbody tr.tier1 td.rank {
+        font-size: var(--text-3xl);
+    }
+
+    .table tbody tr.tier1 td.numeric {
+        font-size: var(--text-xl);
+    }
+
+    .table tbody tr.tier2 td.rank {
+        font-size: var(--text-2xl);
+    }
+
+    .table tbody tr.tier2 td.numeric {
+        font-size: var(--text-lg);
     }
 }
 
@@ -261,7 +377,17 @@
     font-size: var(--text-sm);
 }
 
+/* The columns follow the room there is: as many as fit at 16rem each, so a phone gets one, a
+   tablet two, and a wide screen three, with no breakpoint to keep in step. Cards keep their own
+   height, so an empty one stays short. */
 .divisions {
+    display: grid;
+    gap: var(--space-3);
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 16rem), 1fr));
+    align-items: start;
+}
+
+.divisionsSingle {
     display: grid;
     gap: var(--space-3);
     grid-template-columns: minmax(0, 1fr);
@@ -279,10 +405,37 @@
 
 .divisionHead {
     display: flex;
+    flex-wrap: wrap;
     align-items: baseline;
     justify-content: space-between;
-    gap: var(--space-3);
+    gap: var(--space-1) var(--space-3);
     margin-bottom: var(--space-3);
+}
+
+.divisionNote {
+    flex-basis: 100%;
+    margin: 0;
+    color: var(--color-foreground-muted);
+    font-size: var(--text-sm);
+}
+
+/* An empty division is a short strip, not a card the height of a full one. */
+.divisionEmpty {
+    padding: var(--space-3) var(--space-4);
+}
+
+.divisionEmpty .divisionHead {
+    margin-bottom: var(--space-1);
+}
+
+.playLink {
+    color: var(--color-accent-text);
+    text-underline-offset: 0.2em;
+}
+
+.playLink:focus-visible {
+    outline: 2px solid var(--color-focus-ring);
+    outline-offset: 2px;
 }
 
 .divisionTitle {
@@ -320,9 +473,33 @@
 
 .miniItem {
     display: grid;
-    grid-template-columns: 1.75rem minmax(0, 1fr) auto;
+    grid-template-columns: 2rem minmax(0, 1fr) auto;
     gap: 0 var(--space-3);
     align-items: baseline;
+    padding: var(--space-1) var(--space-2);
+    border-radius: var(--radius-md);
+}
+
+.miniItem.tier1 {
+    background: color-mix(in srgb, var(--color-accent-text) 11%, transparent);
+    box-shadow: inset 3px 0 0 var(--color-accent-text);
+}
+
+.miniItem.tier2 {
+    background: color-mix(in srgb, var(--color-accent-text) 5%, transparent);
+    box-shadow: inset 3px 0 0 color-mix(in srgb, var(--color-accent-text) 45%, transparent);
+}
+
+.miniItem.tier3 {
+    box-shadow: inset 2px 0 0 color-mix(in srgb, var(--color-accent-text) 25%, transparent);
+}
+
+.miniItem.tier1 .miniRank {
+    font-size: var(--text-2xl);
+}
+
+.miniItem.tier1 .miniScore {
+    color: var(--color-accent-text);
 }
 
 .miniRank {
@@ -333,10 +510,11 @@
     font-size: var(--text-xl);
 }
 
+/* A nickname breaks only when it truly doesn't fit, never earlier. */
 .miniPlayer {
     min-width: 0;
     color: var(--color-foreground);
-    overflow-wrap: anywhere;
+    overflow-wrap: break-word;
 }
 
 .miniScore {
@@ -351,14 +529,17 @@
     font-size: var(--text-xs);
 }
 
+/* The single-division card: the name and the note on the left, the list beside them, kept to a
+   readable width instead of stretching across the page. */
 @media (min-width: 48em) {
-    .divisions {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+    .divisionWide {
+        display: grid;
+        grid-template-columns: minmax(12rem, 16rem) minmax(0, 28rem);
+        gap: var(--space-5);
+        align-items: start;
     }
 
-    /* Who Said It? has one division only: it keeps a single column's width. */
-    .divisions:has(> :only-child) {
-        grid-template-columns: minmax(0, 1fr);
-        max-width: 24rem;
+    .divisionWide .divisionHead {
+        margin-bottom: 0;
     }
 }
