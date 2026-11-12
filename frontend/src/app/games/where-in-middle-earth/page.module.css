@@ -551,7 +551,9 @@
 /* The five scoring bands on the menu, wrapped on narrow screens. */
 .bands {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    /* Six tracks: three cards on the first row, two wider ones on the second, so the fifth card
+       never stands alone. */
+    grid-template-columns: repeat(6, minmax(0, 1fr));
     gap: var(--space-2);
     margin: 0 0 var(--space-3);
     padding: 0;
@@ -568,6 +570,11 @@
     border-radius: var(--radius-md);
     background: color-mix(in srgb, var(--scene-surface) 70%, transparent);
     text-align: center;
+    grid-column: span 2;
+}
+
+.band:nth-child(n + 4) {
+    grid-column: span 3;
 }
 
 .bandName {
@@ -746,6 +753,11 @@
         grid-template-columns: repeat(5, minmax(0, 1fr));
     }
 
+    .band,
+    .band:nth-child(n + 4) {
+        grid-column: auto;
+    }
+
     .facts {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
@@ -758,6 +770,20 @@
 
     .confirmRow .readout {
         margin: 0;
+    }
+}
+
+/* The menu intro, one step smaller on narrow screens so it takes fewer lines. */
+@media (max-width: 35.99em) {
+    .introText {
+        margin-bottom: var(--space-4);
+        font-size: var(--text-lg);
+    }
+
+    /* Three cards share the first row: keep "100 points" on one line. */
+    .bandPoints {
+        font-size: var(--text-base);
+        white-space: nowrap;
     }
 }
 

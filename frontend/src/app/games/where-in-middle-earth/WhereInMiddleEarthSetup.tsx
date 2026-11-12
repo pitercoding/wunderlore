@@ -32,9 +32,9 @@ export default function WhereInMiddleEarthSetup({
                 How it works
             </h2>
             <p className={styles.introText}>
-                Ten places of Middle-earth, one map. You are given a name and click where you
-                think it lies on an unlabelled map, move the marker until you are sure, and
-                confirm. The closer your marker, the more the round is worth.
+                Ten places of Middle-earth, one map. Click where each name lies on the
+                unlabelled map, move the marker until you are sure, then confirm. The closer
+                you are, the more the round is worth.
             </p>
 
             <ol className={styles.bands} aria-label="Points by distance">
