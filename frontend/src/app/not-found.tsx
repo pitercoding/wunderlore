@@ -7,8 +7,10 @@ import styles from "./not-found.module.css";
 export default function NotFound() {
     return (
         <QuotesFrame
+            className={styles.page}
+            eyebrow="Error 404"
             title="Page not found"
-            description="The road you followed is not on the map. Return to the start and choose another path."
+            description="This road is not on the map. Head back to the start and choose another path."
         >
             <p className={styles.actions}>
                 <Link href="/" className={styles.home}>

@@ -4,6 +4,21 @@
     margin: 0;
 }
 
+/* Nothing to list below the message, so the hero is centred in the height between the navigation
+   and the footer instead of hugging the top. The bottom padding lifts it a little above true centre. */
+.page {
+    display: flex;
+    flex-direction: column;
+}
+
+.page > main {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    justify-content: center;
+    padding-bottom: var(--space-9);
+}
+
 /* The Home's moss call to action, as a link: it navigates, so it is not a button. */
 .home {
     display: inline-flex;

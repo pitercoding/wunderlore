@@ -10,6 +10,13 @@ describe("NotFound", () => {
         expect(screen.getByRole("link", { name: "Back to the home page" })).toHaveAttribute("href", "/");
     });
 
+    it("labels the page as an error instead of inviting exploration", () => {
+        render(<NotFound />);
+
+        expect(screen.getByText("Error 404")).toBeInTheDocument();
+        expect(screen.queryByText("Explore Middle-earth")).not.toBeInTheDocument();
+    });
+
     it("keeps the site navigation", () => {
         render(<NotFound />);
 

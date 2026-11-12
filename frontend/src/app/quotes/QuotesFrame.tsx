@@ -11,6 +11,10 @@ interface QuotesFrameProps {
     compactNav?: boolean;
     // Which banner to paint: the forest stream (Quotes) or the fire-breathing dragon (Leaderboard).
     scene?: "forest" | "dragon";
+    // The small label above the title; pages that are not about exploring (the 404) say what they are.
+    eyebrow?: string;
+    // Lets a page lay out its own scene, e.g. to centre its content in the height left over.
+    className?: string;
     children?: ReactNode;
 }
 
@@ -39,12 +43,14 @@ export default function QuotesFrame({
     description,
     compactNav = false,
     scene = "forest",
+    eyebrow = "Explore Middle-earth",
+    className,
     children,
 }: QuotesFrameProps) {
     const dragon = scene === "dragon";
 
     return (
-        <div className={`${styles.page} ${dragon ? styles.dragon : ""}`}>
+        <div className={`${styles.page} ${dragon ? styles.dragon : ""} ${className ?? ""}`}>
             <div className={styles.scene} aria-hidden="true">
                 <Image
                     src={dragon ? DRAGON_IMAGE : SCENE_IMAGE}
@@ -84,7 +90,7 @@ export default function QuotesFrame({
                 <header className={styles.hero}>
                     <p className={styles.badge}>
                         <span className={styles.badgeDot} aria-hidden="true" />
-                        Explore Middle-earth
+                        {eyebrow}
                     </p>
                     <h1 className={styles.title}>{title}</h1>
                     {description && <p className={styles.description}>{description}</p>}
