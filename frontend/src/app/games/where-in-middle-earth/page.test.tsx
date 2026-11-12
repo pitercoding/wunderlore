@@ -21,7 +21,7 @@ describe("WhereInMiddleEarthPage", () => {
         expect(
             screen.getByRole("heading", { level: 1, name: "Where in Middle-earth" }),
         ).toBeInTheDocument();
-        expect(screen.getByRole("button", { name: "Start Game" })).toBeEnabled();
+        expect(screen.getByRole("button", { name: "Start game" })).toBeEnabled();
         expect(startWhereInMiddleEarthGame).not.toHaveBeenCalled();
     });
 

@@ -102,7 +102,7 @@ export default function WhoAmISetup({
                     onClick={() => onStart(difficulty)}
                     disabled={isStarting}
                 >
-                    {isStarting ? "Loading..." : error ? "Try again" : "Start Game"}
+                    {isStarting ? "Loading..." : error ? "Try again" : "Start game"}
                 </Button>
                 <Link href="/#experiences" className={styles.backToGames}>
                     Back to the games

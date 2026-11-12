@@ -97,7 +97,7 @@ function deferred<T>() {
 }
 
 function startButton() {
-    return screen.getByRole("button", { name: "Start Game" });
+    return screen.getByRole("button", { name: "Start game" });
 }
 
 function mapSvg(container: HTMLElement) {
@@ -483,7 +483,7 @@ describe("WhereInMiddleEarthGame: failures while answering", () => {
 
         await user.click(screen.getByRole("button", { name: "Start a new game" }));
 
-        expect(await screen.findByRole("button", { name: "Start Game" })).toBeInTheDocument();
+        expect(await screen.findByRole("button", { name: "Start game" })).toBeInTheDocument();
     });
 
     it("picks the game up where the server says it is after a 409", async () => {
@@ -592,7 +592,7 @@ describe("WhereInMiddleEarthGame: the end", () => {
 
         await user.click(screen.getByRole("button", { name: "Change difficulty" }));
 
-        expect(await screen.findByRole("button", { name: "Start Game" })).toBeInTheDocument();
+        expect(await screen.findByRole("button", { name: "Start game" })).toBeInTheDocument();
     });
 
     it("shows an error if a new game cannot be created from the results", async () => {

@@ -19,7 +19,7 @@ describe("WhoAmIPage", () => {
         render(<WhoAmIPage />);
 
         expect(screen.getByRole("heading", { level: 1, name: "Who Am I?" })).toBeInTheDocument();
-        expect(screen.getByRole("button", { name: "Start Game" })).toBeEnabled();
+        expect(screen.getByRole("button", { name: "Start game" })).toBeEnabled();
         expect(startWhoAmIGame).not.toHaveBeenCalled();
     });
 

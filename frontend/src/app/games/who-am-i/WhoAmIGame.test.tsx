@@ -125,7 +125,7 @@ function deferred<T>() {
 }
 
 function startButton() {
-    return screen.getByRole("button", { name: "Start Game" });
+    return screen.getByRole("button", { name: "Start game" });
 }
 
 async function begin(user: ReturnType<typeof userEvent.setup>, first = round(1)) {
