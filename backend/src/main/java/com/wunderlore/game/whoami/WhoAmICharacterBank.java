@@ -33,8 +33,8 @@ public class WhoAmICharacterBank {
     // The least a difficulty needs to build one game of ten different characters.
     public static final int MIN_PER_DIFFICULTY = 10;
 
-    // Each character needs this many compatible wrong answers: three shown at a time, plus up to
-    // four that the player may already have guessed and ruled out.
+    // Each character needs at least this many compatible wrong answers, so the drawer has a real
+    // choice: only three are shown, drawn once per round.
     static final int MIN_WRONG_ANSWER_CANDIDATES = 7;
 
     static final int MAX_CLUE_LENGTH = 220;

@@ -85,8 +85,8 @@ export default function LeaderboardLoading({ selection }: { selection: Leaderboa
 }
 
 // The prerendered shell, sent before the URL is known: it must not claim a selection, so the
-// filters are placeholders of the same height (no current game) and the body is the lighter,
-// single-division shape. The request-time fallback above replaces it right after.
+// filters are placeholders of the same height (no current game) and the body is the one-ranking
+// skeleton. The request-time fallback above replaces it right after.
 export function LeaderboardLoadingShell() {
     return (
         <>

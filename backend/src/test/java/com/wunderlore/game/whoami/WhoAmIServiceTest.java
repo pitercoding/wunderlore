@@ -98,6 +98,7 @@ class WhoAmIServiceTest {
 
     @Test
     void shouldOfferFourDistinctOptionsWithExactlyOneCorrectOnEveryClue() {
+        // drawOptions still honours an excluded set, although the game passes none.
         for (WhoAmIDifficulty difficulty : WhoAmIDifficulty.values()) {
             for (WhoAmICharacter character : BANK.find(difficulty)) {
                 Set<String> excluded = new HashSet<>();

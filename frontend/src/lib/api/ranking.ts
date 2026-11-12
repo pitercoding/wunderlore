@@ -157,7 +157,7 @@ export async function postRankingEntry(
 // publish itself is never cached.
 export const LEADERBOARD_REVALIDATE_SECONDS = 30;
 
-// Every leaderboard read (all games and each filter) carries this tag; publishing expires it.
+// Every leaderboard read (the overview and each division) carries this tag; publishing expires it.
 export const LEADERBOARD_CACHE_TAG = "leaderboard";
 
 // Every leaderboard read (the overview and each division) shares the options below: Next.js keeps

@@ -3,10 +3,12 @@ const API_URL = process.env.API_URL;
 export const API_TIMEOUT_MS = 15_000;
 
 // For the first calls of a visit, which may reach a sleeping backend (Render Free): waking
-// takes about a minute, and the lore load that follows can take up to 60 s more
-// (wunderlore.lore.load-timeout). Stays well under the 300 s a Vercel Hobby function may run.
-// Only for calls that are safe to wait for; everything else keeps API_TIMEOUT_MS, because by
-// then the backend is awake and a long wait would only hide a real failure.
+// takes about a minute and, for calls that depend on the lore data, the load that follows can
+// take up to 60 s more (wunderlore.lore.load-timeout). Calls that do not need the lore data
+// only need the wake-up, so for them this is a margin. Stays well under the 300 s a Vercel Hobby
+// function may run. Only for calls that are safe to wait for; everything else keeps
+// API_TIMEOUT_MS, because by then the backend is awake and a long wait would only hide a real
+// failure.
 export const COLD_START_TIMEOUT_MS = 130_000;
 
 export interface ApiFetchOptions {

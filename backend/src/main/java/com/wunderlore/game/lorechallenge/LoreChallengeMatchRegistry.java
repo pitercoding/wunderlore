@@ -19,8 +19,8 @@ import com.wunderlore.game.lorechallenge.LoreChallengeMatch.AnswerOutcome;
 import com.wunderlore.game.lorechallenge.LoreChallengeMatch.QuestionView;
 import com.wunderlore.game.lorechallenge.LoreChallengeMatch.Result;
 
-// Matches live in memory for one TTL, counted from their creation, and are lost on restart (the
-// production database is off, and Render Free restarts or sleeps the process). It follows the
+// Matches live in memory for one TTL, counted from their creation, and are lost on restart (match
+// state is never persisted, and Render Free restarts or sleeps the process). It follows the
 // limits of WhoSaidItRoundRegistry, with a match in place of a round:
 // - maxActiveMatches: matches that are neither finished nor expired. Reaching it rejects new
 //   matches with CAPACITY_EXCEEDED. Finishing a match frees a slot at once.

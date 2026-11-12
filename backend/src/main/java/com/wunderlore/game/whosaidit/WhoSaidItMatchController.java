@@ -23,7 +23,7 @@ import com.wunderlore.lore.LoreBacked;
 import jakarta.validation.Valid;
 
 // The competitive Who Said It? mode: a match of ten quotes whose sequence, answers and score the
-// backend owns. The single-round game in WhoSaidItController is unchanged. The client gets the
+// backend owns. The single-round game lives in WhoSaidItController. The client gets the
 // current question, answers it, and learns the correct characters only from the finished result.
 @RestController
 @RequestMapping("/api/games/who-said-it/matches")

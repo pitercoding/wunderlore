@@ -16,7 +16,7 @@ interface WhichCharacterFrameProps {
 }
 
 // A mossy hobbit-hole under a dark canopy (frontend/public/images/which-character-hobbit-hole.avif,
-// 2400x1600; source and license in frontend/public/images/ATTRIBUTIONS.md).
+// 2400x1600; see frontend/public/images/ATTRIBUTIONS.md: origin and licence were not recorded).
 const SCENE_IMAGE = "/images/which-character-hobbit-hole.avif";
 
 // Three plates fanned across the page as a field-guide spread. Purely decorative,

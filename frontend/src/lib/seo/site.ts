@@ -16,8 +16,7 @@ export const SITE_DESCRIPTION =
 // Share-card images in public/images/share: 1200x630 JPEGs cropped from the page images in
 // public/images (see ATTRIBUTIONS.md there). They are separate files because AVIF is not
 // reliably supported by link-preview crawlers. Sizes are the real pixel dimensions of the
-// files. Only images with a recorded origin get a page of their own; the others fall back to
-// the home scene.
+// files. Only the pages listed below have their own card; the others fall back to the home image.
 export interface ShareImage {
   path: string;
   width: number;

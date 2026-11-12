@@ -12,7 +12,7 @@ import com.wunderlore.lore.LoreQuote;
 // are: this applies only to what the two game modes draw from LoreData.
 final class WhoSaidItExclusions {
 
-    // Records that are not individual characters: two wiki user pages, both MINOR_CHARACTER
+    // Records that are not individual characters: two wiki user pages, two MINOR_CHARACTER
     // entries (the second owns 117 quotes), Seers, the "Letter 211" document label and the
     // generic "Men" category. They are never a correct answer, an option or a speaker.
     static final Set<String> CHARACTER_IDS = Set.of(

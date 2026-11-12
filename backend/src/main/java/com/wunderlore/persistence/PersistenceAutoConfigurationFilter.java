@@ -10,7 +10,7 @@ import org.springframework.core.env.Environment;
 // Keeps the database auto-configurations out of the application unless
 // wunderlore.persistence.enabled is true. Registered in META-INF/spring.factories.
 //
-// The starters stay on the classpath for the future player accounts and rankings, but
+// The starters stay on the classpath for the leaderboard (and any future persistence), but
 // without a filter Boot would build the DataSource, Hibernate's EntityManagerFactory and
 // run Flyway at startup, and each of those opens a connection. A filtered configuration
 // is never loaded, so none of its beans or properties are ever created or bound: no

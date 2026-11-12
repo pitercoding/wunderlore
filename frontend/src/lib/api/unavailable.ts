@@ -1,6 +1,6 @@
 import { ApiError, ApiTimeoutError } from "@/lib/api/client";
 
-// Wording shared by /games/who-said-it and /quotes for a temporarily unavailable service.
+// Wording shared by every page that reports a temporarily unavailable service.
 export function formatWait(seconds: number): string {
     if (seconds < 60) {
         return `${seconds} ${seconds === 1 ? "second" : "seconds"}`;

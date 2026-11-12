@@ -13,8 +13,8 @@ interface WhoAmIFrameProps {
 }
 
 // Artwork: old keys laid out on dark crumpled paper (frontend/public/images/
-// who-am-i-old-keys.avif, 2400x1600, optimized from a downloaded original; its author and
-// license were not recorded, see public/images/ATTRIBUTIONS.md).
+// who-am-i-old-keys.avif, 2400x1600, optimized from a downloaded original; see
+// public/images/ATTRIBUTIONS.md).
 const SCENE_IMAGE = "/images/who-am-i-old-keys.avif";
 
 // The game's scene: the keys under a dark green wash and a faint lantern glow, in the Home's

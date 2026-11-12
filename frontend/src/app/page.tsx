@@ -30,10 +30,9 @@ const WEBSITE_JSON_LD = {
   inLanguage: "en",
 };
 
-// The forest photograph is an asset the project has to supply:
-// frontend/public/images/enchanted-forest.{avif,webp,jpg}, 2400x1350 (16:9).
-// Until it exists the scene still renders (gradients, mist, fireflies) and no
-// request is made for it. Rebuild after adding the file.
+// The forest photograph is frontend/public/images/enchanted-forest.{avif,webp,jpg}, 2400x1350
+// (16:9); the first one found is used. If none is available the scene still renders (gradients,
+// mist, fireflies) and no request is made for it.
 const SCENE_FILES = ["enchanted-forest.avif", "enchanted-forest.webp", "enchanted-forest.jpg"];
 
 function findSceneImage() {

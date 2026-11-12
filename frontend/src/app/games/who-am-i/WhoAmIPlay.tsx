@@ -28,7 +28,7 @@ interface RoundView {
     options: WhoAmIOption[];
 }
 
-// One round. The game keys it by game and round, so each character starts with a fresh state.
+// One round. The game keys it by game, round and clue, so each character starts with a fresh state.
 export default function WhoAmIPlay({
     round,
     onRoundEnded,

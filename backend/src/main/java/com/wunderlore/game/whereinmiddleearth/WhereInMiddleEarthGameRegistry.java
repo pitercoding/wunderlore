@@ -19,8 +19,9 @@ import com.wunderlore.game.whereinmiddleearth.WhereInMiddleEarthGame.AnswerOutco
 import com.wunderlore.game.whereinmiddleearth.WhereInMiddleEarthGame.Result;
 import com.wunderlore.game.whereinmiddleearth.WhereInMiddleEarthGame.RoundView;
 
-// Games live in memory for one TTL, counted from their creation, and are lost on restart (there
-// is no database and Render Free restarts or sleeps the process). Same limits and same
+// Games live in memory for one TTL, counted from their creation, and are lost on restart (game
+// state is never persisted, only a published result is stored, and Render Free restarts or
+// sleeps the process). Same limits and same
 // bookkeeping as LoreChallengeMatchRegistry, with a game in place of a match:
 // - maxActiveGames: games that are neither finished nor expired. Reaching it rejects new games
 //   with CAPACITY_EXCEEDED. Finishing a game frees a slot at once.

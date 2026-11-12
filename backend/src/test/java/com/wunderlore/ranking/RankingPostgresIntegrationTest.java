@@ -485,8 +485,8 @@ class RankingPostgresIntegrationTest {
     @Test
     void shouldShowOnlyTheBestFiftyAndKeepTheCorrectRankAtTheCut() throws Exception {
         for (int i = 0; i < 60; i++) {
-            // Scores 0..59 out of 100, with 49 and 48 tied below the cut line is not needed; the cut
-            // splits a tie: 5 results share the 50th place.
+            // 45 distinct scores (100 down to 56), then 15 results tied at 55: the cut at 50 falls
+            // inside the tie, and its 5 visible rows share position 46.
             int score = i < 45 ? 100 - i : 55;
 
             insert(GameType.WHO_SAID_IT, "g" + i, "Player " + i, score, 100, "2026-01-01T00:00:00Z");

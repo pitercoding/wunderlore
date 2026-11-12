@@ -35,9 +35,9 @@ services:
       DB_USERNAME: ${DB_USERNAME:?Set DB_USERNAME in .env}
       DB_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in .env}
       THE_ONE_API_ACCESS_TOKEN: ${THE_ONE_API_ACCESS_TOKEN:-}
-      # Nothing stores data yet, so the backend starts without touching PostgreSQL and does
-      # not wait for it. Set to true once persistence is used; the backend then needs the
-      # postgres service reachable (add back depends_on with condition: service_healthy).
+      # The leaderboard is the only feature that stores data. Leave false to start the backend
+      # without PostgreSQL; set to true to enable it (the backend then needs the postgres service
+      # reachable: add back depends_on with condition: service_healthy).
       WUNDERLORE_PERSISTENCE_ENABLED: ${WUNDERLORE_PERSISTENCE_ENABLED:-false}
     ports:
       # Published on the host loopback only. Containers on the Compose network still reach the
