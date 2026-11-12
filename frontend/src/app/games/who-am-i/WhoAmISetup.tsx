@@ -33,9 +33,9 @@ export default function WhoAmISetup({
             </h2>
             <p className={styles.introText}>
                 Ten characters of Middle-earth, five clues each. You see the vaguest clue
-                first and make one guess per clue: a wrong guess reveals the next clue and
-                a fresh set of names. The sooner you name the character, the more it is
-                worth.
+                first and make one guess per clue: a wrong guess reveals the next clue,
+                and the same four names stay on offer. The sooner you name the character,
+                the more it is worth.
             </p>
 
             <ol className={styles.ladder} aria-label="Points by clue">

@@ -25,11 +25,13 @@ const resultMock = vi.mocked(fetchWhoAmIResult);
 const GAME_ID = "123e4567-e89b-42d3-a456-426614174000";
 const UNAVAILABLE = "Wunderlore is temporarily unavailable. Please try again.";
 
-// Names carry the round and the clue, so a test can tell one set of options from the next.
-function optionsFor(round: number, clue: number) {
+// The server draws the four options once per round and sends the same ones with every clue, so
+// they depend on the round only. Names carry the round, so a test can tell one round's set from
+// the next.
+function optionsFor(round: number) {
     return ["a", "b", "c", "d"].map((id, index) => ({
         id,
-        text: `${["Alpha", "Bravo", "Charlie", "Delta"][index]} ${round}.${clue}`,
+        text: `${["Alpha", "Bravo", "Charlie", "Delta"][index]} ${round}`,
     }));
 }
 
@@ -46,7 +48,7 @@ function round(roundNumber: number, clueNumber = 1, score = 0): WhoAmIRound {
         clueNumber,
         totalClues: 5,
         clues: cluesFor(roundNumber, clueNumber),
-        options: optionsFor(roundNumber, clueNumber),
+        options: optionsFor(roundNumber),
         score,
         maxScore: 1000,
     };
@@ -66,7 +68,7 @@ function incorrect(roundNumber: number, clueNumber: number, optionId: string, sc
         next: {
             clueNumber: clueNumber + 1,
             clues: cluesFor(roundNumber, clueNumber + 1),
-            options: optionsFor(roundNumber, clueNumber + 1),
+            options: optionsFor(roundNumber),
         },
         reveal: null,
         result: null,
@@ -145,6 +147,13 @@ function optionButton(name: RegExp | string) {
     return screen.getByRole("button", { name });
 }
 
+// The texts of the option buttons, in the order they are shown.
+function optionTexts() {
+    return within(screen.getByRole("group", { name: "Choose a character" }))
+        .getAllByRole("button")
+        .map((option) => option.textContent);
+}
+
 // Plays rounds 1 to total-1 identifying each at the first clue, then leaves the last one to the caller.
 async function playTo(user: ReturnType<typeof userEvent.setup>, lastRound: number) {
     await begin(user);
@@ -154,7 +163,7 @@ async function playTo(user: ReturnType<typeof userEvent.setup>, lastRound: numbe
             ok: true,
             answer: ended(number, 1, "a", true, 100, number * 100),
         });
-        await user.click(optionButton(`Alpha ${number}.1`));
+        await user.click(optionButton(`Alpha ${number}`));
         roundMock.mockResolvedValueOnce({ ok: true, round: round(number + 1, 1, number * 100) });
         await user.click(await screen.findByRole("button", { name: "Next character" }));
         await screen.findByRole("heading", { level: 2, name: `Round ${number + 1} of 10` });
@@ -303,7 +312,7 @@ describe("WhoAmIGame: a round", () => {
         const options = within(screen.getByRole("group", { name: "Choose a character" })).getAllByRole("button");
 
         expect(options.map((option) => option.textContent)).toEqual([
-            "Alpha 1.1", "Bravo 1.1", "Charlie 1.1", "Delta 1.1",
+            "Alpha 1", "Bravo 1", "Charlie 1", "Delta 1",
         ]);
     });
 
@@ -337,26 +346,27 @@ describe("WhoAmIGame: a round", () => {
         await begin(user);
         answerMock.mockResolvedValue({ ok: true, answer: incorrect(1, 1, "b") });
 
-        await user.click(optionButton("Bravo 1.1"));
+        await user.click(optionButton("Bravo 1"));
 
         expect(answerMock).toHaveBeenCalledTimes(1);
         expect(answerMock).toHaveBeenCalledWith(GAME_ID, 1, 1, "b");
     });
 
-    it("tells a wrong answer apart and reveals the next clue and a new set of names", async () => {
+    it("tells a wrong answer apart and reveals the next clue, keeping the same four options", async () => {
         const user = userEvent.setup();
         render(<WhoAmIGame />);
         await begin(user);
         answerMock.mockResolvedValue({ ok: true, answer: incorrect(1, 1, "b") });
 
-        await user.click(optionButton("Bravo 1.1"));
+        await user.click(optionButton("Bravo 1"));
 
         expect(await screen.findByText("Clue text 1-2.")).toBeInTheDocument();
         expect(screen.getByText("Clue text 1-1.")).toBeInTheDocument();
-        expect(screen.getByText("Bravo 1.1 is not the one. Clue 2 is now revealed.")).toBeInTheDocument();
-        expect(screen.getByText("Ruled out so far: Bravo 1.1")).toBeInTheDocument();
-        expect(optionButton("Alpha 1.2")).toBeEnabled();
-        expect(screen.queryByRole("button", { name: "Alpha 1.1" })).not.toBeInTheDocument();
+        expect(screen.getByText("Bravo 1 is not the one. Clue 2 is now revealed.")).toBeInTheDocument();
+        expect(screen.getByText("Ruled out so far: Bravo 1")).toBeInTheDocument();
+        // The wrong option stays on offer; nothing is replaced.
+        expect(optionTexts()).toEqual(["Alpha 1", "Bravo 1", "Charlie 1", "Delta 1"]);
+        expect(optionButton("Bravo 1")).toBeEnabled();
         expect(screen.queryByText("Clue text 1-3.")).not.toBeInTheDocument();
         expect(screen.getByRole("heading", { level: 2, name: "Round 1 of 10" })).toBeInTheDocument();
 
@@ -366,13 +376,43 @@ describe("WhoAmIGame: a round", () => {
         expect(items[1]).toHaveTextContent("Clue 2, current");
     });
 
+    it("offers the same four options, in the same order, on every clue of a round", async () => {
+        const user = userEvent.setup();
+        render(<WhoAmIGame />);
+        await begin(user);
+
+        const initial = optionTexts();
+
+        expect(initial).toEqual(["Alpha 1", "Bravo 1", "Charlie 1", "Delta 1"]);
+
+        // Four wrong answers in a row, each on a different option: every clue brings the next
+        // clue and nothing else, so the sets cannot be compared to single out the right one.
+        const wrongIds = ["b", "c", "d", "b"];
+        const wrongNames = ["Bravo 1", "Charlie 1", "Delta 1", "Bravo 1"];
+
+        for (let clue = 1; clue <= 4; clue++) {
+            answerMock.mockResolvedValueOnce({ ok: true, answer: incorrect(1, clue, wrongIds[clue - 1]) });
+            await user.click(optionButton(wrongNames[clue - 1]));
+            await screen.findByText(`Clue text 1-${clue + 1}.`);
+
+            expect(optionTexts()).toEqual(initial);
+        }
+
+        // The right option is still among them, and the guess for clue 5 is sent with its id.
+        answerMock.mockResolvedValueOnce({ ok: true, answer: ended(1, 5, "a", true, 20, 20) });
+        await user.click(optionButton("Alpha 1"));
+
+        expect(answerMock).toHaveBeenLastCalledWith(GAME_ID, 1, 5, "a");
+        expect(await screen.findByRole("heading", { level: 3, name: "Correct! +20 points" })).toBeInTheDocument();
+    });
+
     it("moves focus to the new clue after a wrong answer", async () => {
         const user = userEvent.setup();
         render(<WhoAmIGame />);
         await begin(user);
         answerMock.mockResolvedValue({ ok: true, answer: incorrect(1, 1, "b") });
 
-        await user.click(optionButton("Bravo 1.1"));
+        await user.click(optionButton("Bravo 1"));
         await screen.findByText("Clue text 1-2.");
 
         expect(screen.getByText("Clue text 1-2.").closest("li")).toHaveFocus();
@@ -383,15 +423,15 @@ describe("WhoAmIGame: a round", () => {
         render(<WhoAmIGame />);
         await begin(user);
         answerMock.mockResolvedValueOnce({ ok: true, answer: incorrect(1, 1, "b") });
-        await user.click(optionButton("Bravo 1.1"));
+        await user.click(optionButton("Bravo 1"));
         await screen.findByText("Clue text 1-2.");
 
         answerMock.mockResolvedValueOnce({ ok: true, answer: incorrect(1, 2, "c") });
-        await user.click(optionButton("Charlie 1.2"));
+        await user.click(optionButton("Charlie 1"));
         await screen.findByText("Clue text 1-3.");
 
         expect(answerMock).toHaveBeenLastCalledWith(GAME_ID, 1, 2, "c");
-        expect(screen.getByText("Ruled out so far: Bravo 1.1, Charlie 1.2")).toBeInTheDocument();
+        expect(screen.getByText("Ruled out so far: Bravo 1, Charlie 1")).toBeInTheDocument();
         expect(scoreLabel()).toHaveTextContent("0 points");
     });
 
@@ -400,11 +440,11 @@ describe("WhoAmIGame: a round", () => {
         render(<WhoAmIGame />);
         await begin(user);
         answerMock.mockResolvedValueOnce({ ok: true, answer: incorrect(1, 1, "b") });
-        await user.click(optionButton("Bravo 1.1"));
+        await user.click(optionButton("Bravo 1"));
         await screen.findByText("Clue text 1-2.");
 
         answerMock.mockResolvedValueOnce({ ok: true, answer: ended(1, 2, "a", true, 80, 80) });
-        await user.click(optionButton("Alpha 1.2"));
+        await user.click(optionButton("Alpha 1"));
 
         expect(await screen.findByRole("heading", { level: 3, name: "Correct! +80 points" })).toBeInTheDocument();
         expect(screen.getByText("Character 1")).toBeInTheDocument();
@@ -419,7 +459,7 @@ describe("WhoAmIGame: a round", () => {
         await begin(user);
         answerMock.mockResolvedValueOnce({ ok: true, answer: ended(1, 1, "a", true, 100, 100) });
 
-        await user.click(optionButton("Alpha 1.1"));
+        await user.click(optionButton("Alpha 1"));
 
         expect(await screen.findByRole("heading", { level: 3, name: "Correct! +100 points" })).toHaveFocus();
     });
@@ -430,7 +470,7 @@ describe("WhoAmIGame: a round", () => {
         await begin(user);
         answerMock.mockResolvedValueOnce({ ok: true, answer: ended(1, 1, "a", true, 100, 100) });
 
-        await user.click(optionButton("Alpha 1.1"));
+        await user.click(optionButton("Alpha 1"));
 
         await screen.findByRole("heading", { level: 3, name: "Correct! +100 points" });
 
@@ -450,14 +490,14 @@ describe("WhoAmIGame: a round", () => {
 
         for (let clue = 1; clue <= 4; clue++) {
             answerMock.mockResolvedValueOnce({ ok: true, answer: incorrect(1, clue, "b") });
-            await user.click(optionButton(`Bravo 1.${clue}`));
+            await user.click(optionButton(`Bravo 1`));
             await screen.findByText(`Clue text 1-${clue + 1}.`);
         }
 
         expect(screen.getByText("Clue text 1-5.")).toBeInTheDocument();
 
         answerMock.mockResolvedValueOnce({ ok: true, answer: ended(1, 5, "b", false, 0, 0) });
-        await user.click(optionButton("Bravo 1.5"));
+        await user.click(optionButton("Bravo 1"));
 
         expect(
             await screen.findByRole("heading", { level: 3, name: "Not identified. This round is worth 0 points." }),
@@ -476,7 +516,7 @@ describe("WhoAmIGame: a round", () => {
         const pending = deferred<Awaited<ReturnType<typeof submitWhoAmIAnswer>>>();
         answerMock.mockReturnValue(pending.promise);
 
-        await user.dblClick(optionButton("Bravo 1.1"));
+        await user.dblClick(optionButton("Bravo 1"));
 
         expect(answerMock).toHaveBeenCalledTimes(1);
         expect(screen.getByText("Checking your answer...")).toBeInTheDocument();
@@ -497,14 +537,14 @@ describe("WhoAmIGame: a round", () => {
         await begin(user);
         answerMock.mockResolvedValueOnce({ ok: false, kind: "temporary", message: UNAVAILABLE });
 
-        await user.click(optionButton("Bravo 1.1"));
+        await user.click(optionButton("Bravo 1"));
 
         expect(await screen.findByRole("alert")).toHaveTextContent(UNAVAILABLE);
-        expect(optionButton("Bravo 1.1")).toBeEnabled();
+        expect(optionButton("Bravo 1")).toBeEnabled();
         expect(screen.queryByText("Clue text 1-2.")).not.toBeInTheDocument();
 
         answerMock.mockResolvedValueOnce({ ok: true, answer: incorrect(1, 1, "b") });
-        await user.click(optionButton("Bravo 1.1"));
+        await user.click(optionButton("Bravo 1"));
 
         expect(await screen.findByText("Clue text 1-2.")).toBeInTheDocument();
         expect(screen.queryByRole("alert")).not.toBeInTheDocument();
@@ -516,10 +556,10 @@ describe("WhoAmIGame: a round", () => {
         await begin(user);
         answerMock.mockRejectedValueOnce(new Error("boom"));
 
-        await user.click(optionButton("Bravo 1.1"));
+        await user.click(optionButton("Bravo 1"));
 
         expect(await screen.findByRole("alert")).toHaveTextContent("Something went wrong. Please try again.");
-        expect(optionButton("Bravo 1.1")).toBeEnabled();
+        expect(optionButton("Bravo 1")).toBeEnabled();
     });
 
     it("offers a new game when the game expired", async () => {
@@ -532,7 +572,7 @@ describe("WhoAmIGame: a round", () => {
             message: "This game has expired or is no longer available.",
         });
 
-        await user.click(optionButton("Bravo 1.1"));
+        await user.click(optionButton("Bravo 1"));
 
         expect(await screen.findByRole("alert")).toHaveTextContent("This game has expired");
 
@@ -551,7 +591,7 @@ describe("WhoAmIGame: a round", () => {
         await begin(user);
         answerMock.mockResolvedValueOnce({ ok: false, kind: "stale", message: "Moved on." });
 
-        await user.click(optionButton("Bravo 1.1"));
+        await user.click(optionButton("Bravo 1"));
         await screen.findByRole("alert");
 
         roundMock.mockResolvedValueOnce({ ok: true, round: round(1, 3) });
@@ -566,7 +606,7 @@ describe("WhoAmIGame: a round", () => {
         render(<WhoAmIGame />);
         await begin(user);
         answerMock.mockResolvedValueOnce({ ok: false, kind: "stale", message: "Moved on." });
-        await user.click(optionButton("Bravo 1.1"));
+        await user.click(optionButton("Bravo 1"));
         await screen.findByRole("alert");
 
         roundMock.mockResolvedValueOnce({ ok: false, kind: "stale", message: "Game has finished." });
@@ -596,7 +636,7 @@ describe("WhoAmIGame: moving between rounds", () => {
         render(<WhoAmIGame />);
         await begin(user);
         answerMock.mockResolvedValueOnce({ ok: true, answer: ended(1, 1, "a", true, 100, 100) });
-        await user.click(optionButton("Alpha 1.1"));
+        await user.click(optionButton("Alpha 1"));
         const pending = deferred<Awaited<ReturnType<typeof fetchWhoAmIRound>>>();
         roundMock.mockReturnValue(pending.promise);
 
@@ -616,7 +656,7 @@ describe("WhoAmIGame: moving between rounds", () => {
         render(<WhoAmIGame />);
         await begin(user);
         answerMock.mockResolvedValueOnce({ ok: true, answer: ended(1, 1, "a", true, 100, 100) });
-        await user.click(optionButton("Alpha 1.1"));
+        await user.click(optionButton("Alpha 1"));
         roundMock.mockResolvedValueOnce({ ok: false, kind: "temporary", message: UNAVAILABLE });
 
         await user.click(await screen.findByRole("button", { name: "Next character" }));
@@ -640,7 +680,7 @@ describe("WhoAmIGame: moving between rounds", () => {
             answer: ended(10, 1, "a", true, 100, 1000, RESULT),
         });
 
-        await user.click(optionButton("Alpha 10.1"));
+        await user.click(optionButton("Alpha 10"));
 
         expect(await screen.findByRole("button", { name: "See your results" })).toBeEnabled();
         expect(screen.getByRole("heading", { level: 2, name: "Round 10 of 10" })).toBeInTheDocument();
@@ -654,7 +694,7 @@ describe("WhoAmIGame: result", () => {
             ok: true,
             answer: ended(10, 1, "a", true, 100, 1000, RESULT),
         });
-        await user.click(optionButton("Alpha 10.1"));
+        await user.click(optionButton("Alpha 10"));
         await user.click(await screen.findByRole("button", { name: "See your results" }));
         await screen.findByText("Case closed", { selector: "h2" });
     }
