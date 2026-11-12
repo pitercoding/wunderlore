@@ -143,11 +143,37 @@
     }
 }
 
-@media (min-width: 58em) {
-    /* The mark hangs in the margin; the quote keeps its full measure. */
+/* Desktop: the frame (64rem) is wider than a single reading column, so the list
+   becomes two columns. Rows are grid rows, so a short quote beside a long one still
+   shares its row's height and rules. A column is ~29rem, so the type steps down a
+   little to keep a comfortable measure. */
+@media (min-width: 64em) {
+    .quoteList {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        column-gap: var(--space-8);
+        max-width: none;
+    }
+
+    .quote {
+        padding-block: var(--space-6);
+    }
+
+    .text {
+        font-size: clamp(1.3rem, 0.9rem + 0.75vw, 1.5rem);
+    }
+
+    .pagination {
+        max-width: none;
+    }
+}
+
+/* The mark hangs in the margin only once the viewport clears the frame plus the
+   mark's width; in the second column it sits in the gutter between columns. */
+@media (min-width: 71em) {
     .quote::before {
         position: absolute;
-        top: calc(var(--space-7) + 0.1rem);
+        top: calc(var(--space-6) + 0.1rem);
         left: -3.25rem;
         height: auto;
         font-size: 4.5rem;
